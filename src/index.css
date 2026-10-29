@@ -1,0 +1,25 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  color-scheme: light;
+}
+
+body {
+  margin: 0;
+  font-family: "Nunito", system-ui, sans-serif;
+  background: linear-gradient(180deg, #f5f3ff 0%, #eef2ff 40%, #f8fafc 100%);
+  min-height: 100vh;
+}
+
+code,
+pre {
+  font-family: "Fira Code", ui-monospace, Consolas, monospace;
+}
+
+@layer utilities {
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+}
