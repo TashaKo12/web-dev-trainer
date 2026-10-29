@@ -10,7 +10,9 @@ export type TrainerId =
   | "forms"
   | "tables"
   | "page-layout"
-  | "image-paths";
+  | "image-paths"
+  | "tags-attributes"
+  | "links";
 
 export type TrainerProgress = {
   score: number;

@@ -2,7 +2,8 @@ import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
-import { useTaskStepper, type TaskStatus } from "../../components/useTaskStepper";
+import { LevelShell } from "../../components/LevelShell";
+import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 import { FileTree } from "./FileTree";
 import { ImagePreview } from "./ImagePreview";
@@ -262,47 +263,6 @@ function LevelPlayer({ level, onResult }: { level: Level; onResult: (correct: bo
   );
 }
 
-function LevelSidebar({
-  total,
-  current,
-  statuses,
-  onJump,
-}: {
-  total: number;
-  current: number;
-  statuses: TaskStatus[];
-  onJump: (i: number) => void;
-}) {
-  return (
-    <div className="flex gap-2 overflow-x-auto pb-1 sm:w-14 sm:flex-col sm:overflow-visible sm:pb-0">
-      {Array.from({ length: total }, (_, i) => {
-        const status = statuses[i];
-        const isCurrent = i === current;
-        const look =
-          status === "correct"
-            ? "border-emerald-400 bg-emerald-100 text-emerald-700"
-            : status === "wrong"
-              ? "border-rose-300 bg-rose-100 text-rose-600"
-              : isCurrent
-                ? "border-teal-500 bg-teal-50 text-teal-700"
-                : "border-slate-200 bg-white text-slate-400";
-        return (
-          <button
-            key={i}
-            type="button"
-            onClick={() => onJump(i)}
-            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-mono text-sm font-bold transition ${look} ${
-              isCurrent ? "ring-2 ring-teal-300 ring-offset-2" : ""
-            }`}
-          >
-            {status === "correct" ? "✓" : status === "wrong" ? "✗" : i + 1}
-          </button>
-        );
-      })}
-    </div>
-  );
-}
-
 function Tasks() {
   const stepper = useTaskStepper(LEVELS.length, "image-paths");
 
@@ -317,49 +277,22 @@ function Tasks() {
   }
 
   const level = LEVELS[stepper.index];
-  const answered = stepper.status !== "idle";
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-md sm:p-8">
-      <div className="flex flex-col gap-5 sm:flex-row">
-        <LevelSidebar total={LEVELS.length} current={stepper.index} statuses={stepper.statuses} onJump={stepper.goTo} />
-
-        <div className="min-w-0 flex-1">
-          <div className="mb-4 flex items-center justify-between gap-3">
-            <span className="text-sm font-bold text-slate-400">
-              Уровень {stepper.index + 1} из {LEVELS.length}
-            </span>
-            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{level.badge}</span>
-          </div>
-
-          <LevelPlayer key={stepper.index} level={level} onResult={(correct) => stepper.markResult(correct)} />
-
-          <div className="mt-4 flex flex-wrap items-center gap-3">
-            {answered && !stepper.isLast && (
-              <button
-                type="button"
-                onClick={() => stepper.goNext()}
-                className="rounded-full bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow hover:opacity-90"
-              >
-                Следующий уровень →
-              </button>
-            )}
-            {stepper.status === "correct" && <span className="font-bold text-emerald-600">✅ Верно!</span>}
-            {stepper.status === "wrong" && <span className="font-bold text-rose-500">Не совсем — но ты уже близко</span>}
-          </div>
-
-          {answered && (
-            <div
-              className={`mt-4 rounded-2xl p-4 text-sm leading-relaxed ${
-                stepper.status === "correct" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"
-              }`}
-            >
-              {level.explain}
-            </div>
-          )}
-        </div>
-      </div>
-    </div>
+    <LevelShell
+      total={LEVELS.length}
+      index={stepper.index}
+      statuses={stepper.statuses}
+      status={stepper.status}
+      isLast={stepper.isLast}
+      badge={level.badge}
+      explain={level.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-teal-500 to-emerald-600"
+    >
+      <LevelPlayer key={stepper.index} level={level} onResult={(correct) => stepper.markResult(correct)} />
+    </LevelShell>
   );
 }
 

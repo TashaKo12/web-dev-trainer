@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
@@ -159,139 +159,106 @@ function FindLinkTask({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
-function Tasks() {
-  const stepper = useTaskStepper(5, "basic-tags");
-  const [mcq, setMcq] = useState<number | null>(null);
-  const [text, setText] = useState("");
-  const [clickDone, setClickDone] = useState(false);
+function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMcq(null);
-          setText("");
-          setClickDone(false);
-        }}
-      />
-    );
-  }
-
-  const task = stepper.index;
-  const next = () => {
-    stepper.goNext();
-    setMcq(null);
-    setText("");
-    setClickDone(false);
-  };
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="На странице должен быть один главный, самый крупный заголовок. Какой тег для него нужен?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="h1 — главный заголовок страницы. Обычно он один."
-      >
-        <McqOptions options={["h1", "h2", "h3", "p"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Нужно вывести список ингредиентов рецепта, где порядок не важен (соль, сахар, молоко). Какой тег выбрать?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="ul (unordered list) — маркированный список для пунктов без значимого порядка."
-      >
-        <McqOptions options={["ol", "ul", "li", "dl"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="А для шагов инструкции, где важен порядок («сначала взбей яйцо, потом добавь молоко»), подойдёт:"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="ol (ordered list) — нумерованный список, когда порядок пунктов важен."
-      >
-        <McqOptions options={["ol", "ul", "a", "img"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой тег выводит на страницу картинку из файла (без учёта его атрибутов — просто имя тега)?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(text.trim().toLowerCase().replace(/[<>]/g, "") === "img")}
-        onNext={next}
-        checkDisabled={!text.trim()}
-        isLast={false}
-        feedback="img — тег изображения. У него нет закрывающего тега, а путь к файлу указывается в атрибуте src."
-      >
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={stepper.status !== "idle"}
-          placeholder="название тега"
-          className="w-48 rounded-full border-2 border-slate-300 px-4 py-2 text-center font-mono font-semibold text-slate-700 outline-none focus:border-rose-400 disabled:opacity-60"
-        />
-      </TaskShell>
-    );
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
   }
 
   return (
-    <TaskShell
-      index={task}
-      total={5}
-      statuses={stepper.statuses}
-      prompt="Кликни по нужному элементу на мини-странице."
-      status={clickDone ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={next}
-      isLast
-      feedback='Тег <a>, оборачивающий <h2>, делает заголовок кликабельным — это и заголовок, и ссылка одновременно.'
-    >
-      <FindLinkTask
-        onResult={(correct) => {
-          setClickDone(true);
-          stepper.markResult(correct);
-        }}
+    <div>
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-rose-500 to-red-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ImgTagLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(text.trim().toLowerCase().replace(/[<>]/g, "") === "img");
+  }
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => !checked && setText(e.target.value)}
+        disabled={checked}
+        placeholder="название тега"
+        className="w-48 rounded-full border-2 border-slate-300 px-4 py-2 text-center font-mono font-semibold text-slate-700 outline-none focus:border-rose-400 disabled:opacity-60"
       />
-    </TaskShell>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-rose-500 to-red-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TASK_META = [
+  { badge: "выбери из списка", prompt: "На странице должен быть один главный, самый крупный заголовок. Какой тег для него нужен?", explain: "h1 — главный заголовок страницы. Обычно он один." },
+  { badge: "выбери из списка", prompt: "Нужно вывести список ингредиентов рецепта, где порядок не важен (соль, сахар, молоко). Какой тег выбрать?", explain: "ul (unordered list) — маркированный список для пунктов без значимого порядка." },
+  { badge: "выбери из списка", prompt: "А для шагов инструкции, где важен порядок («сначала взбей яйцо, потом добавь молоко»), подойдёт:", explain: "ol (ordered list) — нумерованный список, когда порядок пунктов важен." },
+  { badge: "напиши сам", prompt: "Какой тег выводит на страницу картинку из файла (без учёта его атрибутов — просто имя тега)?", explain: "img — тег изображения. У него нет закрывающего тега, а путь к файлу указывается в атрибуте src." },
+  { badge: "кликни на мини-странице", prompt: "Кликни по элементу, который одновременно и заголовок, и ссылка.", explain: 'Тег <a>, оборачивающий <h2>, делает заголовок кликабельным — это и заголовок, и ссылка одновременно.' },
+];
+
+function Tasks() {
+  const stepper = useTaskStepper(5, "basic-tags");
+  const task = stepper.index;
+  const meta = TASK_META[task];
+
+  if (stepper.allAnswered) {
+    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+  }
+
+  return (
+    <LevelShell
+      total={5}
+      index={task}
+      statuses={stepper.statuses}
+      status={stepper.status}
+      isLast={stepper.isLast}
+      badge={meta.badge}
+      explain={meta.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-rose-500 to-red-600"
+    >
+      <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>
+      {task === 0 && <McqLevel key={task} options={["h1", "h2", "h3", "p"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 1 && <McqLevel key={task} options={["ol", "ul", "li", "dl"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && <McqLevel key={task} options={["ol", "ul", "a", "img"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <ImgTagLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <FindLinkTask key={task} onResult={(c) => stepper.markResult(c)} />}
+    </LevelShell>
   );
 }
 
@@ -307,7 +274,7 @@ export function BasicTagsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий про базовые HTML-теги." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай из списка, пиши сам и кликай на странице." />
       <Tasks />
     </div>
   );

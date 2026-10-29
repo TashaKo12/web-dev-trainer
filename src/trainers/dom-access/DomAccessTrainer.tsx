@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 import { MiniPage, type ElKey } from "./MiniPage";
@@ -92,42 +92,73 @@ function Theory() {
   );
 }
 
-type Task = { code: string; prompt: string; result: ElKey[]; explain: string };
+type Task =
+  | { mode: "click"; code: string; prompt: string; result: ElKey[]; explain: string }
+  | { mode: "type"; prompt: string; expectedCode: string; result: ElKey[]; explain: string };
+
+function normalizeCode(s: string) {
+  return s.replace(/\s+/g, "").replace(/"/g, "'");
+}
 
 const TASKS: Task[] = [
   {
+    mode: "click",
     code: "document.getElementById('note')",
     prompt: "Какой элемент вернёт этот код? Нажми на него на мини-странице.",
     result: ["note"],
     explain: "getElementById находит ровно один элемент с id=\"note\".",
   },
   {
+    mode: "click",
     code: "document.getElementsByClassName('item')[1]",
     prompt: "getElementsByClassName возвращает коллекцию. Какой элемент окажется под индексом [1]?",
     result: ["item2"],
     explain: "Индексы начинаются с 0: [0] — Яблоко, [1] — Банан, [2] — Вишня.",
   },
   {
+    mode: "click",
     code: "document.querySelectorAll('.item')",
     prompt: "Отметь все элементы, которые вернёт этот вызов.",
     result: ["item1", "item2", "item3"],
     explain: "querySelectorAll с классом .item находит все три пункта списка.",
   },
   {
+    mode: "click",
     code: "document.getElementById('list').children[2]",
     prompt: "children — это прямые потомки списка. Что окажется под индексом [2]?",
     result: ["item3"],
     explain: "children[0] — Яблоко, children[1] — Банан, children[2] — Вишня.",
   },
   {
+    mode: "click",
     code: "document.querySelector('.special').previousElementSibling",
     prompt: "Отметь элемент, который вернёт этот код.",
     result: ["item1"],
     explain: "У «Банана» (класс special) соседом слева/выше является «Яблоко».",
   },
+  {
+    mode: "type",
+    prompt: "Теперь не выбирай элемент, а напиши код сам. Элемент с подсказкой на картинке — это <ul>. Напиши выражение, которое найдёт его через parentElement у элемента с классом special.",
+    expectedCode: "document.querySelector('.special').parentElement",
+    result: ["list"],
+    explain: "document.querySelector('.special').parentElement — сначала находим «Банан» (класс special), потом поднимаемся к его родителю — <ul>.",
+  },
+  {
+    mode: "type",
+    prompt: "Напиши код сам: найди элемент «Вишня», воспользовавшись тем, что он — следующий сосед элемента с классом special.",
+    expectedCode: "document.querySelector('.special').nextElementSibling",
+    result: ["item3"],
+    explain: "document.querySelector('.special').nextElementSibling — следующий элемент того же уровня, то есть сосед справа/ниже.",
+  },
 ];
 
-function ClickTask({ task, onResult }: { task: Task; onResult: (correct: boolean) => void }) {
+function ClickTask({
+  task,
+  onResult,
+}: {
+  task: Extract<Task, { mode: "click" }>;
+  onResult: (correct: boolean) => void;
+}) {
   const [selected, setSelected] = useState<Set<ElKey>>(new Set());
   const [checked, setChecked] = useState(false);
 
@@ -171,51 +202,75 @@ function ClickTask({ task, onResult }: { task: Task; onResult: (correct: boolean
   );
 }
 
+function TypeTask({
+  task,
+  onResult,
+}: {
+  task: Extract<Task, { mode: "type" }>;
+  onResult: (correct: boolean) => void;
+}) {
+  const [code, setCode] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(normalizeCode(code) === normalizeCode(task.expectedCode));
+  }
+
+  return (
+    <div>
+      <MiniPage targets={new Set(task.result)} highlighted={checked ? new Set(task.result) : undefined} />
+      <input
+        type="text"
+        value={code}
+        onChange={(e) => !checked && setCode(e.target.value)}
+        disabled={checked}
+        placeholder="document.querySelector(...)..."
+        className="mt-3 w-full rounded-xl border-2 border-violet-200 px-3 py-2 font-mono text-xs outline-none focus:border-violet-400 disabled:opacity-60"
+      />
+      {!checked && (
+        <button
+          type="button"
+          onClick={check}
+          disabled={!code.trim()}
+          className="mt-4 rounded-full bg-gradient-to-r from-violet-500 to-indigo-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+        >
+          Проверить
+        </button>
+      )}
+    </div>
+  );
+}
+
 function Tasks() {
-  const stepper = useTaskStepper(5, "dom-access");
-  const [done, setDone] = useState(false);
+  const stepper = useTaskStepper(TASKS.length, "dom-access");
 
   if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setDone(false);
-        }}
-      />
-    );
+    return <CompletionBanner score={stepper.score} total={TASKS.length} onRestart={() => stepper.restart()} />;
   }
 
   const task = TASKS[stepper.index];
 
   return (
-    <TaskShell
+    <LevelShell
+      total={TASKS.length}
       index={stepper.index}
-      total={5}
       statuses={stepper.statuses}
-      prompt={task.prompt}
-      status={done ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={() => {
-        stepper.goNext();
-        setDone(false);
-      }}
+      status={stepper.status}
       isLast={stepper.isLast}
-      feedback={task.explain}
+      badge={task.mode === "click" ? "кликни на странице" : "напиши сам"}
+      explain={task.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-violet-500 to-indigo-600"
     >
-      <ClickTask
-        key={stepper.index}
-        task={task}
-        onResult={(correct) => {
-          setDone(true);
-          stepper.markResult(correct);
-        }}
-      />
-    </TaskShell>
+      <p className="mb-4 text-sm font-semibold text-slate-700">{task.prompt}</p>
+      {task.mode === "click" ? (
+        <ClickTask key={stepper.index} task={task} onResult={(correct) => stepper.markResult(correct)} />
+      ) : (
+        <TypeTask key={stepper.index} task={task} onResult={(correct) => stepper.markResult(correct)} />
+      )}
+    </LevelShell>
   );
 }
 
@@ -231,7 +286,7 @@ export function DomAccessTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий — угадай результат вызова, кликая по странице." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="7 уровней — сначала кликай по странице, потом пиши код сам." />
       <Tasks />
     </div>
   );

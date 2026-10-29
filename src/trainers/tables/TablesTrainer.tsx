@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
@@ -137,129 +137,161 @@ function TableClickTask({ onResult }: { onResult: (correct: boolean) => void }) 
   );
 }
 
-function Tasks() {
-  const stepper = useTaskStepper(5, "tables");
-  const [mcq, setMcq] = useState<number | null>(null);
-  const [clickDone, setClickDone] = useState(false);
+function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMcq(null);
-          setClickDone(false);
-        }}
-      />
-    );
-  }
-
-  const task = stepper.index;
-  const next = () => {
-    stepper.goNext();
-    setMcq(null);
-    setClickDone(false);
-  };
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой тег создаёт одну строку таблицы?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="tr (table row) — строка таблицы. Внутри неё лежат ячейки td или th."
-      >
-        <McqOptions options={["table", "tr", "td", "th"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой тег нужен для ячейки-заголовка (выделяется жирным и по центру по умолчанию)?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 2)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="th (table header) — ячейка заголовка таблицы."
-      >
-        <McqOptions options={["tr", "td", "th", "caption"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt='Ячейка "Название" должна визуально занимать место СРАЗУ ДВУХ СТРОК. Какой атрибут нужен?'
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback='rowspan="2" растягивает ячейку на две строки по вертикали.'
-      >
-        <McqOptions mono options={['rowspan="2"', 'colspan="2"', 'width="2"', 'span="2"']} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt='А если ячейка "Урон в голову" должна занимать место ДВУХ СТОЛБЦОВ (над "с броней" и "без брони")?'
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback='colspan="2" растягивает ячейку на два столбца по горизонтали.'
-      >
-        <McqOptions mono options={['rowspan="2"', 'colspan="2"', 'merge="2"', 'cols="2"']} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
   }
 
   return (
-    <TaskShell
-      index={task}
+    <div>
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-slate-600 to-slate-800 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SpanPickTask({
+  kind,
+  options,
+  correctIndex,
+  onResult,
+}: {
+  kind: "row" | "col";
+  options: string[];
+  correctIndex: number;
+  onResult: (correct: boolean) => void;
+}) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
+  const picked = choice !== null ? options[choice] : null;
+  const applies = picked ? picked.startsWith(kind === "row" ? "rowspan" : "colspan") : false;
+  const span = applies ? 2 : 1;
+
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
+  }
+
+  return (
+    <div>
+      <table className="mb-4 w-full border-collapse text-sm">
+        <tbody>
+          {kind === "row" ? (
+            <>
+              <tr>
+                <th rowSpan={span} className="border-2 border-slate-400 bg-slate-100 p-2">
+                  Название
+                </th>
+                <th className="border-2 border-slate-300 bg-slate-50 p-2">С броней</th>
+                <th className="border-2 border-slate-300 bg-slate-50 p-2">Без брони</th>
+              </tr>
+              {span === 1 && (
+                <tr>
+                  <th className="border-2 border-slate-400 bg-slate-100 p-2">—</th>
+                  <th className="border-2 border-slate-300 bg-slate-50 p-2">—</th>
+                  <th className="border-2 border-slate-300 bg-slate-50 p-2">—</th>
+                </tr>
+              )}
+              <tr>
+                <td className="border-2 border-slate-200 p-2">AK-47</td>
+                <td className="border-2 border-slate-200 p-2">103</td>
+                <td className="border-2 border-slate-200 p-2">71</td>
+              </tr>
+            </>
+          ) : (
+            <>
+              <tr>
+                <th className="border-2 border-slate-400 bg-slate-100 p-2">Название</th>
+                <th colSpan={span} className="border-2 border-slate-400 bg-slate-100 p-2">
+                  Урон в голову
+                </th>
+                {span === 1 && <th className="border-2 border-slate-400 bg-slate-100 p-2">—</th>}
+              </tr>
+              <tr>
+                <th className="border-2 border-slate-300 bg-slate-50 p-2">—</th>
+                <th className="border-2 border-slate-300 bg-slate-50 p-2">С броней</th>
+                <th className="border-2 border-slate-300 bg-slate-50 p-2">Без брони</th>
+              </tr>
+              <tr>
+                <td className="border-2 border-slate-200 p-2">AK-47</td>
+                <td className="border-2 border-slate-200 p-2">103</td>
+                <td className="border-2 border-slate-200 p-2">71</td>
+              </tr>
+            </>
+          )}
+        </tbody>
+      </table>
+
+      <McqOptions mono options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} />
+
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-slate-600 to-slate-800 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TASK_META = [
+  { badge: "выбери из списка", prompt: "Какой тег создаёт одну строку таблицы?", explain: "tr (table row) — строка таблицы. Внутри неё лежат ячейки td или th." },
+  { badge: "выбери из списка", prompt: "Какой тег нужен для ячейки-заголовка (выделяется жирным и по центру по умолчанию)?", explain: "th (table header) — ячейка заголовка таблицы." },
+  { badge: "выбери и смотри", prompt: 'Ячейка "Название" должна визуально занимать место СРАЗУ ДВУХ СТРОК. Выбери атрибут и посмотри на таблицу.', explain: 'rowspan="2" растягивает ячейку на две строки по вертикали.' },
+  { badge: "выбери и смотри", prompt: 'А если ячейка "Урон в голову" должна занимать место ДВУХ СТОЛБЦОВ? Выбери атрибут и посмотри на таблицу.', explain: 'colspan="2" растягивает ячейку на два столбца по горизонтали.' },
+  { badge: "кликни по ячейке", prompt: "", explain: "th — ячейка заголовка. Данные (например AK-47 и 103) лежат в td." },
+];
+
+function Tasks() {
+  const stepper = useTaskStepper(5, "tables");
+  const task = stepper.index;
+  const meta = TASK_META[task];
+
+  if (stepper.allAnswered) {
+    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+  }
+
+  return (
+    <LevelShell
       total={5}
+      index={task}
       statuses={stepper.statuses}
-      prompt="Кликни по нужной ячейке таблицы."
-      status={clickDone ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={next}
-      isLast
-      feedback="th — ячейка заголовка. Данные (например AK-47 и 103) лежат в td."
+      status={stepper.status}
+      isLast={stepper.isLast}
+      badge={meta.badge}
+      explain={meta.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-slate-600 to-slate-800"
     >
-      <TableClickTask
-        onResult={(correct) => {
-          setClickDone(true);
-          stepper.markResult(correct);
-        }}
-      />
-    </TaskShell>
+      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {task === 0 && <McqLevel key={task} options={["table", "tr", "td", "th"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 1 && <McqLevel key={task} options={["tr", "td", "th", "caption"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && <SpanPickTask key={task} kind="row" options={['rowspan="2"', 'colspan="2"', 'width="2"', 'span="2"']} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <SpanPickTask key={task} kind="col" options={['rowspan="2"', 'colspan="2"', 'merge="2"', 'cols="2"']} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <TableClickTask key={task} onResult={(c) => stepper.markResult(c)} />}
+    </LevelShell>
   );
 }
 
@@ -275,7 +307,7 @@ export function TablesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий про HTML-таблицы." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай, смотри на таблицу и кликай по ячейкам." />
       <Tasks />
     </div>
   );
