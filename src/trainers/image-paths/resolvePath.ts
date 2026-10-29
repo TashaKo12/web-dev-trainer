@@ -4,6 +4,7 @@ export const IMAGE_FILES: Record<string, ImageInfo> = {
   "cat.jpg": { emoji: "🐱", label: "Кот" },
   "images/sunset.jpg": { emoji: "🌅", label: "Закат" },
   "images/gallery/forest.jpg": { emoji: "🌲", label: "Лес" },
+  "Logo.png": { emoji: "🏷️", label: "Логотип" },
 };
 
 export const OTHER_FILES = new Set(["style.css", "index.html", "pages/about.html"]);

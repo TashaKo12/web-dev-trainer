@@ -1,10 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
-import { McqOptions } from "../../components/McqOptions";
-import { useTaskStepper } from "../../components/useTaskStepper";
+import { useTaskStepper, type TaskStatus } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 import { FileTree } from "./FileTree";
 import { ImagePreview } from "./ImagePreview";
@@ -12,7 +10,7 @@ import { resolvePath } from "./resolvePath";
 
 const meta = trainers.find((t) => t.id === "image-paths")!;
 
-const EXAMPLES = ["cat.jpg", "images/sunset.jpg", "images/forest.jpg", "../cat.jpg", "/images/sunset.jpg"];
+const EXAMPLES = ["cat.jpg", "images/sunset.jpg", "images/forest.jpg", "../cat.jpg", "/images/sunset.jpg", "Logo.png"];
 
 function Theory() {
   const [openFile, setOpenFile] = useState<"index.html" | "pages/about.html">("index.html");
@@ -101,44 +99,160 @@ function Theory() {
   );
 }
 
-function PathChallenge({
-  currentDir,
-  target,
-  prompt,
-  onResult,
-}: {
-  currentDir: string;
+type Level = {
+  mode: "choose" | "type";
+  openFile: "index.html" | "pages/about.html";
   target: string;
+  external?: boolean;
+  options?: string[];
+  prefill?: string;
   prompt: string;
-  onResult: (correct: boolean) => void;
-}) {
-  const [src, setSrc] = useState("");
+  badge: string;
+  explain: string;
+};
+
+const LEVELS: Level[] = [
+  {
+    mode: "choose",
+    openFile: "index.html",
+    target: "cat.jpg",
+    options: ["cat.jpg", "images/cat.jpg", "/root/cat.jpg"],
+    prompt: "cat.jpg и index.html лежат в одной папке — в корне проекта. Выбери верный src и проверь на картинке ниже.",
+    badge: "выбери из списка",
+    explain: "Если файлы лежат рядом, достаточно просто имени файла — cat.jpg.",
+  },
+  {
+    mode: "choose",
+    openFile: "index.html",
+    target: "images/sunset.jpg",
+    options: ["sunset.jpg", "images/sunset.jpg", "image/sunset.jpg"],
+    prompt: "Теперь sunset.jpg лежит в папке images. Выбери верный src.",
+    badge: "выбери из списка",
+    explain: 'images/sunset.jpg — сначала точное имя папки (с «s» на конце!), потом «/», потом имя файла.',
+  },
+  {
+    mode: "choose",
+    openFile: "index.html",
+    target: "images/gallery/forest.jpg",
+    options: ["images/forest.jpg", "gallery/forest.jpg", "images/gallery/forest.jpg"],
+    prompt: "forest.jpg лежит ещё глубже — в папке gallery внутри папки images. Выбери верный src.",
+    badge: "выбери из списка",
+    explain: "images/gallery/forest.jpg — папка внутри папки, поэтому два «/» подряд: сначала images, потом gallery.",
+  },
+  {
+    mode: "choose",
+    openFile: "pages/about.html",
+    target: "cat.jpg",
+    options: ["cat.jpg", "../cat.jpg", "/pages/cat.jpg"],
+    prompt: "Открыт pages/about.html — он лежит во вложенной папке pages. Нужно показать cat.jpg из корня проекта. Выбери верный src.",
+    badge: "выбери из списка",
+    explain: "../cat.jpg — about.html лежит в папке pages, поэтому сначала поднимаемся на уровень выше (..), а потом ищем cat.jpg.",
+  },
+  {
+    mode: "type",
+    openFile: "pages/about.html",
+    target: "images/sunset.jpg",
+    prompt: "Снова открыт pages/about.html. Напиши сам путь к sunset.jpg, который лежит в images/ в корне проекта.",
+    badge: "напиши сам",
+    explain: "../images/sunset.jpg (или /images/sunset.jpg) — сначала выходим из pages, потом заходим в images.",
+  },
+  {
+    mode: "type",
+    openFile: "pages/about.html",
+    target: "images/gallery/forest.jpg",
+    prompt: "Та же логика, но папка вложена ещё глубже. Напиши путь к forest.jpg.",
+    badge: "напиши сам",
+    explain: "../images/gallery/forest.jpg — та же идея: сначала «../», потом обычный путь от корня.",
+  },
+  {
+    mode: "type",
+    openFile: "index.html",
+    target: "https://example.com/photos/sky.jpg",
+    external: true,
+    prompt: "Нужно вставить фотографию с другого сайта по ссылке https://example.com/photos/sky.jpg. Какой src написать?",
+    badge: "напиши сам",
+    explain: "Для картинок из интернета путь не вычисляется — ссылку просто вставляют как есть, целиком, вместе с https://.",
+  },
+  {
+    mode: "type",
+    openFile: "index.html",
+    target: "cat.jpg",
+    prefill: "images/cat.jpg",
+    prompt: 'Кто-то написал src="images/cat.jpg", но кот не появляется — он лежит не в images! Почини путь.',
+    badge: "почини баг",
+    explain: "cat.jpg лежит в самом корне проекта, а не в папке images — лишнюю папку нужно убрать из пути.",
+  },
+  {
+    mode: "type",
+    openFile: "index.html",
+    target: "Logo.png",
+    prompt: "В проекте лежит файл Logo.png — с большой буквы Л. Напиши src так, чтобы логотип появился, точно повторив регистр букв.",
+    badge: "напиши сам",
+    explain: "Logo.png — большие и маленькие буквы должны совпадать ТОЧНО. На Windows это прощается, а на сайте в интернете (например на GitHub Pages) — нет, и картинка пропадёт.",
+  },
+];
+
+function dirFor(openFile: Level["openFile"]) {
+  return openFile === "index.html" ? "" : "pages";
+}
+
+function LevelPlayer({ level, onResult }: { level: Level; onResult: (correct: boolean) => void }) {
+  const [value, setValue] = useState(level.prefill ?? "");
   const [checked, setChecked] = useState(false);
+  const dir = dirFor(level.openFile);
 
   function check() {
     setChecked(true);
-    onResult(resolvePath(currentDir, src) === target);
+    const correct = level.external ? value.trim() === level.target : resolvePath(dir, value) === level.target;
+    onResult(correct);
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
-      <input
-        type="text"
-        value={src}
-        onChange={(e) => !checked && setSrc(e.target.value)}
-        disabled={checked}
-        placeholder="впиши путь для src"
-        className="mb-3 w-full rounded-xl border-2 border-teal-200 px-3 py-2 font-mono text-sm outline-none focus:border-teal-400 disabled:opacity-60"
-      />
-      <ImagePreview currentDir={currentDir} src={src} alt="фото" />
+      <p className="mb-4 text-sm font-semibold text-slate-700">{level.prompt}</p>
+
+      <div className="grid gap-5 sm:grid-cols-[1fr_1.1fr]">
+        <FileTree openFile={level.openFile} highlight={level.external ? undefined : [level.target]} />
+
+        <div>
+          {level.mode === "choose" ? (
+            <div className="mb-3 space-y-2">
+              {level.options!.map((opt) => (
+                <button
+                  key={opt}
+                  type="button"
+                  disabled={checked}
+                  onClick={() => setValue(opt)}
+                  className={`block w-full rounded-xl border-2 px-3 py-2 text-left font-mono text-xs transition disabled:cursor-not-allowed ${
+                    value === opt ? "border-teal-500 bg-teal-50 text-teal-700" : "border-slate-200 text-slate-600 hover:border-teal-200"
+                  }`}
+                >
+                  src="{opt}"
+                </button>
+              ))}
+            </div>
+          ) : (
+            <input
+              type="text"
+              value={value}
+              onChange={(e) => !checked && setValue(e.target.value)}
+              disabled={checked}
+              placeholder="впиши путь для src"
+              className="mb-3 w-full rounded-xl border-2 border-teal-200 px-3 py-2 font-mono text-sm outline-none focus:border-teal-400 disabled:opacity-60"
+            />
+          )}
+
+          <ImagePreview currentDir={dir} src={value} alt="фото" />
+        </div>
+      </div>
+
       {!checked && (
         <div className="mt-4 flex justify-center">
           <button
             type="button"
             onClick={check}
-            disabled={!src.trim()}
-            className="rounded-full bg-gradient-to-r from-teal-500 to-emerald-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+            disabled={!value.trim()}
+            className="rounded-full bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
           >
             Проверить
           </button>
@@ -148,154 +262,104 @@ function PathChallenge({
   );
 }
 
+function LevelSidebar({
+  total,
+  current,
+  statuses,
+  onJump,
+}: {
+  total: number;
+  current: number;
+  statuses: TaskStatus[];
+  onJump: (i: number) => void;
+}) {
+  return (
+    <div className="flex gap-2 overflow-x-auto pb-1 sm:w-14 sm:flex-col sm:overflow-visible sm:pb-0">
+      {Array.from({ length: total }, (_, i) => {
+        const status = statuses[i];
+        const isCurrent = i === current;
+        const look =
+          status === "correct"
+            ? "border-emerald-400 bg-emerald-100 text-emerald-700"
+            : status === "wrong"
+              ? "border-rose-300 bg-rose-100 text-rose-600"
+              : isCurrent
+                ? "border-teal-500 bg-teal-50 text-teal-700"
+                : "border-slate-200 bg-white text-slate-400";
+        return (
+          <button
+            key={i}
+            type="button"
+            onClick={() => onJump(i)}
+            className={`flex h-10 w-10 shrink-0 items-center justify-center rounded-full border-2 font-mono text-sm font-bold transition ${look} ${
+              isCurrent ? "ring-2 ring-teal-300 ring-offset-2" : ""
+            }`}
+          >
+            {status === "correct" ? "✓" : status === "wrong" ? "✗" : i + 1}
+          </button>
+        );
+      })}
+    </div>
+  );
+}
+
 function Tasks() {
-  const stepper = useTaskStepper(5, "image-paths");
-  const [mcq, setMcq] = useState<number | null>(null);
-  const [challengeDone, setChallengeDone] = useState(false);
+  const stepper = useTaskStepper(LEVELS.length, "image-paths");
 
   if (stepper.allAnswered) {
     return (
       <CompletionBanner
         score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMcq(null);
-          setChallengeDone(false);
-        }}
+        total={LEVELS.length}
+        onRestart={() => stepper.restart()}
       />
     );
   }
 
-  const task = stepper.index;
-  const next = () => {
-    stepper.goNext();
-    setMcq(null);
-    setChallengeDone(false);
-  };
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="index.html и cat.jpg лежат в одной и той же папке (в корне проекта). Какой src будет верным?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="cat.jpg — если файлы лежат рядом, достаточно просто имени файла."
-      >
-        <McqOptions mono options={["cat.jpg", "images/cat.jpg", "/root/cat.jpg", "./images/cat.jpg"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Открыт index.html (в корне). Картинка sunset.jpg лежит в папке images. Какой src подойдёт?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="images/sunset.jpg — сначала имя папки, потом «/», потом имя файла."
-      >
-        <McqOptions mono options={["sunset.jpg", "images/sunset.jpg", "/sunset.jpg", "images\\sunset.jpg"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Почини путь — сейчас картинка не появляется."
-        status={challengeDone ? stepper.status : "idle"}
-        onCheck={() => {}}
-        checkDisabled
-        hideCheck
-        onNext={next}
-        isLast={false}
-        feedback='Верно: ../cat.jpg. Файл about.html лежит в папке pages, поэтому сначала нужно подняться на уровень выше (../), а потом искать cat.jpg в корне.'
-      >
-        <PathChallenge
-          currentDir="pages"
-          target="cat.jpg"
-          prompt="Сейчас открыт pages/about.html. Напиши путь к cat.jpg, который лежит в корне проекта (на уровень выше)."
-          onResult={(correct) => {
-            setChallengeDone(true);
-            stepper.markResult(correct);
-          }}
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt={
-          <>
-            На твоём компьютере файл называется <code className="rounded bg-slate-100 px-1">Cat.JPG</code> (с
-            большими буквами), а в коде написано{" "}
-            <code className="rounded bg-slate-100 px-1">src="cat.jpg"</code>. Локально всё работает. Что будет,
-            когда сайт выложат на GitHub Pages?
-          </>
-        }
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="Windows не различает регистр букв в именах файлов, а серверы в интернете (как GitHub Pages) — различают. Поэтому картинка пропадёт, хотя на компьютере всё было в порядке."
-      >
-        <McqOptions
-          mono={false}
-          options={["Картинка тоже будет видна", "Картинка может пропасть — большие и маленькие буквы важны", "Сайт вообще не откроется", "Браузер сам исправит имя файла"]}
-          selected={mcq}
-          onSelect={setMcq}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
-  }
+  const level = LEVELS[stepper.index];
+  const answered = stepper.status !== "idle";
 
   return (
-    <TaskShell
-      index={task}
-      total={5}
-      statuses={stepper.statuses}
-      prompt="Последнее задание — самый длинный путь."
-      status={challengeDone ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={next}
-      isLast
-      feedback="images/gallery/forest.jpg — папка внутри папки, поэтому два «/» подряд."
-    >
-      <PathChallenge
-        currentDir=""
-        target="images/gallery/forest.jpg"
-        prompt="Открыт index.html. Напиши путь к forest.jpg, который лежит в images/gallery/."
-        onResult={(correct) => {
-          setChallengeDone(true);
-          stepper.markResult(correct);
-        }}
-      />
-    </TaskShell>
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-md sm:p-8">
+      <div className="flex flex-col gap-5 sm:flex-row">
+        <LevelSidebar total={LEVELS.length} current={stepper.index} statuses={stepper.statuses} onJump={stepper.goTo} />
+
+        <div className="min-w-0 flex-1">
+          <div className="mb-4 flex items-center justify-between gap-3">
+            <span className="text-sm font-bold text-slate-400">
+              Уровень {stepper.index + 1} из {LEVELS.length}
+            </span>
+            <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{level.badge}</span>
+          </div>
+
+          <LevelPlayer key={stepper.index} level={level} onResult={(correct) => stepper.markResult(correct)} />
+
+          <div className="mt-4 flex flex-wrap items-center gap-3">
+            {answered && !stepper.isLast && (
+              <button
+                type="button"
+                onClick={() => stepper.goNext()}
+                className="rounded-full bg-gradient-to-r from-teal-500 to-emerald-600 px-6 py-2.5 text-sm font-bold text-white shadow hover:opacity-90"
+              >
+                Следующий уровень →
+              </button>
+            )}
+            {stepper.status === "correct" && <span className="font-bold text-emerald-600">✅ Верно!</span>}
+            {stepper.status === "wrong" && <span className="font-bold text-rose-500">Не совсем — но ты уже близко</span>}
+          </div>
+
+          {answered && (
+            <div
+              className={`mt-4 rounded-2xl p-4 text-sm leading-relaxed ${
+                stepper.status === "correct" ? "bg-emerald-50 text-emerald-800" : "bg-amber-50 text-amber-800"
+              }`}
+            >
+              {level.explain}
+            </div>
+          )}
+        </div>
+      </div>
+    </div>
   );
 }
 
@@ -311,7 +375,11 @@ export function ImagePathsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий про пути к изображениям." />
+      <SectionHeading
+        kicker="Практика"
+        title="9 уровней"
+        description="Сначала выбираешь путь из списка, потом пишешь сам — и сразу видишь результат на картинке."
+      />
       <Tasks />
     </div>
   );

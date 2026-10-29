@@ -128,7 +128,7 @@ export const trainers: TrainerMeta[] = [
     title: "Пути к картинкам",
     summary:
       "Впиши src сам и смотри вживую, когда фото появляется, а когда — нет.",
-    taskCount: 5,
+    taskCount: 9,
     gradient: "from-teal-500 to-emerald-600",
   },
 ];
