@@ -61,4 +61,64 @@ export const trainers: TrainerMeta[] = [
     taskCount: 5,
     gradient: "from-violet-500 to-indigo-600",
   },
+  {
+    id: "basic-tags",
+    path: "/basic-tags",
+    emoji: "📝",
+    title: "HTML-теги: заголовки, списки, ссылки",
+    summary:
+      "h1–h3, p, a, img, ul/ol — базовые теги, из которых собрана почти любая страница.",
+    taskCount: 5,
+    gradient: "from-rose-500 to-red-600",
+  },
+  {
+    id: "typography",
+    path: "/typography",
+    emoji: "🔤",
+    title: "Шрифты и оформление текста",
+    summary:
+      "font-family, text-align, letter-spacing, line-height — и как подключить свой или Google-шрифт.",
+    taskCount: 5,
+    gradient: "from-purple-500 to-fuchsia-600",
+  },
+  {
+    id: "pseudo-classes",
+    path: "/pseudo-classes",
+    emoji: "🖱️",
+    title: "Псевдоклассы :hover и :active",
+    summary:
+      "Наведи курсор или нажми кнопку мыши — посмотри, как меняется элемент.",
+    taskCount: 5,
+    gradient: "from-pink-500 to-rose-600",
+  },
+  {
+    id: "forms",
+    path: "/forms",
+    emoji: "📋",
+    title: "Формы и поля ввода",
+    summary:
+      "type, placeholder и required — собери форму регистрации из подходящих полей.",
+    taskCount: 5,
+    gradient: "from-cyan-500 to-blue-600",
+  },
+  {
+    id: "tables",
+    path: "/tables",
+    emoji: "📊",
+    title: "HTML-таблицы",
+    summary:
+      "table, tr, td, th и объединение ячеек через rowspan и colspan.",
+    taskCount: 5,
+    gradient: "from-slate-500 to-slate-700",
+  },
+  {
+    id: "page-layout",
+    path: "/page-layout",
+    emoji: "🧱",
+    title: "Макет страницы: header, main, footer",
+    summary:
+      "Собери скелет страницы и прижми footer к низу экрана с помощью flexbox.",
+    taskCount: 5,
+    gradient: "from-indigo-500 to-blue-700",
+  },
 ];

@@ -11,6 +11,12 @@
 - 🧲 **Flexbox** — живые свойства `flex-direction`, `justify-content`, `align-items`, `flex-wrap`.
 - 🎯 **CSS-селекторы** — пиши селекторы и смотри, какие элементы страницы они выбирают (по-настоящему, через `querySelectorAll`).
 - 🧰 **Доступ к элементам HTML в JS** — `getElementById`, `querySelector(All)`, `children`, `closest`, `parentElement`, `nextElementSibling`...
+- 📝 **HTML-теги: заголовки, списки, ссылки** — `h1–h3`, `p`, `a`, `img`, `ul`/`ol`.
+- 🔤 **Шрифты и оформление текста** — `font-family`, `text-align`, `letter-spacing`, `line-height`, `@font-face` vs `@import`.
+- 🖱️ **Псевдоклассы `:hover` и `:active`** — живая карточка, реагирующая на курсор и клик.
+- 📋 **Формы и поля ввода** — `type`, `placeholder`, `required` на примере формы регистрации.
+- 📊 **HTML-таблицы** — `table`, `tr`, `td`, `th`, `rowspan`, `colspan`.
+- 🧱 **Макет страницы: header, main, footer** — прижимаем footer к низу экрана через flexbox.
 
 Прогресс по каждой теме сохраняется в `localStorage` браузера.
 
