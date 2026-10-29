@@ -174,7 +174,7 @@ function Tasks() {
 export function PageLayoutTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} />
+      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="Прижми footer к низу страницы"

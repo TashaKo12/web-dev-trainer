@@ -317,7 +317,7 @@ function Tasks() {
 export function FlexboxTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} />
+      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="Поиграй со свойствами flex"

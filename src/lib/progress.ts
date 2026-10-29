@@ -4,7 +4,6 @@ export type TrainerId =
   | "flexbox"
   | "selectors"
   | "dom-access"
-  | "basic-tags"
   | "typography"
   | "pseudo-classes"
   | "forms"
@@ -14,7 +13,16 @@ export type TrainerId =
   | "tags-attributes"
   | "links"
   | "backgrounds"
-  | "shadows";
+  | "shadows"
+  | "headings"
+  | "paragraphs"
+  | "lists"
+  | "div-classes"
+  | "images"
+  | "css-intro"
+  | "text-color"
+  | "background-color"
+  | "text-align";
 
 export type TrainerProgress = {
   score: number;

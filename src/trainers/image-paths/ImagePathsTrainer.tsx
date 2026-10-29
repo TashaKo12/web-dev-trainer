@@ -299,7 +299,7 @@ function Tasks() {
 export function ImagePathsTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} />
+      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="Собери путь к картинке сам"
