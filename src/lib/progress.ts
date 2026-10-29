@@ -12,7 +12,9 @@ export type TrainerId =
   | "page-layout"
   | "image-paths"
   | "tags-attributes"
-  | "links";
+  | "links"
+  | "backgrounds"
+  | "shadows";
 
 export type TrainerProgress = {
   score: number;

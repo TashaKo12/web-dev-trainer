@@ -3,6 +3,8 @@ import { Layout } from "./components/Layout";
 import { Home } from "./pages/Home";
 import { HtmlStructureTrainer } from "./trainers/html-structure/HtmlStructureTrainer";
 import { BoxModelTrainer } from "./trainers/box-model/BoxModelTrainer";
+import { BackgroundsTrainer } from "./trainers/backgrounds/BackgroundsTrainer";
+import { ShadowsTrainer } from "./trainers/shadows/ShadowsTrainer";
 import { FlexboxTrainer } from "./trainers/flexbox/FlexboxTrainer";
 import { SelectorsTrainer } from "./trainers/selectors/SelectorsTrainer";
 import { DomAccessTrainer } from "./trainers/dom-access/DomAccessTrainer";
@@ -24,6 +26,8 @@ function App() {
           <Route index element={<Home />} />
           <Route path="html-structure" element={<HtmlStructureTrainer />} />
           <Route path="box-model" element={<BoxModelTrainer />} />
+          <Route path="backgrounds" element={<BackgroundsTrainer />} />
+          <Route path="shadows" element={<ShadowsTrainer />} />
           <Route path="flexbox" element={<FlexboxTrainer />} />
           <Route path="selectors" element={<SelectorsTrainer />} />
           <Route path="dom-access" element={<DomAccessTrainer />} />

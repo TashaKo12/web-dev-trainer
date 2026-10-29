@@ -15,6 +15,8 @@
 - 📝 **HTML-теги: заголовки, списки, ссылки** — `h1–h3`, `p`, `a`, `img`, `ul`/`ol`.
 - 🔗 **Тег `a` и атрибут `href`** — собери ссылку сам: на страницу сайта, во внешний сайт, к разделу страницы, в почту.
 - 📦 **CSS Box Model** — подвигай слои `margin`, `border`, `padding` и посмотри, как считается итоговый размер блока.
+- 🏞️ **Фон блока: background-image** — `background-size`, `background-position`, `background-repeat` вживую.
+- 🪪 **Тени и скругления** — `border-radius` и `box-shadow`: скругли уголки и подвинь тень карточки.
 - 🔤 **Шрифты и оформление текста** — `font-family`, `text-align`, `letter-spacing`, `line-height`, `@font-face` vs `@import`.
 - 🧲 **Flexbox** — живые свойства `flex-direction`, `justify-content`, `align-items`, `flex-wrap`.
 - 🎯 **CSS-селекторы** — пиши селекторы и смотри, какие элементы страницы они выбирают (по-настоящему, через `querySelectorAll`).
