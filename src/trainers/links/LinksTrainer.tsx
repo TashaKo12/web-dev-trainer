@@ -8,6 +8,40 @@ import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "links")!;
 
+function parseTag(code: string): { href: string; target: boolean; text: string } {
+  const hrefMatch = code.match(/href\s*=\s*"([^"]*)"/i);
+  const targetMatch = code.match(/target\s*=\s*"_blank"/i);
+  const textMatch = code.match(/>([^<]*)<\/a/i);
+  return { href: hrefMatch?.[1] ?? "", target: !!targetMatch, text: textMatch?.[1] ?? "" };
+}
+
+function LinkPreview({ code }: { code: string | null }) {
+  if (!code) {
+    return (
+      <div className="flex h-24 items-center justify-center rounded-xl border-2 border-dashed border-slate-300 bg-slate-50 text-sm text-slate-400">
+        Выбери или напиши ссылку, чтобы увидеть результат
+      </div>
+    );
+  }
+
+  const { href, target, text } = parseTag(code);
+
+  return (
+    <div className="rounded-xl border-2 border-blue-200 bg-blue-50/50 p-4">
+      <p className="mb-1 text-xs font-bold uppercase text-slate-400">Живая ссылка</p>
+      <a
+        href={href || "#"}
+        target={target ? "_blank" : undefined}
+        onClick={(e) => e.preventDefault()}
+        className="mb-3 block text-base font-semibold text-blue-600 underline"
+      >
+        {text || "(без текста)"}
+      </a>
+      <div className="rounded-lg bg-white p-2.5 text-sm text-blue-800">{classifyHref(href, target)}</div>
+    </div>
+  );
+}
+
 function classifyHref(href: string, target: boolean) {
   const h = href.trim();
   if (!h) return "Пустая ссылка — никуда не поведёт.";
@@ -153,20 +187,24 @@ function ChooseLevel({ level, onResult }: { level: Extract<Level, { mode: "choos
 
   return (
     <div>
-      <div className="mb-3 space-y-2">
-        {level.options.map((opt) => (
-          <button
-            key={opt}
-            type="button"
-            disabled={checked}
-            onClick={() => setSelected(opt)}
-            className={`block w-full rounded-xl border-2 px-3 py-2 text-left font-mono text-xs transition disabled:cursor-not-allowed ${
-              selected === opt ? "border-blue-500 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-600 hover:border-blue-200"
-            }`}
-          >
-            {opt}
-          </button>
-        ))}
+      <p className="mb-3 text-xs text-slate-400">Нажимай на варианты — справа сразу видно, что каждый из них сделает.</p>
+      <div className="grid gap-4 sm:grid-cols-[1.1fr_1fr]">
+        <div className="space-y-2">
+          {level.options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              disabled={checked}
+              onClick={() => setSelected(opt)}
+              className={`block w-full rounded-xl border-2 px-3 py-2 text-left font-mono text-xs transition disabled:cursor-not-allowed ${
+                selected === opt ? "border-blue-500 bg-blue-50 text-blue-700" : "border-slate-200 text-slate-600 hover:border-blue-200"
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+        <LinkPreview code={selected} />
       </div>
       {!checked && (
         <div className="flex justify-center">
@@ -203,6 +241,9 @@ function TypeLevel({ level, onResult }: { level: Extract<Level, { mode: "type" }
         placeholder="напиши тег a целиком"
         className="mb-3 w-full rounded-xl border-2 border-blue-200 px-3 py-2 font-mono text-sm outline-none focus:border-blue-400 disabled:opacity-60"
       />
+      <div className="mb-3">
+        <LinkPreview code={code.trim() ? code : null} />
+      </div>
       {!checked && (
         <div className="flex justify-center">
           <button
