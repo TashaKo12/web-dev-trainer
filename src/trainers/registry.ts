@@ -62,6 +62,26 @@ export const trainers: TrainerMeta[] = [
     gradient: "from-amber-500 to-orange-600",
   },
   {
+    id: "backgrounds",
+    path: "/backgrounds",
+    emoji: "🏞️",
+    title: "Фон блока: background-image",
+    summary:
+      "background-size, background-position, background-repeat — растяни, подвинь и размножь картинку на фоне блока.",
+    taskCount: 8,
+    gradient: "from-cyan-500 to-blue-600",
+  },
+  {
+    id: "shadows",
+    path: "/shadows",
+    emoji: "🪪",
+    title: "Тени и скругления: border-radius, box-shadow",
+    summary:
+      "Скругли уголки карточки и подвинь её тень — border-radius и box-shadow вживую.",
+    taskCount: 8,
+    gradient: "from-slate-600 to-zinc-700",
+  },
+  {
     id: "typography",
     path: "/typography",
     emoji: "🔤",
