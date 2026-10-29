@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { McqOptions } from "../../components/McqOptions";
 import { trainers } from "../registry";
@@ -271,167 +271,156 @@ function MatchingTask({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
-function Tasks() {
-  const stepper = useTaskStepper(5, "html-structure");
-  const [matchDone, setMatchDone] = useState(false);
-  const [mcqChoice, setMcqChoice] = useState<number | null>(null);
-  const [textAnswer, setTextAnswer] = useState("");
+function TitlePlacementTask({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [placed, setPlaced] = useState<"head" | "body" | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMatchDone(false);
-          setMcqChoice(null);
-          setTextAnswer("");
-        }}
-      />
-    );
+  function check() {
+    setChecked(true);
+    onResult(placed === "head");
   }
 
-  const task = stepper.index;
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="В какой части HTML-документа должен находиться тег <title>?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcqChoice === 1)}
-        onNext={() => {
-          stepper.goNext();
-          setMcqChoice(null);
-        }}
-        checkDisabled={mcqChoice === null}
-        isLast={false}
-        feedback="«title» определяет текст в заголовке вкладки браузера, поэтому он живёт в <head> — служебной части документа, которая не выводится на экран страницы."
-      >
-        <McqOptions
-          options={["<body>", "<head>", "<main>", "<footer>"]}
-          selected={mcqChoice}
-          onSelect={setMcqChoice}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой тег лучше всего подходит для меню навигации по сайту?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcqChoice === 2)}
-        onNext={() => {
-          stepper.goNext();
-          setMcqChoice(null);
-        }}
-        checkDisabled={mcqChoice === null}
-        isLast={false}
-        feedback="Тег <nav> специально создан для блоков со ссылками-навигацией — это сразу понятно и браузеру, и человеку, читающему код."
-      >
-        <McqOptions
-          options={["<header>", "<aside>", "<nav>", "<span>"]}
-          selected={mcqChoice}
-          onSelect={setMcqChoice}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Собери пары: тег ↔ что он означает."
-        status={matchDone ? stepper.status : "idle"}
-        onCheck={() => {}}
-        checkDisabled
-        hideCheck
-        onNext={() => {
-          stepper.goNext();
-          setMatchDone(false);
-        }}
-        isLast={false}
-        feedback="«ul» — список, «li» — пункт списка, «a» — ссылка (от англ. anchor), «img» — картинка (от англ. image)."
-      >
-        <MatchingTask
-          onResult={(correct) => {
-            setMatchDone(true);
-            stepper.markResult(correct);
-          }}
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Для блока с новостью на сайте разработчик выбирает между <div> и <article>. Почему <article> — лучший выбор?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcqChoice === 1)}
-        onNext={() => {
-          stepper.goNext();
-          setMcqChoice(null);
-        }}
-        checkDisabled={mcqChoice === null}
-        isLast={false}
-        feedback="<article> показывает, что внутри — самостоятельный, законченный материал (новость, статья, пост). <div> ничего не говорит о смысле содержимого, хотя выглядеть блоки могут одинаково."
-      >
-        <McqOptions
-          options={[
-            "Потому что <div> вообще не умеют стилизовать через CSS",
-            "Потому что <article> показывает, что это самостоятельный, законченный материал",
-            "Потому что <article> работает быстрее, чем <div>",
-            "Никакой разницы нет, теги взаимозаменяемы",
-          ]}
-          selected={mcqChoice}
-          onSelect={setMcqChoice}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
+  function zoneClass(id: "head" | "body") {
+    const isSel = placed === id;
+    const isCorrect = checked && id === "head";
+    const isWrong = checked && isSel && id !== "head";
+    return `rounded-2xl border-2 px-4 py-6 text-left transition ${
+      isCorrect ? "border-emerald-400 bg-emerald-50" : isWrong ? "border-rose-300 bg-rose-50" : isSel ? "border-indigo-400 bg-indigo-50" : "border-slate-200 hover:border-indigo-200"
+    }`;
   }
 
   return (
-    <TaskShell
-      index={task}
-      total={5}
-      statuses={stepper.statuses}
-      prompt="Напиши название тега (без угловых скобок), который создаёт подвал страницы с копирайтом и контактами."
-      status={stepper.status}
-      onCheck={() =>
-        stepper.markResult(textAnswer.trim().toLowerCase().replace(/[<>]/g, "") === "footer")
-      }
-      onNext={stepper.goNext}
-      checkDisabled={!textAnswer.trim()}
-      isLast
-      feedback="footer — семантический тег для подвала страницы или раздела."
-    >
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        &lt;title&gt; задаёт текст на вкладке браузера — он не выводится на самой странице. Кликни на зону, куда
+        его нужно поместить.
+      </p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button type="button" disabled={checked} onClick={() => setPlaced("head")} className={zoneClass("head")}>
+          <code className="mb-1 block font-bold text-slate-700">&lt;head&gt;</code>
+          <span className="text-xs text-slate-500">служебная часть — не видна на странице</span>
+        </button>
+        <button type="button" disabled={checked} onClick={() => setPlaced("body")} className={zoneClass("body")}>
+          <code className="mb-1 block font-bold text-slate-700">&lt;body&gt;</code>
+          <span className="text-xs text-slate-500">видимое содержимое страницы</span>
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!placed}
+            className="rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
+  }
+
+  return (
+    <div>
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function FooterTagLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(text.trim().toLowerCase().replace(/[<>]/g, "") === "footer");
+  }
+
+  return (
+    <div>
       <input
         type="text"
-        value={textAnswer}
-        onChange={(e) => setTextAnswer(e.target.value)}
-        disabled={stepper.status !== "idle"}
+        value={text}
+        onChange={(e) => !checked && setText(e.target.value)}
+        disabled={checked}
         placeholder="например: header"
         className="w-48 rounded-full border-2 border-slate-300 px-4 py-2 text-center font-mono font-semibold text-slate-700 outline-none focus:border-indigo-400 disabled:opacity-60"
       />
-    </TaskShell>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TASK_META = [
+  { badge: "кликни на зону", prompt: "", explain: "«title» определяет текст в заголовке вкладки браузера, поэтому он живёт в <head> — служебной части документа, которая не выводится на экран страницы." },
+  { badge: "выбери из списка", prompt: "Какой тег лучше всего подходит для меню навигации по сайту?", explain: "Тег <nav> специально создан для блоков со ссылками-навигацией — это сразу понятно и браузеру, и человеку, читающему код." },
+  { badge: "собери пары", prompt: "Собери пары: тег ↔ что он означает.", explain: "«ul» — список, «li» — пункт списка, «a» — ссылка (от англ. anchor), «img» — картинка (от англ. image)." },
+  { badge: "выбери из списка", prompt: "На странице блог с новостями. Какой тег лучше всего подходит для ОДНОГО блока с новостью?", explain: "<article> показывает, что внутри — самостоятельный, законченный материал (новость, статья, пост). <div> ничего не говорит о смысле содержимого, хотя выглядеть блоки могут одинаково." },
+  { badge: "напиши сам", prompt: "Напиши название тега (без угловых скобок), который создаёт подвал страницы с копирайтом и контактами.", explain: "footer — семантический тег для подвала страницы или раздела." },
+];
+
+function Tasks() {
+  const stepper = useTaskStepper(5, "html-structure");
+  const task = stepper.index;
+  const meta = TASK_META[task];
+
+  if (stepper.allAnswered) {
+    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+  }
+
+  return (
+    <LevelShell
+      total={5}
+      index={task}
+      statuses={stepper.statuses}
+      status={stepper.status}
+      isLast={stepper.isLast}
+      badge={meta.badge}
+      explain={meta.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-sky-500 to-blue-600"
+    >
+      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {task === 0 && <TitlePlacementTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 1 && <McqLevel key={task} options={["<header>", "<aside>", "<nav>", "<span>"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && <MatchingTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <McqLevel key={task} options={["<div>", "<article>", "<aside>"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <FooterTagLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+    </LevelShell>
   );
 }
 
@@ -455,7 +444,7 @@ export function HtmlStructureTrainer() {
       <SectionHeading
         kicker="Практика"
         title="Закрепим"
-        description="5 заданий о тегах и структуре документа."
+        description="5 уровней — кликай, собирай пары и пиши сам."
       />
       <Tasks />
     </div>

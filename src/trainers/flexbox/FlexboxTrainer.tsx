@@ -1,8 +1,8 @@
 import { useState, type CSSProperties } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -134,12 +134,15 @@ function Theory() {
   );
 }
 
+type FlexKey = "direction" | "justify" | "align" | "wrap";
+
 type Level = {
   prompt: string;
-  exposed: ("direction" | "justify" | "align" | "wrap")[];
+  exposed: FlexKey[];
   target: FlexConfig;
   start: FlexConfig;
   explain: string;
+  mode?: "type";
 };
 
 const LEVELS: Level[] = [
@@ -178,17 +181,47 @@ const LEVELS: Level[] = [
     start: DEFAULT_CONFIG,
     explain: "flex-wrap: wrap разрешает блокам, которым не хватило места, перенестись на следующую строку.",
   },
+  {
+    prompt: "Сложный уровень: сделай колонку, прижатую к правому краю — как на образце.",
+    exposed: ["direction", "align"],
+    target: { ...DEFAULT_CONFIG, direction: "column", align: "flex-end" },
+    start: DEFAULT_CONFIG,
+    explain: "direction: column меняет ось на вертикальную, а align-items начинает управлять горизонтальным положением — flex-end прижимает блоки вправо.",
+  },
+  {
+    prompt: "Теперь не выбирай из списка, а напиши значение сам. Собери образец: блоки разведены с равными промежутками по краям И между собой.",
+    exposed: ["justify"],
+    target: { ...DEFAULT_CONFIG, justify: "space-around" },
+    start: DEFAULT_CONFIG,
+    mode: "type",
+    explain: "justify-content: space-around — у каждого блока одинаковый отступ с обеих сторон (в отличие от space-between, где крайние блоки прижаты к самим краям).",
+  },
+  {
+    prompt: "Напиши значение сам: прижми блоки к НАЧАЛУ поперечной оси (контейнер выше блоков — по умолчанию они растянуты).",
+    exposed: ["align"],
+    target: { ...DEFAULT_CONFIG, align: "flex-start" },
+    start: DEFAULT_CONFIG,
+    mode: "type",
+    explain: "align-items: flex-start — без этого свойства блоки по умолчанию растягиваются (stretch) на всю высоту контейнера.",
+  },
 ];
 
 function FlexLevel({ level, onResult }: { level: Level; onResult: (correct: boolean) => void }) {
+  const isType = level.mode === "type";
+  const typedKey = isType ? level.exposed[0] : null;
   const [value, setValue] = useState<FlexConfig>(level.start);
+  const [typed, setTyped] = useState("");
   const [checked, setChecked] = useState(false);
   const isWrapLevel = level.exposed.includes("wrap");
   const containerWidth = isWrapLevel ? 220 : undefined;
 
+  const previewConfig: FlexConfig = typedKey ? ({ ...level.start, [typedKey]: typed } as FlexConfig) : value;
+
   function check() {
     setChecked(true);
-    const correct = level.exposed.every((k) => value[k] === level.target[k]);
+    const correct = typedKey
+      ? typed.trim() === level.target[typedKey]
+      : level.exposed.every((k) => value[k] === level.target[k]);
     onResult(correct);
   }
 
@@ -204,32 +237,46 @@ function FlexLevel({ level, onResult }: { level: Level; onResult: (correct: bool
         <div>
           <p className="mb-1 text-xs font-bold uppercase text-slate-400">Твой контейнер</p>
           <div style={{ width: containerWidth }} className="mx-auto">
-            <FlexContainer config={value} height={110} count={isWrapLevel ? 8 : 5} />
+            <FlexContainer config={previewConfig} height={110} count={isWrapLevel ? 8 : 5} />
           </div>
         </div>
       </div>
 
-      <div className="mt-4 flex flex-wrap justify-center gap-3">
-        {level.exposed.includes("direction") && (
-          <Select label="flex-direction" value={value.direction} options={DIRECTIONS} onChange={(v) => !checked && setValue((c) => ({ ...c, direction: v }))} />
-        )}
-        {level.exposed.includes("justify") && (
-          <Select label="justify-content" value={value.justify} options={JUSTIFY} onChange={(v) => !checked && setValue((c) => ({ ...c, justify: v }))} />
-        )}
-        {level.exposed.includes("align") && (
-          <Select label="align-items" value={value.align} options={ALIGN} onChange={(v) => !checked && setValue((c) => ({ ...c, align: v }))} />
-        )}
-        {level.exposed.includes("wrap") && (
-          <Select label="flex-wrap" value={value.wrap} options={WRAP} onChange={(v) => !checked && setValue((c) => ({ ...c, wrap: v }))} />
-        )}
-      </div>
+      {isType ? (
+        <div className="mt-4 flex justify-center">
+          <input
+            type="text"
+            value={typed}
+            onChange={(e) => !checked && setTyped(e.target.value)}
+            disabled={checked}
+            placeholder={`значение для ${typedKey === "justify" ? "justify-content" : typedKey === "align" ? "align-items" : typedKey}`}
+            className="w-72 rounded-full border-2 border-emerald-200 px-4 py-2 text-center font-mono text-sm outline-none focus:border-emerald-400 disabled:opacity-60"
+          />
+        </div>
+      ) : (
+        <div className="mt-4 flex flex-wrap justify-center gap-3">
+          {level.exposed.includes("direction") && (
+            <Select label="flex-direction" value={value.direction} options={DIRECTIONS} onChange={(v) => !checked && setValue((c) => ({ ...c, direction: v }))} />
+          )}
+          {level.exposed.includes("justify") && (
+            <Select label="justify-content" value={value.justify} options={JUSTIFY} onChange={(v) => !checked && setValue((c) => ({ ...c, justify: v }))} />
+          )}
+          {level.exposed.includes("align") && (
+            <Select label="align-items" value={value.align} options={ALIGN} onChange={(v) => !checked && setValue((c) => ({ ...c, align: v }))} />
+          )}
+          {level.exposed.includes("wrap") && (
+            <Select label="flex-wrap" value={value.wrap} options={WRAP} onChange={(v) => !checked && setValue((c) => ({ ...c, wrap: v }))} />
+          )}
+        </div>
+      )}
 
       {!checked && (
         <div className="mt-4 flex justify-center">
           <button
             type="button"
             onClick={check}
-            className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2 text-sm font-bold text-white shadow"
+            disabled={isType && !typed.trim()}
+            className="rounded-full bg-gradient-to-r from-emerald-500 to-teal-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
           >
             Проверить
           </button>
@@ -240,50 +287,30 @@ function FlexLevel({ level, onResult }: { level: Level; onResult: (correct: bool
 }
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "flexbox");
-  const [levelDone, setLevelDone] = useState(false);
+  const stepper = useTaskStepper(LEVELS.length, "flexbox");
 
   if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setLevelDone(false);
-        }}
-      />
-    );
+    return <CompletionBanner score={stepper.score} total={LEVELS.length} onRestart={() => stepper.restart()} />;
   }
 
   const level = LEVELS[stepper.index];
 
   return (
-    <TaskShell
+    <LevelShell
+      total={LEVELS.length}
       index={stepper.index}
-      total={5}
       statuses={stepper.statuses}
-      prompt={level.prompt}
-      status={levelDone ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={() => {
-        stepper.goNext();
-        setLevelDone(false);
-      }}
+      status={stepper.status}
       isLast={stepper.isLast}
-      feedback={level.explain}
+      badge={level.mode === "type" ? "напиши сам" : "выбери из списка"}
+      explain={level.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-emerald-500 to-teal-600"
     >
-      <FlexLevel
-        key={stepper.index}
-        level={level}
-        onResult={(correct) => {
-          setLevelDone(true);
-          stepper.markResult(correct);
-        }}
-      />
-    </TaskShell>
+      <p className="mb-4 text-sm font-semibold text-slate-700">{level.prompt}</p>
+      <FlexLevel key={stepper.index} level={level} onResult={(correct) => stepper.markResult(correct)} />
+    </LevelShell>
   );
 }
 
@@ -299,7 +326,7 @@ export function FlexboxTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Собери образец" description="5 уровней — повтори расположение блоков с образца." />
+      <SectionHeading kicker="Практика" title="Собери образец" description="8 уровней — сначала выбирай значения из списка, потом пиши их сам." />
       <Tasks />
     </div>
   );

@@ -1,8 +1,8 @@
 import { useRef, useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 import { FakePage, computeMatches } from "./FakePage";
@@ -65,23 +65,39 @@ type Challenge = {
   prompt: string;
   target: string[];
   explain: string;
+  mode?: "choose";
+  options?: string[];
 };
 
 const CHALLENGES: Challenge[] = [
   {
-    prompt: "Напиши селектор, который выберет только активную ссылку в меню (обведена зелёной пунктирной линией).",
+    mode: "choose",
+    prompt: "Выбери селектор, который выберет сразу все ссылки в меню (три штуки).",
+    target: ["a1", "a2", "a3"],
+    options: [".nav-link", "#nav-link", "nav-link"],
+    explain: "Точка перед именем нужна для выбора по классу: .nav-link. # ищет по id, а без точки/решётки браузер решит, что nav-link — это тег.",
+  },
+  {
+    mode: "choose",
+    prompt: "Выбери селектор, который выберет избранную (featured) статью.",
+    target: ["art1"],
+    options: [".featured", "featured", ".Featured"],
+    explain: "Класс написан с маленькой буквы — .featured. CSS-классы чувствительны к регистру, поэтому .Featured не сработает.",
+  },
+  {
+    prompt: "Теперь напиши селектор сам: выбери только активную ссылку в меню (обведена зелёной пунктирной линией).",
     target: ["a1"],
     explain: "Подойдёт, например, .active или a.nav-link.active — у этой ссылки есть класс active, которого нет у других.",
   },
   {
-    prompt: "Напиши селектор, который выберет сразу все ссылки в меню.",
+    prompt: "Напиши селектор, который выберет сразу все ссылки в меню — но на этот раз без класса, через вложенность.",
     target: ["a1", "a2", "a3"],
-    explain: "Подойдёт .nav-link (у всех ссылок есть этот класс) или nav a (любая ссылка внутри nav).",
+    explain: "nav a — любая ссылка (a), вложенная куда угодно внутрь <nav>.",
   },
   {
-    prompt: "Напиши селектор, который выберет только избранную (featured) статью.",
+    prompt: "Напиши ещё один способ выбрать избранную статью — в этот раз через её атрибут, а не класс.",
     target: ["art1"],
-    explain: "Подойдёт .featured или [data-featured] — у первой статьи есть и класс, и атрибут, которых нет у остальных.",
+    explain: "[data-featured] — выбирает любой элемент, у которого есть этот атрибут, независимо от значения.",
   },
   {
     prompt: "Напиши селектор, который выберет заголовки (h2) всех статей внутри <main>.",
@@ -92,6 +108,16 @@ const CHALLENGES: Challenge[] = [
     prompt: "Напиши селектор, который выберет все пункты меню (li), не затрагивая сами ссылки внутри них.",
     target: ["li1", "li2", "li3"],
     explain: "Подойдёт .nav-item или nav li — тег li сам по себе, без a внутри.",
+  },
+  {
+    prompt: "Сложный уровень: напиши селектор, который выберет ТОЛЬКО самый первый пункт меню — и никакой другой.",
+    target: ["li1"],
+    explain: "li:first-child (или .nav-item:first-child) — псевдокласс :first-child выбирает элемент, только если он первый среди соседей.",
+  },
+  {
+    prompt: "Напиши селектор, который выберет все абзацы (p) внутри статей — но не абзац в футере.",
+    target: ["p-1", "p-2", "p-3"],
+    explain: "article p (или main p) — любой p, вложенный в article/main, не задевает p внутри footer.",
   },
 ];
 
@@ -123,14 +149,34 @@ function SelectorChallenge({
       <p className="mb-3 text-xs text-slate-400">
         Пунктирная зелёная рамка показывает, какие элементы нужно выбрать.
       </p>
-      <input
-        type="text"
-        value={selector}
-        onChange={(e) => !checked && setSelector(e.target.value)}
-        disabled={checked}
-        placeholder="твой селектор"
-        className="mb-3 w-full rounded-xl border-2 border-fuchsia-200 px-4 py-2.5 font-mono text-sm outline-none focus:border-fuchsia-400 disabled:opacity-60"
-      />
+
+      {challenge.mode === "choose" ? (
+        <div className="mb-3 flex flex-wrap gap-2">
+          {challenge.options!.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              disabled={checked}
+              onClick={() => setSelector(opt)}
+              className={`rounded-xl border-2 px-3 py-2 font-mono text-xs transition disabled:cursor-not-allowed ${
+                selector === opt ? "border-fuchsia-500 bg-fuchsia-50 text-fuchsia-700" : "border-slate-200 text-slate-600 hover:border-fuchsia-200"
+              }`}
+            >
+              {opt}
+            </button>
+          ))}
+        </div>
+      ) : (
+        <input
+          type="text"
+          value={selector}
+          onChange={(e) => !checked && setSelector(e.target.value)}
+          disabled={checked}
+          placeholder="твой селектор"
+          className="mb-3 w-full rounded-xl border-2 border-fuchsia-200 px-4 py-2.5 font-mono text-sm outline-none focus:border-fuchsia-400 disabled:opacity-60"
+        />
+      )}
+
       {error && <p className="mb-2 text-sm font-semibold text-rose-500">{error}</p>}
       <div ref={containerRef}>
         <FakePage targetKeys={targetSet} matchedKeys={keys} />
@@ -150,50 +196,30 @@ function SelectorChallenge({
 }
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "selectors");
-  const [done, setDone] = useState(false);
+  const stepper = useTaskStepper(CHALLENGES.length, "selectors");
 
   if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setDone(false);
-        }}
-      />
-    );
+    return <CompletionBanner score={stepper.score} total={CHALLENGES.length} onRestart={() => stepper.restart()} />;
   }
 
   const challenge = CHALLENGES[stepper.index];
 
   return (
-    <TaskShell
+    <LevelShell
+      total={CHALLENGES.length}
       index={stepper.index}
-      total={5}
       statuses={stepper.statuses}
-      prompt={challenge.prompt}
-      status={done ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={() => {
-        stepper.goNext();
-        setDone(false);
-      }}
+      status={stepper.status}
       isLast={stepper.isLast}
-      feedback={challenge.explain}
+      badge={challenge.mode === "choose" ? "выбери из списка" : "напиши сам"}
+      explain={challenge.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-fuchsia-500 to-pink-600"
     >
-      <SelectorChallenge
-        key={stepper.index}
-        challenge={challenge}
-        onResult={(correct) => {
-          setDone(true);
-          stepper.markResult(correct);
-        }}
-      />
-    </TaskShell>
+      <p className="mb-4 text-sm font-semibold text-slate-700">{challenge.prompt}</p>
+      <SelectorChallenge key={stepper.index} challenge={challenge} onResult={(correct) => stepper.markResult(correct)} />
+    </LevelShell>
   );
 }
 
@@ -209,7 +235,7 @@ export function SelectorsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий — попади селектором точно в цель." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай селектор из списка, потом пиши сам." />
       <Tasks />
     </div>
   );

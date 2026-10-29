@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
@@ -86,141 +86,118 @@ function Theory() {
   );
 }
 
-function Tasks() {
-  const stepper = useTaskStepper(5, "forms");
-  const [mcq, setMcq] = useState<number | null>(null);
-  const [text, setText] = useState("");
+function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMcq(null);
-          setText("");
-        }}
-      />
-    );
-  }
-
-  const task = stepper.index;
-  const next = () => {
-    stepper.goNext();
-    setMcq(null);
-    setText("");
-  };
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Пользователь вводит email. Какой атрибут type сразу подскажет браузеру проверять формат адреса?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback='type="email" — браузер сам проверит, что введён похожий на email текст (есть @ и домен).'
-      >
-        <McqOptions mono options={['type="text"', 'type="email"', 'type="tel"', 'type="password"']} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой type скрывает вводимые символы точками, чтобы их никто не подсмотрел?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 2)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback='type="password" — вводимый текст заменяется точками/звёздочками.'
-      >
-        <McqOptions mono options={['type="text"', 'type="tel"', 'type="password"', 'type="hidden"']} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой атрибут не даст форме отправиться, пока поле не заполнено?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(text.trim().toLowerCase() === "required")}
-        onNext={next}
-        checkDisabled={!text.trim()}
-        isLast={false}
-        feedback="required — делает поле обязательным для заполнения перед отправкой."
-      >
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={stepper.status !== "idle"}
-          placeholder="название атрибута"
-          className="w-48 rounded-full border-2 border-slate-300 px-4 py-2 text-center font-mono font-semibold text-slate-700 outline-none focus:border-cyan-400 disabled:opacity-60"
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Как называется атрибут, который показывает серую подсказку внутри ПУСТОГО поля (например «Введите имя»)?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 3)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="placeholder — подсказка, которая пропадает, как только пользователь начинает печатать."
-      >
-        <McqOptions mono options={["value", "required", "label", "placeholder"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
   }
 
   return (
-    <TaskShell
-      index={task}
-      total={5}
-      statuses={stepper.statuses}
-      prompt='Нужно поле для номера телефона с подсказкой "+7 000 000-00-00". Выбери правильно оформленный тег.'
-      status={stepper.status}
-      onCheck={() => stepper.markResult(mcq === 2)}
-      onNext={next}
-      checkDisabled={mcq === null}
-      isLast
-      feedback='Верно: type="tel" и placeholder в кавычках, значение полностью в двойных кавычках.'
-    >
-      <McqOptions
-        mono
-        options={[
-          '<input placeholder=+7 000 000-00-00 type="tel">',
-          '<input placeholder="+7 000 000-00-00" type="text">',
-          '<input placeholder="+7 000 000-00-00" type="tel">',
-          '<input type="tel">+7 000 000-00-00</input>',
-        ]}
-        selected={mcq}
-        onSelect={setMcq}
-        disabled={stepper.status !== "idle"}
+    <div>
+      <McqOptions mono options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function RequiredAttrLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(text.trim().toLowerCase() === "required");
+  }
+
+  return (
+    <div>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => !checked && setText(e.target.value)}
+        disabled={checked}
+        placeholder="название атрибута"
+        className="w-48 rounded-full border-2 border-slate-300 px-4 py-2 text-center font-mono font-semibold text-slate-700 outline-none focus:border-cyan-400 disabled:opacity-60"
       />
-    </TaskShell>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TASK_META = [
+  { badge: "выбери из списка", prompt: "Пользователь вводит email. Какой атрибут type сразу подскажет браузеру проверять формат адреса?", explain: 'type="email" — браузер сам проверит, что введён похожий на email текст (есть @ и домен).' },
+  { badge: "выбери из списка", prompt: "Какой type скрывает вводимые символы точками, чтобы их никто не подсмотрел?", explain: 'type="password" — вводимый текст заменяется точками/звёздочками.' },
+  { badge: "напиши сам", prompt: "Какой атрибут не даст форме отправиться, пока поле не заполнено?", explain: "required — делает поле обязательным для заполнения перед отправкой." },
+  { badge: "выбери из списка", prompt: "Как называется атрибут, который показывает серую подсказку внутри ПУСТОГО поля (например «Введите имя»)?", explain: "placeholder — подсказка, которая пропадает, как только пользователь начинает печатать." },
+  { badge: "выбери из списка", prompt: 'Нужно поле для номера телефона с подсказкой "+7 000 000-00-00". Выбери правильно оформленный тег.', explain: 'Верно: type="tel" и placeholder в кавычках, значение полностью в двойных кавычках.' },
+];
+
+function Tasks() {
+  const stepper = useTaskStepper(5, "forms");
+  const task = stepper.index;
+  const meta = TASK_META[task];
+
+  if (stepper.allAnswered) {
+    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+  }
+
+  return (
+    <LevelShell
+      total={5}
+      index={task}
+      statuses={stepper.statuses}
+      status={stepper.status}
+      isLast={stepper.isLast}
+      badge={meta.badge}
+      explain={meta.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-cyan-500 to-blue-600"
+    >
+      <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>
+      {task === 0 && <McqLevel key={task} options={['type="text"', 'type="email"', 'type="tel"', 'type="password"']} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 1 && <McqLevel key={task} options={['type="text"', 'type="tel"', 'type="password"', 'type="hidden"']} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && <RequiredAttrLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <McqLevel key={task} options={["value", "required", "label", "placeholder"]} correctIndex={3} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && (
+        <McqLevel
+          key={task}
+          options={[
+            '<input placeholder=+7 000 000-00-00 type="tel">',
+            '<input placeholder="+7 000 000-00-00" type="text">',
+            '<input placeholder="+7 000 000-00-00" type="tel">',
+            '<input type="tel">+7 000 000-00-00</input>',
+          ]}
+          correctIndex={2}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+    </LevelShell>
   );
 }
 
@@ -236,7 +213,7 @@ export function FormsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий про формы и типы полей." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай из списка и пиши сам." />
       <Tasks />
     </div>
   );

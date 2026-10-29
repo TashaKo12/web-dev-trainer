@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
@@ -102,137 +102,199 @@ function Select<T extends string>({
   );
 }
 
-function Tasks() {
-  const stepper = useTaskStepper(5, "typography");
-  const [mcq, setMcq] = useState<number | null>(null);
+function McqLevel({ options, correctIndex, mono = true, onResult }: { options: string[]; correctIndex: number; mono?: boolean; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMcq(null);
-        }}
-      />
-    );
-  }
-
-  const task = stepper.index;
-  const next = () => {
-    stepper.goNext();
-    setMcq(null);
-  };
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какое свойство выравнивает текст по центру блока?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="text-align: center центрирует текст внутри его блока."
-      >
-        <McqOptions options={["line-height", "text-align", "letter-spacing", "text-decoration"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какое свойство увеличивает расстояние МЕЖДУ СТРОКАМИ текста (а не между буквами)?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="line-height — межстрочный интервал. letter-spacing отвечает за расстояние между буквами."
-      >
-        <McqOptions options={["line-height", "letter-spacing", "text-align", "font-size"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt={
-          <>
-            У тебя есть свой файл шрифта <code className="rounded bg-slate-100 px-1">Melodin.ttf</code> в папке{" "}
-            <code className="rounded bg-slate-100 px-1">fonts</code>. Каким правилом подключить его в CSS?
-          </>
-        }
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 2)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="@font-face подключает собственный файл шрифта: указываешь font-family и src с путём к файлу."
-      >
-        <McqOptions
-          mono
-          options={['@import url("fonts/Melodin.ttf")', '<link href="Melodin.ttf">', "@font-face { src: url(fonts/Melodin.ttf); }", "font-family: Melodin.ttf;"]}
-          selected={mcq}
-          onSelect={setMcq}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="А если шрифт берётся с Google Fonts (ты просто копируешь ссылку, файл сам не скачиваешь) — какая строка в начале style.css это сделает?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="@import url('https://fonts.googleapis.com/...') — именно так Google Fonts подключают без скачивания файла."
-      >
-        <McqOptions
-          mono
-          options={["@import url('https://fonts.googleapis.com/...');", "@font-face { font-family: Roboto; }", "<a href='https://fonts.google.com'>", "font-family: url(google.com);"]}
-          selected={mcq}
-          onSelect={setMcq}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
   }
 
   return (
-    <TaskShell
-      index={task}
+    <div>
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} mono={mono} />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ALIGNS_LEVEL = ["left", "center", "right", "justify"] as const;
+
+function AlignMatchTask({ onResult }: { onResult: (correct: boolean) => void }) {
+  const target: (typeof ALIGNS_LEVEL)[number] = "center";
+  const [value, setValue] = useState<(typeof ALIGNS_LEVEL)[number]>("left");
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(value === target);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Выбери text-align так, чтобы твой текст встал как на образце.</p>
+      <div className="grid gap-4 sm:grid-cols-2">
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Образец</p>
+          <p style={{ textAlign: target }} className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+            Привет! Это пример текста.
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Твой текст</p>
+          <p style={{ textAlign: value }} className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+            Привет! Это пример текста.
+          </p>
+        </div>
+      </div>
+      <div className="mt-4 flex flex-wrap justify-center gap-2">
+        {ALIGNS_LEVEL.map((a) => (
+          <button
+            key={a}
+            type="button"
+            disabled={checked}
+            onClick={() => setValue(a)}
+            className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition disabled:cursor-not-allowed ${
+              value === a ? "bg-purple-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-purple-100"
+            }`}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            className="rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-600 px-5 py-2 text-sm font-bold text-white shadow"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function DecorationTypeTask({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [value, setValue] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(value.trim() === "none");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Ссылка подчёркнута по умолчанию. Напиши значение text-decoration, которое уберёт подчёркивание — и
+        смотри на ссылку ниже.
+      </p>
+      <a style={{ textDecoration: value || undefined }} className="mb-4 block text-lg font-semibold text-purple-600 underline">
+        Пример ссылки
+      </a>
+      <input
+        type="text"
+        value={value}
+        onChange={(e) => !checked && setValue(e.target.value)}
+        disabled={checked}
+        placeholder="значение text-decoration"
+        className="w-56 rounded-full border-2 border-purple-200 px-4 py-2 text-center font-mono text-sm outline-none focus:border-purple-400 disabled:opacity-60"
+      />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!value.trim()}
+            className="rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TASK_META = [
+  { badge: "подбери значение", prompt: "", explain: "text-align: center центрирует текст внутри его блока." },
+  { badge: "выбери из списка", prompt: "Какое свойство увеличивает расстояние МЕЖДУ СТРОКАМИ текста (а не между буквами)?", explain: "line-height — межстрочный интервал. letter-spacing отвечает за расстояние между буквами." },
+  {
+    badge: "выбери из списка",
+    prompt: (
+      <>
+        У тебя есть свой файл шрифта <code className="rounded bg-slate-100 px-1">Melodin.ttf</code> в папке{" "}
+        <code className="rounded bg-slate-100 px-1">fonts</code>. Каким правилом подключить его в CSS?
+      </>
+    ),
+    explain: "@font-face подключает собственный файл шрифта: указываешь font-family и src с путём к файлу.",
+  },
+  {
+    badge: "выбери из списка",
+    prompt: "А если шрифт берётся с Google Fonts (ты просто копируешь ссылку, файл сам не скачиваешь) — какая строка в начале style.css это сделает?",
+    explain: "@import url('https://fonts.googleapis.com/...') — именно так Google Fonts подключают без скачивания файла.",
+  },
+  { badge: "напиши сам", prompt: "", explain: "text-decoration: none убирает любое оформление (подчёркивание, зачёркивание) у текста/ссылки." },
+];
+
+function Tasks() {
+  const stepper = useTaskStepper(5, "typography");
+  const task = stepper.index;
+  const meta = TASK_META[task];
+
+  if (stepper.allAnswered) {
+    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+  }
+
+  return (
+    <LevelShell
       total={5}
+      index={task}
       statuses={stepper.statuses}
-      prompt="Какое значение text-decoration убирает подчёркивание у ссылки?"
       status={stepper.status}
-      onCheck={() => stepper.markResult(mcq === 1)}
-      onNext={next}
-      checkDisabled={mcq === null}
-      isLast
-      feedback="text-decoration: none убирает любое оформление (подчёркивание, зачёркивание) у текста/ссылки."
+      isLast={stepper.isLast}
+      badge={meta.badge}
+      explain={meta.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-purple-500 to-fuchsia-600"
     >
-      <McqOptions options={["underline", "none", "line-through", "overline"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-    </TaskShell>
+      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {task === 0 && <AlignMatchTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 1 && <McqLevel key={task} options={["line-height", "letter-spacing", "text-align", "font-size"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && (
+        <McqLevel
+          key={task}
+          options={['@import url("fonts/Melodin.ttf")', '<link href="Melodin.ttf">', "@font-face { src: url(fonts/Melodin.ttf); }", "font-family: Melodin.ttf;"]}
+          correctIndex={2}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 3 && (
+        <McqLevel
+          key={task}
+          options={["@import url('https://fonts.googleapis.com/...');", "@font-face { font-family: Roboto; }", "<a href='https://fonts.google.com'>", "font-family: url(google.com);"]}
+          correctIndex={0}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 4 && <DecorationTypeTask key={task} onResult={(c) => stepper.markResult(c)} />}
+    </LevelShell>
   );
 }
 
@@ -248,7 +310,7 @@ export function TypographyTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий про шрифты и оформление текста." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — подбирай значения и пиши сам." />
       <Tasks />
     </div>
   );

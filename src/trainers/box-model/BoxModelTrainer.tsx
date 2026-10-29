@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
@@ -164,156 +164,186 @@ function LayerClickTask({ onResult }: { onResult: (correct: boolean) => void }) 
   );
 }
 
-function Tasks() {
-  const stepper = useTaskStepper(5, "box-model");
-  const [mcq, setMcq] = useState<number | null>(null);
-  const [text, setText] = useState("");
-  const [layerDone, setLayerDone] = useState(false);
+function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMcq(null);
-          setText("");
-          setLayerDone(false);
-        }}
-      />
-    );
-  }
-
-  const task = stepper.index;
-  const next = () => {
-    stepper.goNext();
-    setMcq(null);
-    setText("");
-    setLayerDone(false);
-  };
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какое свойство создаёт пространство МЕЖДУ рамкой (border) и содержимым внутри блока?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 1)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="padding — внутренний отступ, он раздвигает содержимое от рамки блока."
-      >
-        <McqOptions options={["margin", "padding", "border", "gap"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какое свойство создаёт пространство СНАРУЖИ блока — между ним и соседними элементами?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 2)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="margin — внешний отступ, он отодвигает блок от других элементов на странице."
-      >
-        <McqOptions options={["padding", "border", "margin", "outline"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt={
-          <>
-            Content = 100px, padding = 10px, border = 5px (значения — на
-            каждую сторону). Чему равна ширина самого видимого блока — с
-            рамкой, но <u>без учёта margin</u>?
-          </>
-        }
-        status={stepper.status}
-        onCheck={() => stepper.markResult(text.trim().replace(/px$/i, "") === "130")}
-        onNext={next}
-        checkDisabled={!text.trim()}
-        isLast={false}
-        feedback="100 + 2×10 (padding) + 2×5 (border) = 130px."
-      >
-        <input
-          type="text"
-          value={text}
-          onChange={(e) => setText(e.target.value)}
-          disabled={stepper.status !== "idle"}
-          placeholder="Ширина в px"
-          className="w-40 rounded-full border-2 border-slate-300 px-4 py-2 text-center font-mono font-semibold text-slate-700 outline-none focus:border-indigo-400 disabled:opacity-60"
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Выбери правильный порядок слоёв блока — от центра (содержимого) наружу:"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="Правильный порядок: content → padding → border → margin."
-      >
-        <McqOptions
-          mono={false}
-          options={[
-            "content → padding → border → margin",
-            "content → border → padding → margin",
-            "margin → border → padding → content",
-            "padding → content → border → margin",
-          ]}
-          selected={mcq}
-          onSelect={setMcq}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
   }
 
   return (
-    <TaskShell
-      index={task}
+    <div>
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} mono={options[0].length < 12} />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TargetWidthTask({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [padding, setPadding] = useState(0);
+  const [border, setBorder] = useState(0);
+  const [checked, setChecked] = useState(false);
+  const contentW = 100;
+  const target = 130;
+  const width = contentW + padding * 2 + border * 2;
+
+  function check() {
+    setChecked(true);
+    onResult(width === target);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        content = {contentW}px. Подвинь padding и border так, чтобы итоговая ширина блока (с рамкой, без margin)
+        стала ровно <strong>{target}px</strong>. Подходит любая комбинация значений.
+      </p>
+      <div className="grid gap-4 sm:grid-cols-[1fr_auto]">
+        <div className="space-y-4">
+          <Slider label="padding" color="text-sky-600" value={padding} max={40} onChange={(v) => !checked && setPadding(v)} />
+          <Slider label="border" color="text-orange-700" value={border} max={20} onChange={(v) => !checked && setBorder(v)} />
+          <div className={`rounded-xl p-3 text-center font-mono text-sm font-bold ${width === target ? "bg-emerald-50 text-emerald-700" : "bg-slate-50 text-slate-600"}`}>
+            {contentW} + 2×{padding} + 2×{border} = {width}px {width === target && "✅"}
+          </div>
+        </div>
+        <div className="flex items-center justify-center rounded-2xl bg-slate-100 p-4">
+          <div style={{ borderWidth: border }} className="border-solid border-orange-400 bg-orange-100">
+            <div style={{ padding }} className="bg-sky-100">
+              <div style={{ width: contentW, height: 50 }} className="flex items-center justify-center bg-white text-xs font-bold text-slate-500">
+                content
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-bold text-white shadow"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const ORDER_CORRECT = ["content", "padding", "border", "margin"];
+const ORDER_POOL = ["border", "content", "margin", "padding"];
+
+function LayerOrderTask({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [seq, setSeq] = useState<string[]>([]);
+  const [checked, setChecked] = useState(false);
+
+  function pick(label: string) {
+    if (checked || seq.includes(label)) return;
+    setSeq((s) => [...s, label]);
+  }
+
+  function check() {
+    setChecked(true);
+    onResult(seq.join(",") === ORDER_CORRECT.join(","));
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Кликай по слоям в порядке ОТ СОДЕРЖИМОГО НАРУЖУ.</p>
+      <div className="mb-3 flex flex-wrap gap-2">
+        {ORDER_POOL.map((label) => (
+          <button
+            key={label}
+            type="button"
+            disabled={checked || seq.includes(label)}
+            onClick={() => pick(label)}
+            className="rounded-lg bg-slate-100 px-3 py-1.5 text-sm font-bold text-slate-600 transition hover:bg-amber-100 disabled:cursor-not-allowed disabled:opacity-30"
+          >
+            {label}
+          </button>
+        ))}
+      </div>
+      <div className="mb-4 flex min-h-[2.5rem] flex-wrap items-center gap-2 rounded-xl bg-slate-50 p-3 font-mono text-sm">
+        {seq.length === 0 && <span className="text-slate-300">кликай по слоям выше…</span>}
+        {seq.map((s, i) => (
+          <span key={s} className="flex items-center gap-2">
+            {i > 0 && <span className="text-slate-300">→</span>}
+            <span className={checked ? (s === ORDER_CORRECT[i] ? "font-bold text-emerald-600" : "font-bold text-rose-500") : "font-bold text-indigo-600"}>{s}</span>
+          </span>
+        ))}
+      </div>
+      <div className="flex items-center gap-4">
+        {!checked && seq.length > 0 && (
+          <button type="button" onClick={() => setSeq([])} className="text-xs font-semibold text-slate-400 underline">
+            Сбросить
+          </button>
+        )}
+        {!checked && (
+          <button
+            type="button"
+            onClick={check}
+            disabled={seq.length < 4}
+            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        )}
+      </div>
+    </div>
+  );
+}
+
+const TASK_META = [
+  { badge: "выбери из списка", prompt: "Какое свойство создаёт пространство МЕЖДУ рамкой (border) и содержимым внутри блока?", explain: "padding — внутренний отступ, он раздвигает содержимое от рамки блока." },
+  { badge: "выбери из списка", prompt: "Какое свойство создаёт пространство СНАРУЖИ блока — между ним и соседними элементами?", explain: "margin — внешний отступ, он отодвигает блок от других элементов на странице." },
+  { badge: "подвинь ползунки", prompt: "", explain: "Подходит любая пара значений, где padding + border = 15 — например 10 и 5, или 0 и 15." },
+  { badge: "кликай по порядку", prompt: "", explain: "Правильный порядок: content → padding → border → margin — от центра наружу." },
+  { badge: "кликни по диаграмме", prompt: "", explain: "padding находится сразу вокруг содержимого, внутри рамки (border)." },
+];
+
+function Tasks() {
+  const stepper = useTaskStepper(5, "box-model");
+  const task = stepper.index;
+  const meta = TASK_META[task];
+
+  if (stepper.allAnswered) {
+    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+  }
+
+  return (
+    <LevelShell
       total={5}
+      index={task}
       statuses={stepper.statuses}
-      prompt="Кликни по нужному слою на диаграмме."
-      status={layerDone ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={next}
-      isLast
-      feedback="padding находится сразу вокруг содержимого, внутри рамки (border)."
+      status={stepper.status}
+      isLast={stepper.isLast}
+      badge={meta.badge}
+      explain={meta.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-amber-500 to-orange-600"
     >
-      <LayerClickTask
-        onResult={(correct) => {
-          setLayerDone(true);
-          stepper.markResult(correct);
-        }}
-      />
-    </TaskShell>
+      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {task === 0 && <McqLevel key={task} options={["margin", "padding", "border", "gap"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 1 && <McqLevel key={task} options={["padding", "border", "margin", "outline"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && <TargetWidthTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <LayerOrderTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <LayerClickTask key={task} onResult={(c) => stepper.markResult(c)} />}
+    </LevelShell>
   );
 }
 
@@ -329,7 +359,7 @@ export function BoxModelTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий про box model." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай, двигай ползунки и кликай по диаграмме." />
       <Tasks />
     </div>
   );

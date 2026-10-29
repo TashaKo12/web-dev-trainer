@@ -1,8 +1,8 @@
 import { useState } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
-import { TaskShell } from "../../components/TaskShell";
 import { CompletionBanner } from "../../components/CompletionBanner";
+import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
@@ -123,140 +123,131 @@ function HoverPickTask({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
-function Tasks() {
-  const stepper = useTaskStepper(5, "pseudo-classes");
-  const [mcq, setMcq] = useState<number | null>(null);
-  const [hoverDone, setHoverDone] = useState(false);
+function McqLevel({ options, correctIndex, mono = true, onResult }: { options: string[]; correctIndex: number; mono?: boolean; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
 
-  if (stepper.allAnswered) {
-    return (
-      <CompletionBanner
-        score={stepper.score}
-        total={5}
-        onRestart={() => {
-          stepper.restart();
-          setMcq(null);
-          setHoverDone(false);
-        }}
-      />
-    );
-  }
-
-  const task = stepper.index;
-  const next = () => {
-    stepper.goNext();
-    setMcq(null);
-    setHoverDone(false);
-  };
-
-  if (task === 0) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой псевдокласс срабатывает, когда курсор мыши просто НАВЕДЁН на элемент (без клика)?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback=":hover — состояние наведения курсора."
-      >
-        <McqOptions options={[":hover", ":active", ":focus", ":visited"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 1) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Какой псевдокласс срабатывает, пока кнопка мыши ЗАЖАТА на элементе (ещё не отпущена)?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 2)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback=":active — состояние нажатия, действует только в момент удержания кнопки мыши."
-      >
-        <McqOptions options={[":hover", ":link", ":active", ":checked"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
-  }
-
-  if (task === 2) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt={
-          <>
-            Если написать <code className="rounded bg-slate-100 px-1">.card:hover {"{"} opacity: 0; {"}"}</code>,
-            что будет с карточкой, когда курсор НЕ наведён на неё?
-          </>
-        }
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback="Без наведения правило :hover не действует — карточка видна как обычно (opacity: 1 по умолчанию)."
-      >
-        <McqOptions
-          mono={false}
-          options={["Видна как обычно", "Полностью прозрачна", "Пропадает совсем со страницы", "Становится чёрной"]}
-          selected={mcq}
-          onSelect={setMcq}
-          disabled={stepper.status !== "idle"}
-        />
-      </TaskShell>
-    );
-  }
-
-  if (task === 3) {
-    return (
-      <TaskShell
-        index={task}
-        total={5}
-        statuses={stepper.statuses}
-        prompt="Как правильно написать селектор для состояния наведения на элемент с классом .card?"
-        status={stepper.status}
-        onCheck={() => stepper.markResult(mcq === 0)}
-        onNext={next}
-        checkDisabled={mcq === null}
-        isLast={false}
-        feedback=".card:hover — класс и псевдокласс пишутся слитно, без пробела."
-      >
-        <McqOptions mono options={[".card:hover", ".card-hover", ":hover.card", ".card::hover"]} selected={mcq} onSelect={setMcq} disabled={stepper.status !== "idle"} />
-      </TaskShell>
-    );
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
   }
 
   return (
-    <TaskShell
-      index={task}
+    <div>
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} mono={mono} />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function OpacityPredictTask({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<"visible" | "hidden" | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(choice === "visible");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        У этой карточки есть правило <code className="rounded bg-slate-100 px-1">.card:hover {"{"} opacity: 0; {"}"}</code>.
+        Не наводи на неё курсор — просто посмотри и ответь, видна ли она сейчас.
+      </p>
+      <div className="group mb-4 flex h-20 items-center justify-center rounded-xl border-2 border-pink-200 bg-pink-50 text-sm font-bold text-pink-700 transition hover:opacity-0">
+        Карточка
+      </div>
+      <div className="flex justify-center gap-3">
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setChoice("visible")}
+          className={`rounded-xl border-2 px-5 py-2 text-sm font-bold transition disabled:cursor-not-allowed ${
+            choice === "visible" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-slate-200 text-slate-500 hover:border-pink-200"
+          }`}
+        >
+          Видна
+        </button>
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setChoice("hidden")}
+          className={`rounded-xl border-2 px-5 py-2 text-sm font-bold transition disabled:cursor-not-allowed ${
+            choice === "hidden" ? "border-pink-500 bg-pink-50 text-pink-700" : "border-slate-200 text-slate-500 hover:border-pink-200"
+          }`}
+        >
+          Прозрачна
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!choice}
+            className="rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+const TASK_META = [
+  { badge: "выбери из списка", prompt: "Какой псевдокласс срабатывает, когда курсор мыши просто НАВЕДЁН на элемент (без клика)?", explain: ":hover — состояние наведения курсора." },
+  { badge: "выбери из списка", prompt: "Какой псевдокласс срабатывает, пока кнопка мыши ЗАЖАТА на элементе (ещё не отпущена)?", explain: ":active — состояние нажатия, действует только в момент удержания кнопки мыши." },
+  {
+    badge: "посмотри и ответь",
+    prompt: "",
+    explain: "Без наведения правило :hover не действует — карточка видна как обычно (opacity: 1 по умолчанию). Если ты случайно навёл на неё курсор, читая задание, — она и правда стала прозрачной, вот и весь смысл :hover!",
+  },
+  { badge: "выбери из списка", prompt: "Как правильно написать селектор для состояния наведения на элемент с классом .card?", explain: ".card:hover — класс и псевдокласс пишутся слитно, без пробела." },
+  { badge: "наведи на карточки", prompt: "Проверь на практике разницу между :hover и :active.", explain: ":hover реагирует на простое наведение курсора, а :active — только на нажатие кнопки мыши." },
+];
+
+function Tasks() {
+  const stepper = useTaskStepper(5, "pseudo-classes");
+  const task = stepper.index;
+  const meta = TASK_META[task];
+
+  if (stepper.allAnswered) {
+    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+  }
+
+  return (
+    <LevelShell
       total={5}
+      index={task}
       statuses={stepper.statuses}
-      prompt="Проверь на практике разницу между :hover и :active."
-      status={hoverDone ? stepper.status : "idle"}
-      onCheck={() => {}}
-      checkDisabled
-      hideCheck
-      onNext={next}
-      isLast
-      feedback=":hover реагирует на простое наведение курсора, а :active — только на нажатие кнопки мыши."
+      status={stepper.status}
+      isLast={stepper.isLast}
+      badge={meta.badge}
+      explain={meta.explain}
+      onJump={stepper.goTo}
+      onNext={stepper.goNext}
+      nextClassName="bg-gradient-to-r from-pink-500 to-rose-600"
     >
-      <HoverPickTask
-        onResult={(correct) => {
-          setHoverDone(true);
-          stepper.markResult(correct);
-        }}
-      />
-    </TaskShell>
+      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {task === 0 && <McqLevel key={task} options={[":hover", ":active", ":focus", ":visited"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 1 && <McqLevel key={task} options={[":hover", ":link", ":active", ":checked"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && <OpacityPredictTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <McqLevel key={task} options={[".card:hover", ".card-hover", ":hover.card", ".card::hover"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <HoverPickTask key={task} onResult={(c) => stepper.markResult(c)} />}
+    </LevelShell>
   );
 }
 
@@ -272,7 +263,7 @@ export function PseudoClassesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 заданий про :hover и :active." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай, наблюдай и наводи курсор." />
       <Tasks />
     </div>
   );
