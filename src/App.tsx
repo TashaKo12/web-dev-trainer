@@ -12,6 +12,7 @@ import { PseudoClassesTrainer } from "./trainers/pseudo-classes/PseudoClassesTra
 import { FormsTrainer } from "./trainers/forms/FormsTrainer";
 import { TablesTrainer } from "./trainers/tables/TablesTrainer";
 import { PageLayoutTrainer } from "./trainers/page-layout/PageLayoutTrainer";
+import { ImagePathsTrainer } from "./trainers/image-paths/ImagePathsTrainer";
 
 function App() {
   return (
@@ -30,6 +31,7 @@ function App() {
           <Route path="forms" element={<FormsTrainer />} />
           <Route path="tables" element={<TablesTrainer />} />
           <Route path="page-layout" element={<PageLayoutTrainer />} />
+          <Route path="image-paths" element={<ImagePathsTrainer />} />
         </Route>
       </Routes>
     </HashRouter>

@@ -9,7 +9,8 @@ export type TrainerId =
   | "pseudo-classes"
   | "forms"
   | "tables"
-  | "page-layout";
+  | "page-layout"
+  | "image-paths";
 
 export type TrainerProgress = {
   score: number;
