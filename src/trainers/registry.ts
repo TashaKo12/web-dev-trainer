@@ -121,4 +121,14 @@ export const trainers: TrainerMeta[] = [
     taskCount: 5,
     gradient: "from-indigo-500 to-blue-700",
   },
+  {
+    id: "image-paths",
+    path: "/image-paths",
+    emoji: "🧭",
+    title: "Пути к картинкам",
+    summary:
+      "Впиши src сам и смотри вживую, когда фото появляется, а когда — нет.",
+    taskCount: 5,
+    gradient: "from-teal-500 to-emerald-600",
+  },
 ];
