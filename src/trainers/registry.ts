@@ -8,9 +8,11 @@ export type TrainerMeta = {
   summary: string;
   taskCount: number;
   gradient: string;
+  section: "html" | "css" | "js";
 };
 
 export const trainers: TrainerMeta[] = [
+  // ───────── HTML ─────────
   {
     id: "tags-attributes",
     path: "/tags-attributes",
@@ -20,6 +22,7 @@ export const trainers: TrainerMeta[] = [
       "Разбери HTML-тег на части: имя тега, атрибут, значение атрибута — и собери свой.",
     taskCount: 8,
     gradient: "from-orange-500 to-amber-600",
+    section: "html",
   },
   {
     id: "html-structure",
@@ -30,126 +33,58 @@ export const trainers: TrainerMeta[] = [
       "Собери скелет веб-страницы из блоков и разберись, какой тег за что отвечает.",
     taskCount: 5,
     gradient: "from-sky-500 to-blue-600",
+    section: "html",
   },
   {
-    id: "basic-tags",
-    path: "/basic-tags",
-    emoji: "📝",
-    title: "HTML-теги: заголовки, списки, ссылки",
+    id: "headings",
+    path: "/headings",
+    emoji: "🔠",
+    title: "Заголовки h1–h6",
     summary:
-      "h1–h3, p, a, img, ul/ol — базовые теги, из которых собрана почти любая страница.",
+      "Один главный заголовок h1 и разделы поменьше h2–h6 — разберись, какой тег когда ставить.",
     taskCount: 5,
-    gradient: "from-rose-500 to-red-600",
+    gradient: "from-rose-500 to-pink-600",
+    section: "html",
   },
   {
-    id: "links",
-    path: "/links",
-    emoji: "🔗",
-    title: "Тег a и атрибут href",
-    summary:
-      "Собери ссылку сам — куда она ведёт, когда открывается в новой вкладке, и чем якорь отличается от обычной ссылки.",
-    taskCount: 8,
-    gradient: "from-blue-500 to-cyan-600",
+    id: "paragraphs",
+    path: "/paragraphs",
+    emoji: "📄",
+    title: "Абзац p",
+    summary: "Тег p — обычный текст страницы. Когда начинать новый абзац и чем он отличается от переноса строки.",
+    taskCount: 4,
+    gradient: "from-orange-400 to-amber-500",
+    section: "html",
   },
   {
-    id: "box-model",
-    path: "/box-model",
-    emoji: "📦",
-    title: "CSS Box Model",
-    summary:
-      "Подвигай слои margin, border и padding и увидь, как из них складывается размер блока.",
+    id: "lists",
+    path: "/lists",
+    emoji: "📑",
+    title: "Списки: ul, ol и вложенные",
+    summary: "Маркированный ul и нумерованный ol — собери список сам, попробуй и вложенный список внутри пункта.",
+    taskCount: 4,
+    gradient: "from-lime-500 to-green-600",
+    section: "html",
+  },
+  {
+    id: "div-classes",
+    path: "/div-classes",
+    emoji: "🗂️",
+    title: "Блоки div и классы",
+    summary: "div группирует содержимое в блок, а атрибут class даёт этому блоку имя, за которое цепляется CSS.",
     taskCount: 5,
-    gradient: "from-amber-500 to-orange-600",
+    gradient: "from-amber-400 to-orange-500",
+    section: "html",
   },
   {
-    id: "backgrounds",
-    path: "/backgrounds",
-    emoji: "🏞️",
-    title: "Фон блока: background-image",
-    summary:
-      "background-size, background-position, background-repeat — растяни, подвинь и размножь картинку на фоне блока.",
-    taskCount: 8,
-    gradient: "from-cyan-500 to-blue-600",
-  },
-  {
-    id: "shadows",
-    path: "/shadows",
-    emoji: "🪪",
-    title: "Тени и скругления: border-radius, box-shadow",
-    summary:
-      "Скругли уголки карточки и подвинь её тень — border-radius и box-shadow вживую.",
-    taskCount: 8,
-    gradient: "from-slate-600 to-zinc-700",
-  },
-  {
-    id: "typography",
-    path: "/typography",
-    emoji: "🔤",
-    title: "Шрифты и оформление текста",
-    summary:
-      "font-family, text-align, letter-spacing, line-height — и как подключить свой или Google-шрифт.",
-    taskCount: 5,
-    gradient: "from-purple-500 to-fuchsia-600",
-  },
-  {
-    id: "flexbox",
-    path: "/flexbox",
-    emoji: "🧲",
-    title: "Flexbox: выравнивание и направление",
-    summary:
-      "Расставь карточки по контейнеру с помощью flex-свойств — всё меняется вживую.",
-    taskCount: 8,
-    gradient: "from-emerald-500 to-teal-600",
-  },
-  {
-    id: "selectors",
-    path: "/selectors",
-    emoji: "🎯",
-    title: "CSS-селекторы",
-    summary:
-      "Пиши селекторы и смотри, какие элементы страницы они подсвечивают.",
-    taskCount: 9,
-    gradient: "from-fuchsia-500 to-pink-600",
-  },
-  {
-    id: "pseudo-classes",
-    path: "/pseudo-classes",
-    emoji: "🖱️",
-    title: "Псевдоклассы :hover и :active",
-    summary:
-      "Наведи курсор или нажми кнопку мыши — посмотри, как меняется элемент.",
+    id: "images",
+    path: "/images",
+    emoji: "🖼️",
+    title: "Изображения img",
+    summary: "src, alt, width и height — набор атрибутов, с которых начинается любая картинка на странице.",
     taskCount: 5,
     gradient: "from-pink-500 to-rose-600",
-  },
-  {
-    id: "forms",
-    path: "/forms",
-    emoji: "📋",
-    title: "Формы и поля ввода",
-    summary:
-      "type, placeholder и required — собери форму регистрации из подходящих полей.",
-    taskCount: 5,
-    gradient: "from-cyan-500 to-blue-600",
-  },
-  {
-    id: "tables",
-    path: "/tables",
-    emoji: "📊",
-    title: "HTML-таблицы",
-    summary:
-      "table, tr, td, th и объединение ячеек через rowspan и colspan.",
-    taskCount: 5,
-    gradient: "from-slate-500 to-slate-700",
-  },
-  {
-    id: "page-layout",
-    path: "/page-layout",
-    emoji: "🧱",
-    title: "Макет страницы: header, main, footer",
-    summary:
-      "Собери скелет страницы и прижми footer к низу экрана с помощью flexbox.",
-    taskCount: 5,
-    gradient: "from-indigo-500 to-blue-700",
+    section: "html",
   },
   {
     id: "image-paths",
@@ -160,7 +95,173 @@ export const trainers: TrainerMeta[] = [
       "Впиши src сам и смотри вживую, когда фото появляется, а когда — нет.",
     taskCount: 9,
     gradient: "from-teal-500 to-emerald-600",
+    section: "html",
   },
+  {
+    id: "links",
+    path: "/links",
+    emoji: "🔗",
+    title: "Тег a и атрибут href",
+    summary:
+      "Собери ссылку сам — куда она ведёт, когда открывается в новой вкладке, и чем якорь отличается от обычной ссылки.",
+    taskCount: 8,
+    gradient: "from-blue-500 to-cyan-600",
+    section: "html",
+  },
+  {
+    id: "tables",
+    path: "/tables",
+    emoji: "📊",
+    title: "HTML-таблицы",
+    summary:
+      "table, tr, td, th и объединение ячеек через rowspan и colspan.",
+    taskCount: 5,
+    gradient: "from-slate-500 to-slate-700",
+    section: "html",
+  },
+  {
+    id: "forms",
+    path: "/forms",
+    emoji: "📋",
+    title: "Формы и поля ввода",
+    summary:
+      "type, placeholder и required — собери форму регистрации из подходящих полей.",
+    taskCount: 5,
+    gradient: "from-cyan-500 to-blue-600",
+    section: "html",
+  },
+
+  // ───────── CSS ─────────
+  {
+    id: "css-intro",
+    path: "/css-intro",
+    emoji: "🔌",
+    title: "Как подключить стили",
+    summary: "CSS живёт в ОТДЕЛЬНОМ файле style.css. Разберись, как связать его с HTML через тег link.",
+    taskCount: 5,
+    gradient: "from-violet-600 to-fuchsia-700",
+    section: "css",
+  },
+  {
+    id: "selectors",
+    path: "/selectors",
+    emoji: "🎯",
+    title: "CSS-селекторы",
+    summary:
+      "Пиши селекторы и смотри, какие элементы страницы они подсвечивают.",
+    taskCount: 9,
+    gradient: "from-fuchsia-500 to-pink-600",
+    section: "css",
+  },
+  {
+    id: "text-color",
+    path: "/text-color",
+    emoji: "🎨",
+    title: "Цвет текста: color",
+    summary: "Свойство color красит сам текст. Подбирай значение и смотри на результат вживую.",
+    taskCount: 5,
+    gradient: "from-fuchsia-500 to-purple-600",
+    section: "css",
+  },
+  {
+    id: "background-color",
+    path: "/background-color",
+    emoji: "🪣",
+    title: "Цвет фона: background-color",
+    summary: "background-color красит не текст, а фон блока целиком. Не перепутай с color!",
+    taskCount: 5,
+    gradient: "from-violet-500 to-purple-700",
+    section: "css",
+  },
+  {
+    id: "text-align",
+    path: "/text-align",
+    emoji: "📐",
+    title: "Выравнивание текста: text-align",
+    summary: "left, center, right, justify — куда прижимается текст внутри своего блока.",
+    taskCount: 4,
+    gradient: "from-sky-400 to-blue-500",
+    section: "css",
+  },
+  {
+    id: "typography",
+    path: "/typography",
+    emoji: "🔤",
+    title: "Шрифты и оформление текста",
+    summary:
+      "font-family, letter-spacing, line-height, text-decoration — и как подключить свой или Google-шрифт.",
+    taskCount: 5,
+    gradient: "from-purple-500 to-fuchsia-600",
+    section: "css",
+  },
+  {
+    id: "box-model",
+    path: "/box-model",
+    emoji: "📦",
+    title: "CSS Box Model",
+    summary:
+      "Подвигай слои margin, border и padding и увидь, как из них складывается размер блока.",
+    taskCount: 5,
+    gradient: "from-amber-500 to-orange-600",
+    section: "css",
+  },
+  {
+    id: "shadows",
+    path: "/shadows",
+    emoji: "🪪",
+    title: "Тени и скругления: border-radius, box-shadow",
+    summary:
+      "Скругли уголки карточки и подвинь её тень — border-radius и box-shadow вживую.",
+    taskCount: 8,
+    gradient: "from-slate-600 to-zinc-700",
+    section: "css",
+  },
+  {
+    id: "backgrounds",
+    path: "/backgrounds",
+    emoji: "🏞️",
+    title: "Фон блока: background-image",
+    summary:
+      "background-size, background-position, background-repeat — растяни, подвинь и размножь картинку на фоне блока.",
+    taskCount: 8,
+    gradient: "from-cyan-500 to-blue-600",
+    section: "css",
+  },
+  {
+    id: "flexbox",
+    path: "/flexbox",
+    emoji: "🧲",
+    title: "Flexbox: выравнивание и направление",
+    summary:
+      "Расставь карточки по контейнеру с помощью flex-свойств — всё меняется вживую.",
+    taskCount: 8,
+    gradient: "from-emerald-500 to-teal-600",
+    section: "css",
+  },
+  {
+    id: "page-layout",
+    path: "/page-layout",
+    emoji: "🧱",
+    title: "Макет страницы: header, main, footer",
+    summary:
+      "Собери скелет страницы и прижми footer к низу экрана с помощью flexbox.",
+    taskCount: 5,
+    gradient: "from-indigo-500 to-blue-700",
+    section: "css",
+  },
+  {
+    id: "pseudo-classes",
+    path: "/pseudo-classes",
+    emoji: "🖱️",
+    title: "Псевдоклассы :hover и :active",
+    summary:
+      "Наведи курсор или нажми кнопку мыши — посмотри, как меняется элемент.",
+    taskCount: 5,
+    gradient: "from-pink-500 to-rose-600",
+    section: "css",
+  },
+
+  // ───────── JS ─────────
   {
     id: "dom-access",
     path: "/dom-access",
@@ -170,5 +271,6 @@ export const trainers: TrainerMeta[] = [
       "Разберись, что вернёт getElementById, querySelector и их соседи по DOM.",
     taskCount: 7,
     gradient: "from-violet-500 to-indigo-600",
+    section: "js",
   },
 ];

@@ -130,11 +130,9 @@ function McqLevel({ options, correctIndex, mono = true, onResult }: { options: s
   );
 }
 
-const ALIGNS_LEVEL = ["left", "center", "right", "justify"] as const;
-
-function AlignMatchTask({ onResult }: { onResult: (correct: boolean) => void }) {
-  const target: (typeof ALIGNS_LEVEL)[number] = "center";
-  const [value, setValue] = useState<(typeof ALIGNS_LEVEL)[number]>("left");
+function FontMatchTask({ onResult }: { onResult: (correct: boolean) => void }) {
+  const target: (typeof FONTS)[number] = "monospace";
+  const [value, setValue] = useState<(typeof FONTS)[number]>("sans-serif");
   const [checked, setChecked] = useState(false);
 
   function check() {
@@ -144,33 +142,33 @@ function AlignMatchTask({ onResult }: { onResult: (correct: boolean) => void }) 
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">Выбери text-align так, чтобы твой текст встал как на образце.</p>
+      <p className="mb-3 text-sm text-slate-500">Выбери font-family так, чтобы твой текст встал как на образце.</p>
       <div className="grid gap-4 sm:grid-cols-2">
         <div>
           <p className="mb-1 text-xs font-bold uppercase text-slate-400">Образец</p>
-          <p style={{ textAlign: target }} className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+          <p style={{ fontFamily: target }} className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
             Привет! Это пример текста.
           </p>
         </div>
         <div>
           <p className="mb-1 text-xs font-bold uppercase text-slate-400">Твой текст</p>
-          <p style={{ textAlign: value }} className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
+          <p style={{ fontFamily: value }} className="rounded-xl bg-slate-50 p-3 text-sm text-slate-600">
             Привет! Это пример текста.
           </p>
         </div>
       </div>
       <div className="mt-4 flex flex-wrap justify-center gap-2">
-        {ALIGNS_LEVEL.map((a) => (
+        {FONTS.map((f) => (
           <button
-            key={a}
+            key={f}
             type="button"
             disabled={checked}
-            onClick={() => setValue(a)}
+            onClick={() => setValue(f)}
             className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition disabled:cursor-not-allowed ${
-              value === a ? "bg-purple-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-purple-100"
+              value === f ? "bg-purple-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-purple-100"
             }`}
           >
-            {a}
+            {f}
           </button>
         ))}
       </div>
@@ -232,7 +230,7 @@ function DecorationTypeTask({ onResult }: { onResult: (correct: boolean) => void
 }
 
 const TASK_META = [
-  { badge: "подбери значение", prompt: "", explain: "text-align: center центрирует текст внутри его блока." },
+  { badge: "подбери значение", prompt: "", explain: "font-family: monospace — моноширинный шрифт, у которого все буквы одинаковой ширины (как в коде)." },
   { badge: "выбери из списка", prompt: "Какое свойство увеличивает расстояние МЕЖДУ СТРОКАМИ текста (а не между буквами)?", explain: "line-height — межстрочный интервал. letter-spacing отвечает за расстояние между буквами." },
   {
     badge: "выбери из списка",
@@ -275,7 +273,7 @@ function Tasks() {
       nextClassName="bg-gradient-to-r from-purple-500 to-fuchsia-600"
     >
       {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
-      {task === 0 && <AlignMatchTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 0 && <FontMatchTask key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <McqLevel key={task} options={["line-height", "letter-spacing", "text-align", "font-size"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && (
         <McqLevel
@@ -301,11 +299,11 @@ function Tasks() {
 export function TypographyTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} />
+      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="Поиграй со шрифтом и текстом"
-        description="font-family, text-align, letter-spacing, line-height и text-decoration управляют тем, как читается текст."
+        description="font-family, letter-spacing, line-height и text-decoration управляют тем, как читается текст."
       />
       <div className="mb-10">
         <Theory />
