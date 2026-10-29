@@ -3,7 +3,13 @@ export type TrainerId =
   | "box-model"
   | "flexbox"
   | "selectors"
-  | "dom-access";
+  | "dom-access"
+  | "basic-tags"
+  | "typography"
+  | "pseudo-classes"
+  | "forms"
+  | "tables"
+  | "page-layout";
 
 export type TrainerProgress = {
   score: number;

@@ -6,6 +6,12 @@ import { BoxModelTrainer } from "./trainers/box-model/BoxModelTrainer";
 import { FlexboxTrainer } from "./trainers/flexbox/FlexboxTrainer";
 import { SelectorsTrainer } from "./trainers/selectors/SelectorsTrainer";
 import { DomAccessTrainer } from "./trainers/dom-access/DomAccessTrainer";
+import { BasicTagsTrainer } from "./trainers/basic-tags/BasicTagsTrainer";
+import { TypographyTrainer } from "./trainers/typography/TypographyTrainer";
+import { PseudoClassesTrainer } from "./trainers/pseudo-classes/PseudoClassesTrainer";
+import { FormsTrainer } from "./trainers/forms/FormsTrainer";
+import { TablesTrainer } from "./trainers/tables/TablesTrainer";
+import { PageLayoutTrainer } from "./trainers/page-layout/PageLayoutTrainer";
 
 function App() {
   return (
@@ -18,6 +24,12 @@ function App() {
           <Route path="flexbox" element={<FlexboxTrainer />} />
           <Route path="selectors" element={<SelectorsTrainer />} />
           <Route path="dom-access" element={<DomAccessTrainer />} />
+          <Route path="basic-tags" element={<BasicTagsTrainer />} />
+          <Route path="typography" element={<TypographyTrainer />} />
+          <Route path="pseudo-classes" element={<PseudoClassesTrainer />} />
+          <Route path="forms" element={<FormsTrainer />} />
+          <Route path="tables" element={<TablesTrainer />} />
+          <Route path="page-layout" element={<PageLayoutTrainer />} />
         </Route>
       </Routes>
     </HashRouter>
