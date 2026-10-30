@@ -164,24 +164,160 @@ function TypeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
+function WidthMatchLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const target = 8;
+  const [value, setValue] = useState(1);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(Math.abs(value - target) <= 1);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Подвинь ползунок толщины рамки так, чтобы она стала примерно такой же, как образец.</p>
+      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Образец</p>
+          <Box width={target} style="solid" />
+        </div>
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Твоя рамка</p>
+          <Box width={value} style="solid" />
+        </div>
+      </div>
+      <input type="range" min={1} max={16} value={value} onChange={(e) => !checked && setValue(Number(e.target.value))} disabled={checked} className="w-full accent-orange-600" />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-bold text-white shadow"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TypeBottomLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function normalize(s: string) {
+    return s.trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  function check() {
+    setChecked(true);
+    onResult(/^3px\s+solid\s+(#000000|#000|black)$/i.test(normalize(text)));
+  }
+
+  const previewStyle = /^\d+px\s+\w+\s+\S+/.test(text.trim()) ? text : undefined;
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Напиши значение для border-bottom — сплошная ЧЁРНАЯ линия толщиной 3px (цвет напиши словом black).
+      </p>
+      <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => !checked && setText(e.target.value)}
+          disabled={checked}
+          placeholder="толщина стиль цвет"
+          className="w-full rounded-xl border-2 border-orange-200 px-3 py-2 font-mono text-sm outline-none focus:border-orange-400 disabled:opacity-60"
+        />
+        <div style={{ borderBottom: previewStyle }} className="flex h-20 items-center justify-center rounded-lg bg-slate-50 text-xs font-bold text-slate-400">
+          Заголовок
+        </div>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function McqLevel({ options, correctIndex, mono = true, onResult }: { options: string[]; correctIndex: number; mono?: boolean; onResult: (correct: boolean) => void }) {
+  const [choice, setChoice] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(choice === correctIndex);
+  }
+
+  return (
+    <div>
+      <div className="grid gap-2 sm:grid-cols-2">
+        {options.map((opt, i) => (
+          <button
+            key={opt}
+            type="button"
+            disabled={checked}
+            onClick={() => setChoice(i)}
+            className={`rounded-xl border-2 px-4 py-2.5 text-left text-sm transition disabled:cursor-not-allowed ${mono ? "font-mono" : "font-medium"} ${
+              choice === i ? "border-orange-400 bg-orange-50" : "border-slate-200 hover:border-orange-200"
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={choice === null}
+            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Нужна рамка из коротких штрихов. Какое значение border-style подходит?", explain: "dashed — штриховая линия. dotted — из точек, solid — сплошная." },
   { badge: "выбери из списка", prompt: "А какое значение даёт рамку из точек?", explain: "dotted — рамка из точек." },
   { badge: "напиши сам", prompt: "", explain: "border: 2px solid orange; — толщина, стиль и цвет через пробел, в любом порядке, но обычно пишут именно так." },
+  { badge: "выбери из списка", prompt: "Какое значение border-style рисует рамку из ДВУХ параллельных линий?", explain: "double — двойная рамка, состоящая из двух линий с просветом между ними." },
+  { badge: "выбери из списка", prompt: "Какое значение border-style — самая обычная, сплошная линия?", explain: "solid — сплошная рамка, самый распространённый вариант." },
+  { badge: "подбери толщину", prompt: "", explain: "Главное — приблизительно совпасть с образцом по толщине." },
+  { badge: "выбери из списка", prompt: "Какое значение border-style полностью УБИРАЕТ рамку?", explain: "none — значение по умолчанию, означающее «рамки нет»." },
+  { badge: "напиши сам", prompt: "", explain: "border-bottom: 3px solid black; — та же структура значения, что и у border, просто другое свойство." },
+  { badge: "выбери из списка", prompt: "Чем border-radius отличается от border?", explain: "border-radius скругляет УГЛЫ блока (не рисует саму линию), а border задаёт толщину, стиль и цвет самой рамки — это два разных свойства, которые часто используют вместе." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(3, "border");
+  const stepper = useTaskStepper(9, "border");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={3} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={3}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -192,10 +328,24 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-amber-500 to-orange-600"
     >
-      {(task === 0 || task === 1) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <ChooseLevel key={task} target="dashed" options={["solid", "dashed", "dotted", "double"]} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <ChooseLevel key={task} target="dotted" options={["solid", "dashed", "dotted", "double"]} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <TypeLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <ChooseLevel key={task} target="double" options={["solid", "dashed", "dotted", "double"]} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <ChooseLevel key={task} target="solid" options={["solid", "dashed", "dotted", "double"]} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <WidthMatchLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <McqLevel key={task} options={["none", "solid", "empty", "hidden"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <TypeBottomLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["Это одно и то же", "border-radius скругляет углы, border рисует саму линию", "border-radius работает только с кругами", "border медленнее border-radius"]}
+          correctIndex={1}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
     </LevelShell>
   );
 }
@@ -212,7 +362,7 @@ export function BorderTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="3 уровня — выбирай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, подбирай и пиши сам." />
       <Tasks />
     </div>
   );
