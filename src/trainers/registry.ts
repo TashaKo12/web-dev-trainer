@@ -334,7 +334,7 @@ export const trainers: TrainerMeta[] = [
     emoji: "▦",
     title: "CSS Grid: сетка из карточек",
     summary: "grid-template-columns и gap расставляют карточки ровной сеткой из колонок и рядов.",
-    taskCount: 3,
+    taskCount: 9,
     gradient: "from-emerald-500 to-teal-600",
     section: "css",
   },
@@ -345,7 +345,7 @@ export const trainers: TrainerMeta[] = [
     title: "Макет страницы: header, main, footer",
     summary:
       "Собери скелет страницы и прижми footer к низу экрана с помощью flexbox.",
-    taskCount: 5,
+    taskCount: 9,
     gradient: "from-indigo-500 to-blue-700",
     section: "css",
   },
