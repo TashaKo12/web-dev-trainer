@@ -7,7 +7,7 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
-const meta = trainers.find((t) => t.id === "forms")!;
+const meta = trainers.find((t) => t.id === "input-types")!;
 
 type FieldKey = "name" | "email" | "phone" | "password";
 
@@ -158,7 +158,7 @@ const TASK_META = [
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "forms");
+  const stepper = useTaskStepper(5, "input-types");
   const task = stepper.index;
   const meta = TASK_META[task];
 
@@ -201,7 +201,7 @@ function Tasks() {
   );
 }
 
-export function FormsTrainer() {
+export function InputTypesTrainer() {
   return (
     <div>
       <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
