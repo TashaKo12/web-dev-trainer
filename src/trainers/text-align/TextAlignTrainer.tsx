@@ -129,19 +129,27 @@ function McqLevel({ options, correctIndex, mono = true, onResult }: { options: s
   );
 }
 
-function TypeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+function TypeLevel({
+  target = "center",
+  prompt = "Напиши значение text-align, чтобы заголовок встал ровно по центру карточки.",
+  onResult,
+}: {
+  target?: Align;
+  prompt?: string;
+  onResult: (correct: boolean) => void;
+}) {
   const [text, setText] = useState("");
   const [checked, setChecked] = useState(false);
   const value = ALIGNS.includes(text.trim().toLowerCase() as Align) ? (text.trim().toLowerCase() as Align) : "left";
 
   function check() {
     setChecked(true);
-    onResult(text.trim().toLowerCase() === "center");
+    onResult(text.trim().toLowerCase() === target);
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">Напиши значение text-align, чтобы заголовок встал ровно по центру карточки.</p>
+      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
       <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
         <input
           type="text"
@@ -171,25 +179,80 @@ function TypeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
+function FixAlignLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [value, setValue] = useState<Align>("left");
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(value === "center");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Кнопка внутри карточки должна стоять ровно по центру, а сейчас прижата к левому краю. Подбери text-align
+        для карточки, чтобы починить это.
+      </p>
+      <div style={{ textAlign: value }} className="mb-4 rounded-2xl bg-slate-50 p-4">
+        <button type="button" className="rounded-full bg-sky-500 px-5 py-2 text-sm font-bold text-white">
+          Заказать
+        </button>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        {ALIGNS.map((a) => (
+          <button
+            key={a}
+            type="button"
+            disabled={checked}
+            onClick={() => setValue(a)}
+            className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition disabled:cursor-not-allowed ${
+              value === a ? "bg-sky-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-sky-100"
+            }`}
+          >
+            {a}
+          </button>
+        ))}
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            className="rounded-full bg-gradient-to-r from-sky-400 to-blue-500 px-5 py-2 text-sm font-bold text-white shadow"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "подбери значение", prompt: "", explain: "text-align: center центрирует текст внутри его блока." },
   { badge: "подбери значение", prompt: "", explain: "text-align: right прижимает текст к правому краю блока." },
   { badge: "выбери из списка", prompt: "Какое значение text-align растягивает КАЖДУЮ строку так, чтобы её края ровно совпадали и слева, и справа (кроме последней, короткой строки)?", explain: "justify — «выключка», текст в газетах и книгах часто оформлен именно так." },
   { badge: "напиши сам", prompt: "", explain: "text-align: center — центрирует содержимое по горизонтали." },
+  { badge: "подбери значение", prompt: "", explain: "text-align: left — прижимает текст к левому краю, это значение браузер использует по умолчанию." },
+  { badge: "выбери из списка", prompt: "Какое значение text-align используется по умолчанию, даже если его вообще не указывать?", explain: "left — для языков с письмом слева направо это значение по умолчанию." },
+  { badge: "почини баг", prompt: "", explain: "text-align: center на родительском блоке центрирует кнопку (и вообще любое содержимое) по горизонтали." },
+  { badge: "напиши сам", prompt: "", explain: "text-align: right — та же конструкция, другое значение." },
+  { badge: "выбери из списка", prompt: "Чем center отличается от justify?", explain: "center просто сдвигает текст целиком к середине, а justify растягивает каждую строку так, чтобы её края совпадали и слева, и справа." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(4, "text-align");
+  const stepper = useTaskStepper(9, "text-align");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={4} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={4}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -200,11 +263,24 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-sky-400 to-blue-500"
     >
-      {task === 2 && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 2 || task === 5 || task === 8) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <MatchLevel key={task} target="center" onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <MatchLevel key={task} target="right" onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <McqLevel key={task} options={["left", "center", "right", "justify"]} correctIndex={3} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <TypeLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <MatchLevel key={task} target="left" onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <McqLevel key={task} options={["left", "center", "right", "justify"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <FixAlignLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <TypeLevel key={task} target="right" prompt="Напиши значение text-align, чтобы заголовок прижался к правому краю карточки." onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["Разницы нет", "center сдвигает текст к середине, justify растягивает каждую строку по ширине", "justify работает только с картинками", "center работает только в таблицах"]}
+          correctIndex={1}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
     </LevelShell>
   );
 }
@@ -221,7 +297,7 @@ export function TextAlignTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="4 уровня — подбирай значение и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значение, выбирай и пиши сам." />
       <Tasks />
     </div>
   );

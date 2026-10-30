@@ -130,19 +130,31 @@ function MatchLevel({ target, onResult }: { target: number; onResult: (correct: 
   );
 }
 
-function TypeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+function TypeLevel({
+  word = "bold",
+  weightNum = 700,
+  altAccept = "700",
+  prompt = "Напиши значение font-weight, чтобы сделать текст жирным (именем, не числом).",
+  onResult,
+}: {
+  word?: string;
+  weightNum?: number;
+  altAccept?: string;
+  prompt?: string;
+  onResult: (correct: boolean) => void;
+}) {
   const [text, setText] = useState("");
   const [checked, setChecked] = useState(false);
-  const weight = /^\d+$/.test(text.trim()) ? Number(text.trim()) : text.trim().toLowerCase() === "bold" ? 700 : 400;
+  const weight = /^\d+$/.test(text.trim()) ? Number(text.trim()) : text.trim().toLowerCase() === word ? weightNum : 400;
 
   function check() {
     setChecked(true);
-    onResult(text.trim().toLowerCase() === "bold" || text.trim() === "700");
+    onResult(text.trim().toLowerCase() === word || text.trim() === altAccept);
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">Напиши значение font-weight, чтобы сделать текст жирным (именем, не числом).</p>
+      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
       <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
         <input
           type="text"
@@ -172,24 +184,78 @@ function TypeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
+function CompareBoldLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [picked, setPicked] = useState<"a" | "b" | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(picked === "b");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Кликни на текст, у которого font-weight БОЛЬШЕ (он жирнее).</p>
+      <div className="mb-4 grid gap-3 sm:grid-cols-2">
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("a")}
+          style={{ fontWeight: 400 }}
+          className={`rounded-xl border-2 p-4 text-lg text-slate-700 transition disabled:cursor-not-allowed ${picked === "a" ? "border-purple-500 bg-purple-50" : "border-slate-200"}`}
+        >
+          Текст А
+        </button>
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("b")}
+          style={{ fontWeight: 800 }}
+          className={`rounded-xl border-2 p-4 text-lg text-slate-700 transition disabled:cursor-not-allowed ${picked === "b" ? "border-purple-500 bg-purple-50" : "border-slate-200"}`}
+        >
+          Текст Б
+        </button>
+      </div>
+      {!checked && (
+        <div className="flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!picked}
+            className="rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "подбери значение", prompt: "", explain: "700 — числовой эквивалент именованного значения bold." },
   { badge: "выбери из списка", prompt: "Какое числовое значение font-weight соответствует именованному bold?", explain: "bold = 700. normal = 400." },
   { badge: "напиши сам", prompt: "", explain: "bold (или числом 700) делает текст жирным." },
+  { badge: "подбери значение", prompt: "", explain: "300 — одно из более лёгких (тонких) значений жирности." },
+  { badge: "подбери значение", prompt: "", explain: "900 — максимальная жирность из стандартной шкалы значений." },
+  { badge: "выбери из списка", prompt: "Какое числовое значение font-weight соответствует именованному normal?", explain: "normal = 400 — это и есть обычная, не жирная и не тонкая насыщенность." },
+  { badge: "напиши сам", prompt: "", explain: "normal (или числом 400) возвращает обычную, не жирную насыщенность." },
+  { badge: "выбери из списка", prompt: "Какое значение из списка самое ТОНКОЕ (светлое)?", explain: "Чем меньше число, тем тоньше (светлее) шрифт — из перечисленных вариантов 300 самое лёгкое." },
+  { badge: "кликни на жирный", prompt: "", explain: "font-weight: 800 заметно жирнее, чем font-weight: 400 — чем больше число, тем жирнее текст." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(3, "font-weight");
+  const stepper = useTaskStepper(9, "font-weight");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={3} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={3}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -200,10 +266,16 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-purple-500 to-fuchsia-600"
     >
-      {task === 1 && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 1 || task === 5 || task === 7) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <MatchLevel key={task} target={700} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <McqLevel key={task} options={["400", "500", "700", "900"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <TypeLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <MatchLevel key={task} target={300} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <MatchLevel key={task} target={900} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <McqLevel key={task} options={["300", "400", "700", "900"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <TypeLevel key={task} word="normal" weightNum={400} altAccept="400" prompt="Напиши значение font-weight, чтобы вернуть ОБЫЧНУЮ (не жирную) насыщенность." onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <McqLevel key={task} options={["900", "400", "300", "700"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <CompareBoldLevel key={task} onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -220,7 +292,7 @@ export function FontWeightTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="3 уровня — подбирай значение и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значение, выбирай и пиши сам." />
       <Tasks />
     </div>
   );
