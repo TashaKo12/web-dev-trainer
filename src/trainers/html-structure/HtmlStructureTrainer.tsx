@@ -431,6 +431,57 @@ function FooterTagLevel({ expected = "footer", onResult }: { expected?: string; 
   );
 }
 
+function TypeTitleTagLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function normalize(s: string) {
+    return s.trim().toLowerCase().replace(/\s+/g, " ");
+  }
+
+  function check() {
+    setChecked(true);
+    onResult(normalize(text) === normalize("<title>Мой сайт</title>"));
+  }
+
+  const tabText = /<title>([^<]*)<\/title>/i.exec(text)?.[1]?.trim() || "Название вкладки";
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Напиши тег title с текстом «Мой сайт» — посмотри, как меняется название вкладки браузера ниже.
+      </p>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => !checked && setText(e.target.value)}
+        disabled={checked}
+        placeholder="<title>...</title>"
+        className="mb-4 w-full rounded-xl border-2 border-sky-200 px-3 py-2 font-mono text-sm outline-none focus:border-sky-400 disabled:opacity-60"
+      />
+      <div className="overflow-hidden rounded-t-xl border-2 border-b-0 border-slate-300 bg-slate-100">
+        <div className="flex items-center gap-2 px-3 py-2">
+          <span className="inline-block h-3 w-3 rounded-full bg-sky-500" />
+          <span className="truncate text-xs font-semibold text-slate-600">{tabText}</span>
+        </div>
+      </div>
+      <div className="rounded-b-xl border-2 border-slate-300 bg-white p-4 text-center text-xs text-slate-400">содержимое страницы</div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "кликни на зону", prompt: "", explain: "«title» определяет текст в заголовке вкладки браузера, поэтому он живёт в <head> — служебной части документа, которая не выводится на экран страницы." },
   { badge: "выбери из списка", prompt: "Какой тег лучше всего подходит для меню навигации по сайту?", explain: "Тег <nav> специально создан для блоков со ссылками-навигацией — это сразу понятно и браузеру, и человеку, читающему код." },
@@ -441,20 +492,21 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "Нужен самостоятельный раздел страницы со своим заголовком — например «Отзывы» или «О компании» (не вся страница и не отдельная статья). Какой тег?", explain: "<section> группирует тематически связанный кусок страницы со своим заголовком — в отличие от <div>, у него есть смысл." },
   { badge: "кликни на зону", prompt: "", explain: "<h1> — видимый заголовок, который читает посетитель, поэтому он живёт в <body>, а не в <head>." },
   { badge: "напиши сам", prompt: "Напиши название тега (без угловых скобок) для бокового блока с рекламой или похожими статьями — второстепенной информации.", explain: "aside — семантический тег для содержимого, не являющегося главным на странице." },
+  { badge: "напиши сам", prompt: "", explain: "<title>Мой сайт</title> — текст между тегами попадает прямо на вкладку браузера, его видит каждый, у кого открыта эта страница." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(9, "html-structure");
+  const stepper = useTaskStepper(10, "html-structure");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={10} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={9}
+      total={10}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -475,6 +527,7 @@ function Tasks() {
       {task === 6 && <McqLevel key={task} options={["<div>", "<section>", "<span>", "<b>"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
       {task === 7 && <ZonePlacementTask key={task} question="Куда поместить <h1>Заголовок страницы</h1>?" correctZone="body" onResult={(c) => stepper.markResult(c)} />}
       {task === 8 && <FooterTagLevel key={task} expected="aside" onResult={(c) => stepper.markResult(c)} />}
+      {task === 9 && <TypeTitleTagLevel key={task} onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -500,7 +553,7 @@ export function HtmlStructureTrainer() {
       <SectionHeading
         kicker="Практика"
         title="Закрепим"
-        description="9 уровней — кликай, собирай пары и пиши сам."
+        description="10 уровней — кликай, собирай пары и пиши сам."
       />
       <Tasks />
     </div>
