@@ -6,7 +6,6 @@ export type TrainerId =
   | "dom-access"
   | "typography"
   | "pseudo-classes"
-  | "forms"
   | "tables"
   | "page-layout"
   | "image-paths"
@@ -22,7 +21,20 @@ export type TrainerId =
   | "css-intro"
   | "text-color"
   | "background-color"
-  | "text-align";
+  | "text-align"
+  | "buttons"
+  | "semantic-tags"
+  | "form-basics"
+  | "form-fields"
+  | "input-types"
+  | "font-size"
+  | "font-weight"
+  | "border"
+  | "gradient"
+  | "reset-box-sizing"
+  | "grid"
+  | "opacity"
+  | "transitions";
 
 export type TrainerProgress = {
   score: number;
