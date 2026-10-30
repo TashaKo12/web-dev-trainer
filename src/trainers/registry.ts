@@ -31,7 +31,7 @@ export const trainers: TrainerMeta[] = [
     title: "HTML-теги и структура страницы",
     summary:
       "Собери скелет веб-страницы из блоков и разберись, какой тег за что отвечает.",
-    taskCount: 9,
+    taskCount: 10,
     gradient: "from-sky-500 to-blue-600",
     section: "html",
   },
