@@ -128,6 +128,19 @@ const LEVELS: Level[] = [
     expected: '<img src="photo.jpg" alt="Фото">',
     explain: 'Тег: <img src="photo.jpg" alt="Фото"> (слэш перед > можно не ставить). Два атрибута через пробел, у каждого своё значение в кавычках.',
   },
+  {
+    mode: "click",
+    example: { tagName: "label", attrs: [{ name: "for", value: "email" }, { name: "class", value: "field-label" }], content: "Почта" },
+    question: "У этого тега тоже два атрибута. Кликни на значение ВТОРОГО атрибута.",
+    target: "attr-value-1",
+    explain: "field-label — второе по счёту значение, оно принадлежит атрибуту class.",
+  },
+  {
+    mode: "type",
+    question: 'Собери тег ссылки a с атрибутом href="contact.html" и текстом «Контакты».',
+    expected: '<a href="contact.html">Контакты</a>',
+    explain: 'Тег: <a href="contact.html">Контакты</a> — у ссылки есть закрывающий тег, текст лежит между ними.',
+  },
 ];
 
 function normalizeTag(s: string) {
@@ -246,7 +259,7 @@ export function TagsAttributesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="8 уровней — сначала кликай по частям тега, потом собирай тег сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по частям тега, потом собирай тег сам." />
       <Tasks />
     </div>
   );

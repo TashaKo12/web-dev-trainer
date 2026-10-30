@@ -219,26 +219,138 @@ function TypeRuleLevel({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
+function ScopeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [useRule, setUseRule] = useState(false);
+  const [picked, setPicked] = useState<"one" | "all" | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(picked === "all");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Внизу три абзаца p. Включи правило <code className="rounded bg-slate-100 px-1">p {"{"} color: teal; {"}"}</code>{" "}
+        из style.css и посмотри, сколько абзацев покрасится.
+      </p>
+      <label className="mb-3 flex items-center gap-2 text-sm font-bold text-violet-700">
+        <input type="checkbox" checked={useRule} onChange={(e) => setUseRule(e.target.checked)} />
+        p {"{"} color: teal; {"}"}
+      </label>
+      <div style={useRule ? { color: "teal" } : undefined} className="mb-4 space-y-1 rounded-2xl bg-slate-50 p-4 text-sm">
+        <p>Первый абзац</p>
+        <p>Второй абзац</p>
+        <p>Третий абзац</p>
+      </div>
+      <p className="mb-3 text-sm text-slate-500">Сколько абзацев покрасилось?</p>
+      <div className="flex justify-center gap-2">
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("one")}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === "one" ? "bg-violet-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Только один
+        </button>
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("all")}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === "all" ? "bg-violet-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Все три сразу
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!picked}
+            className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-700 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TypeRuleLevel2({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function normalize(s: string) {
+    return s.trim().toLowerCase().replace(/\s+/g, "");
+  }
+
+  function check() {
+    setChecked(true);
+    const n = normalize(text);
+    onResult(n === "h1{background-color:black;}" || n === "h1{background-color:black}");
+  }
+
+  const applied = /^h1\s*\{\s*background-color\s*:\s*black\s*;?\s*\}$/i.test(text.trim());
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Напиши CSS-правило, которое красит фон тега h1 в чёрный (black).</p>
+      <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => !checked && setText(e.target.value)}
+          disabled={checked}
+          placeholder="селектор { свойство: значение; }"
+          className="w-full rounded-xl border-2 border-violet-200 px-3 py-2 font-mono text-sm outline-none focus:border-violet-400 disabled:opacity-60"
+        />
+        <div style={{ background: applied ? "black" : "#f8fafc" }} className="flex items-center justify-center rounded-2xl p-4">
+          <h1 className="text-sm font-extrabold text-white">Заголовок</h1>
+        </div>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-violet-600 to-fuchsia-700 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Где по правилам хранят CSS всего сайта?", explain: "В отдельном файле .css (например style.css), который подключают к каждой HTML-странице." },
   { badge: "выбери из списка", prompt: 'Какой тег в <head> подключает внешний файл стилей к странице?', explain: '<link rel="stylesheet" href="style.css"> — именно так HTML-файл «узнаёт» про свой CSS.' },
   { badge: "напиши сам", prompt: "", explain: 'rel="stylesheet" — атрибут rel у link говорит браузеру, что это именно файл стилей.' },
   { badge: "выбери из списка", prompt: "", explain: "h1 { color: red; } — селектор, фигурные скобки, свойство: значение; (точка с запятой на конце — хорошая привычка, хотя для последнего правила в блоке не обязательна)." },
   { badge: "напиши сам", prompt: "", explain: "p { color: blue; } — селектор p выбирает все абзацы, color — свойство цвета текста." },
+  { badge: "выбери из списка", prompt: "Какой способ задания стиля НЕ требует отдельного файла CSS, а пишется прямо внутри тега?", explain: 'style="..." — атрибут style задаёт стили прямо на самом теге, без отдельного файла и без селектора.' },
+  { badge: "проверь вживую", prompt: "", explain: "CSS-правило из style.css применяется СРАЗУ КО ВСЕМ элементам, подходящим под селектор — именно поэтому один файл управляет оформлением всей страницы." },
+  { badge: "напиши сам", prompt: "", explain: "h1 { background-color: black; } — тот же синтаксис, другое свойство и значение." },
+  { badge: "выбери из списка", prompt: "Если два правила в style.css красят ОДИН И ТОТ ЖЕ элемент в разные цвета, какое из них победит (при прочих равных)?", explain: "Последнее по порядку в файле — более поздние правила перезаписывают более ранние, если их «сила» (специфичность) одинакова." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "css-intro");
+  const stepper = useTaskStepper(9, "css-intro");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -249,7 +361,7 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-violet-600 to-fuchsia-700"
     >
-      {(task === 0 || task === 1) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 0 || task === 1 || task === 5 || task === 8) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && (
         <McqLevel
           key={task}
@@ -270,6 +382,20 @@ function Tasks() {
       )}
       {task === 3 && <SyntaxLevel key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <TypeRuleLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && (
+        <McqLevel key={task} mono={false} options={['style="..." прямо в теге', "<link> в head", "отдельный файл .css", "@import в начале файла"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />
+      )}
+      {task === 6 && <ScopeLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <TypeRuleLevel2 key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["Последнее по порядку в файле", "Первое по порядку в файле", "Оба применятся одновременно", "Браузер выберет случайно"]}
+          correctIndex={0}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
     </LevelShell>
   );
 }
@@ -321,7 +447,7 @@ export function CssIntroTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, проверяй вживую и пиши сам." />
       <Tasks />
     </div>
   );

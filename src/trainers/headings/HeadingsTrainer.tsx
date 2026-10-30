@@ -187,20 +187,24 @@ const TASK_META = [
   { badge: "кликни на мини-странице", prompt: "", explain: "«Основные блюда» — это заголовок раздела внутри страницы, поэтому здесь используется h2, а не h1 (он уже занят названием кафе)." },
   { badge: "кликни на мини-странице", prompt: "", explain: "Второй h2 на странице — это нормально: у h1 (в отличие от h2) обычно только одна копия, а подзаголовков может быть сколько угодно." },
   { badge: "напиши сам", prompt: "Какой тег заголовка самый МЕЛКИЙ по иерархии (ниже него заголовков уже нет)?", explain: "h6 — последний, самый глубокий уровень заголовков." },
+  { badge: "выбери из списка", prompt: "Сколько тегов h1 рекомендуется использовать на ОДНОЙ странице?", explain: "1 — ровно один h1 на странице: он играет роль главного заголовка, как название книги." },
+  { badge: "кликни на мини-странице", prompt: "А теперь найди на этой же мини-странице ГЛАВНЫЙ заголовок — h1.", explain: '"Меню кафе «Тыковка»" — название всей страницы, поэтому это h1, а не h2.' },
+  { badge: "напиши сам", prompt: "Внутри раздела h2 нужен ещё более мелкий подраздел — на один уровень глубже. Какой тег?", explain: "h3 — на один уровень ниже h2, следующий по иерархии заголовок." },
+  { badge: "напиши сам", prompt: "А внутри h3 нужен ещё один уровень вложенности — ещё мельче. Какой тег?", explain: "h4 — следующий уровень после h3." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "headings");
+  const stepper = useTaskStepper(9, "headings");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -217,6 +221,10 @@ function Tasks() {
       {task === 2 && <PickHeadingTask key={task} target="h2a" prompt='Кликни на элемент, который в этом макете должен быть тегом h2 — заголовок раздела "Основные блюда".' onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <PickHeadingTask key={task} target="h2b" prompt="А теперь найди ВТОРОЙ h2 на этой же мини-странице." onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <TypeLevel key={task} expected="h6" placeholder="название тега" onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <McqLevel key={task} options={["0", "1", "3", "сколько угодно"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <PickHeadingTask key={task} target="h1" prompt="" onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <TypeLevel key={task} expected="h3" placeholder="название тега" onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <TypeLevel key={task} expected="h4" placeholder="название тега" onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -233,7 +241,7 @@ export function HeadingsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай, кликай на мини-странице и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, кликай на мини-странице и пиши сам." />
       <Tasks />
     </div>
   );

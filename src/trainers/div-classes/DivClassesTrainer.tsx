@@ -133,20 +133,24 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "А если нужно пометить ЕДИНСТВЕННЫЙ уникальный элемент на странице — например, сам логотип сайта?", explain: "id — уникальный идентификатор, который по правилам встречается на странице только один раз (в отличие от class)." },
   { badge: "напиши сам", prompt: 'Напиши атрибут class со значением "card" так, как он пишется внутри тега.', explain: 'class="card" — имя атрибута, знак =, значение в кавычках.' },
   { badge: "напиши сам", prompt: 'У блока должно быть сразу ДВА класса: "card" и "highlight". Как записать оба класса в одном атрибуте class?', explain: 'class="card highlight" — несколько классов пишут через пробел внутри одних и тех же кавычек.' },
+  { badge: "напиши сам", prompt: "", explain: 'id="logo" — имя атрибута, знак =, значение в кавычках, так же как и у class.' },
+  { badge: "выбери из списка", prompt: "Сколько раз один и тот же id может встретиться на одной странице?", explain: "Ровно один раз — id должен быть уникальным, иначе браузер и JavaScript не смогут однозначно понять, какой элемент имелся в виду." },
+  { badge: "выбери из списка", prompt: "Можно ли использовать ОДИН И ТОТ ЖЕ class у разных тегов (например, div, p и h2 одновременно)?", explain: "Да — class не привязан к конкретному тегу, им можно пометить любые элементы, которые должны выглядеть одинаково." },
+  { badge: "напиши сам", prompt: "", explain: 'class="card rounded" — оба класса через пробел в одних кавычках, как и в прошлый раз с "card highlight".' },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "div-classes");
+  const stepper = useTaskStepper(9, "div-classes");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -157,12 +161,32 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-amber-400 to-orange-500"
     >
-      {(task === 0 || task === 1 || task === 2) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 0 || task === 1 || task === 2 || task === 6 || task === 7) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={["div", "p", "span", "h2"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <McqLevel key={task} options={["class", "id", "href", "src"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <McqLevel key={task} options={["id", "class", "alt", "name"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <TypeLevel key={task} expected='class="card"' placeholder='class="..."' prompt={meta.prompt} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <TypeLevel key={task} expected='class="card highlight"' placeholder='class="..."' prompt={meta.prompt} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <TypeLevel key={task} expected='id="logo"' placeholder='id="..."' prompt='Напиши атрибут id со значением "logo" так, как он пишется внутри тега.' onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["Сколько угодно раз", "Ровно один раз", "Ровно два раза", "Зависит от браузера"]}
+          correctIndex={1}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 7 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["Да, class можно вешать на любые теги", "Нет, у каждого тега свой набор классов", "Только на div", "Только на span"]}
+          correctIndex={0}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 8 && <TypeLevel key={task} expected='class="card rounded"' placeholder='class="..."' prompt='У блока должны быть классы "card" и "rounded" одновременно. Напиши атрибут class целиком.' onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -179,7 +203,7 @@ export function DivClassesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
     </div>
   );

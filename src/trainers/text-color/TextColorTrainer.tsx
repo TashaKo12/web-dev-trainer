@@ -236,20 +236,24 @@ const TASK_META = [
   { badge: "напиши сам", prompt: "Напиши значение color именем цвета, чтобы текст стал красным.", explain: "red — одно из именованных CSS-значений цвета." },
   { badge: "напиши сам", prompt: "Напиши значение color в HEX-формате, чтобы текст стал чёрным.", explain: "#000000 (или короткая запись #000) — HEX-код чёрного цвета." },
   { badge: "почини баг", prompt: "", explain: "Тёмный цвет текста (например #1e293b) на светлом фоне карточки снова делает текст читаемым." },
+  { badge: "подбери цвет", prompt: "", explain: "Фиолетовый тоже можно подобрать и по названию, и по HEX-коду — главное совпасть с образцом." },
+  { badge: "напиши сам", prompt: "Напиши значение color в формате rgb(), чтобы текст стал красным: rgb(220, 38, 38).", explain: "rgb(220, 38, 38) — три числа от 0 до 255: красный, зелёный, синий каналы." },
+  { badge: "выбери из списка", prompt: "Какое из значений НЕ является допустимым цветом в CSS?", explain: '"colorful" не существует как именованный цвет — в отличие от tomato, #ff6600 и rgb(10,20,30), которые все по-своему валидны.' },
+  { badge: "напиши сам", prompt: "Напиши значение color именем цвета, чтобы текст стал оранжевым.", explain: "orange — ещё одно из именованных CSS-значений цвета." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "text-color");
+  const stepper = useTaskStepper(9, "text-color");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -284,6 +288,29 @@ function Tasks() {
         />
       )}
       {task === 4 && <FixBugLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <MatchLevel key={task} target="#9333ea" onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && (
+        <TypeLevel
+          key={task}
+          prompt={meta.prompt}
+          placeholder="значение color"
+          preview={(v) => v || "#1e293b"}
+          check={(v) => v.trim().toLowerCase().replace(/\s+/g, "") === "rgb(220,38,38)"}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 7 && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {task === 7 && <McqLevel key={task} options={["tomato", "#ff6600", "rgb(10,20,30)", "colorful"]} correctIndex={3} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && (
+        <TypeLevel
+          key={task}
+          prompt={meta.prompt}
+          placeholder="значение color"
+          preview={(v) => v || "#1e293b"}
+          check={(v) => v.trim().toLowerCase() === "orange"}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
     </LevelShell>
   );
 }
@@ -300,7 +327,7 @@ export function TextColorTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
     </div>
   );

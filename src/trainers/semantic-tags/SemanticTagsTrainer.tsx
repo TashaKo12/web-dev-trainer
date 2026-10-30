@@ -143,20 +143,25 @@ const TASK_META = [
   { badge: "кликни по макету", prompt: "Кликни на зону, которая обычно содержит меню навигационных ссылок.", explain: "nav — специально для блока ссылок меню." },
   { badge: "кликни по макету", prompt: "Кликни на зону для второстепенной информации — например, рекламного блока или списка похожих статей.", explain: "aside — боковой, не главный контент." },
   { badge: "выбери из списка", prompt: "Чем article отличается от обычного div с тем же содержимым?", explain: "article помечает блок как самостоятельный, независимый кусок контента (например, статью) — это помогает поисковикам и читалкам понимать структуру страницы, в отличие от смыслонейтрального div." },
+  { badge: "кликни по макету", prompt: "", explain: "header — шапка страницы, обычно вверху макета." },
+  { badge: "кликни по макету", prompt: "", explain: "footer — подвал страницы, внизу макета." },
+  { badge: "выбери из списка", prompt: "Сколько тегов main рекомендуется использовать на ОДНОЙ странице?", explain: "1 — main должен быть только один, он отмечает главное, уникальное содержимое именно этой страницы." },
+  { badge: "выбери из списка", prompt: "Какой тег используют для бокового блока с рекламой или похожими статьями?", explain: "aside — тег для второстепенной, не главной информации." },
+  { badge: "кликни по макету", prompt: "", explain: "main — главное содержимое страницы, центральная и самая крупная зона макета." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(4, "semantic-tags");
+  const stepper = useTaskStepper(9, "semantic-tags");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={4} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={4}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -167,7 +172,7 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-sky-500 to-blue-600"
     >
-      {(task === 0 || task === 3) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 0 || task === 3 || task === 6 || task === 7) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={["main", "header", "footer", "nav"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <ZoneClickLevel key={task} target="nav" prompt={meta.prompt} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <ZoneClickLevel key={task} target="aside" prompt={meta.prompt} onResult={(c) => stepper.markResult(c)} />}
@@ -180,6 +185,11 @@ function Tasks() {
           onResult={(c) => stepper.markResult(c)}
         />
       )}
+      {task === 4 && <ZoneClickLevel key={task} target="header" prompt="Кликни на зону шапки сайта." onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <ZoneClickLevel key={task} target="footer" prompt="Кликни на подвал страницы." onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <McqLevel key={task} options={["0", "1", "2", "сколько угодно"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <McqLevel key={task} options={["aside", "nav", "section", "header"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <ZoneClickLevel key={task} target="main" prompt="Кликни на зону главного содержимого страницы." onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -196,7 +206,7 @@ export function SemanticTagsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="4 уровня — выбирай и кликай по макету." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и кликай по макету." />
       <Tasks />
     </div>
   );

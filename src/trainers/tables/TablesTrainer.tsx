@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -81,7 +81,20 @@ function Theory() {
 
 type CellKey = "th-name" | "th-dmg" | "td-weapon" | "td-value";
 
-function TableClickTask({ onResult }: { onResult: (correct: boolean) => void }) {
+function TableClickTask({
+  target = "th-dmg",
+  prompt = (
+    <>
+      Нажми на ячейку заголовка «Урон» — это тег <code className="rounded bg-slate-100 px-1">th</code>, а не
+      обычная ячейка данных <code className="rounded bg-slate-100 px-1">td</code>.
+    </>
+  ),
+  onResult,
+}: {
+  target?: CellKey;
+  prompt?: ReactNode;
+  onResult: (correct: boolean) => void;
+}) {
   const [selected, setSelected] = useState<CellKey | null>(null);
   const [checked, setChecked] = useState(false);
 
@@ -92,15 +105,12 @@ function TableClickTask({ onResult }: { onResult: (correct: boolean) => void }) 
 
   function check() {
     setChecked(true);
-    onResult(selected === "th-dmg");
+    onResult(selected === target);
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">
-        Нажми на ячейку заголовка «Урон» — это тег <code className="rounded bg-slate-100 px-1">th</code>, а не
-        обычная ячейка данных <code className="rounded bg-slate-100 px-1">td</code>.
-      </p>
+      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
       <table className="w-full border-collapse text-sm">
         <tbody>
           <tr>
@@ -255,26 +265,70 @@ function SpanPickTask({
   );
 }
 
+function TypeRowLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function normalize(s: string) {
+    return s.trim().toLowerCase().replace(/\s+/g, "");
+  }
+
+  function check() {
+    setChecked(true);
+    onResult(normalize(text) === "<tr><td>ak-47</td></tr>");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Напиши строку таблицы с одной ячейкой данных — текст «AK-47».</p>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => !checked && setText(e.target.value)}
+        disabled={checked}
+        placeholder="<tr><td>...</td></tr>"
+        className="w-full rounded-xl border-2 border-slate-300 px-3 py-2 font-mono text-sm outline-none focus:border-slate-500 disabled:opacity-60"
+      />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-slate-600 to-slate-800 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Какой тег создаёт одну строку таблицы?", explain: "tr (table row) — строка таблицы. Внутри неё лежат ячейки td или th." },
   { badge: "выбери из списка", prompt: "Какой тег нужен для ячейки-заголовка (выделяется жирным и по центру по умолчанию)?", explain: "th (table header) — ячейка заголовка таблицы." },
   { badge: "выбери и смотри", prompt: 'Ячейка "Название" должна визуально занимать место СРАЗУ ДВУХ СТРОК. Выбери атрибут и посмотри на таблицу.', explain: 'rowspan="2" растягивает ячейку на две строки по вертикали.' },
   { badge: "выбери и смотри", prompt: 'А если ячейка "Урон в голову" должна занимать место ДВУХ СТОЛБЦОВ? Выбери атрибут и посмотри на таблицу.', explain: 'colspan="2" растягивает ячейку на два столбца по горизонтали.' },
   { badge: "кликни по ячейке", prompt: "", explain: "th — ячейка заголовка. Данные (например AK-47 и 103) лежат в td." },
+  { badge: "выбери из списка", prompt: "Какой тег описывает ВСЮ таблицу целиком — внешний контейнер для всех строк?", explain: "table — внешний тег, внутри него лежат строки tr, а внутри них — ячейки." },
+  { badge: "кликни по ячейке", prompt: "", explain: "td — ячейка с обычными данными, в отличие от th (заголовок)." },
+  { badge: "выбери из списка", prompt: "Можно ли разместить картинку <img> внутри ячейки <td>?", explain: "Да — ячейка таблицы может содержать практически любой другой HTML, включая картинки, как в таблице урона оружия." },
+  { badge: "напиши сам", prompt: "", explain: "<tr><td>AK-47</td></tr> — строка с одной ячейкой данных." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "tables");
+  const stepper = useTaskStepper(9, "tables");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -291,6 +345,10 @@ function Tasks() {
       {task === 2 && <SpanPickTask key={task} kind="row" options={['rowspan="2"', 'colspan="2"', 'width="2"', 'span="2"']} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <SpanPickTask key={task} kind="col" options={['rowspan="2"', 'colspan="2"', 'merge="2"', 'cols="2"']} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <TableClickTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <McqLevel key={task} options={["table", "tr", "thead", "tbody"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <TableClickTask key={task} target="td-weapon" prompt="Нажми на ячейку с данными «AK-47» (не заголовок)." onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <McqLevel key={task} options={["Да", "Нет", "Только в th", "Только с colspan"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <TypeRowLevel key={task} onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -307,7 +365,7 @@ export function TablesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай, смотри на таблицу и кликай по ячейкам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, смотри на таблицу и кликай по ячейкам." />
       <Tasks />
     </div>
   );

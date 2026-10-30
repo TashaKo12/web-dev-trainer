@@ -204,6 +204,14 @@ const LEVELS: Level[] = [
     mode: "type",
     explain: "align-items: flex-start — без этого свойства блоки по умолчанию растягиваются (stretch) на всю высоту контейнера.",
   },
+  {
+    prompt: "Напиши значение сам: прижми блоки к ПРАВОМУ краю ряда — как на образце.",
+    exposed: ["justify"],
+    target: { ...DEFAULT_CONFIG, justify: "flex-end" },
+    start: DEFAULT_CONFIG,
+    mode: "type",
+    explain: "justify-content: flex-end собирает блоки у конца главной оси — для ряда это правый край.",
+  },
 ];
 
 function FlexLevel({ level, onResult }: { level: Level; onResult: (correct: boolean) => void }) {
@@ -326,7 +334,7 @@ export function FlexboxTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Собери образец" description="8 уровней — сначала выбирай значения из списка, потом пиши их сам." />
+      <SectionHeading kicker="Практика" title="Собери образец" description="9 уровней — сначала выбирай значения из списка, потом пиши их сам." />
       <Tasks />
     </div>
   );

@@ -170,6 +170,12 @@ const LEVELS: Level[] = [
     expected: '<a href="mailto:info@site.ru">Написать нам</a>',
     explain: 'Полный тег: <a href="mailto:info@site.ru">Написать нам</a> — href начинается со схемы mailto:.',
   },
+  {
+    mode: "type",
+    question: "Напиши ссылку для звонка на номер +79990001122, текст — «Позвонить».",
+    expected: '<a href="tel:+79990001122">Позвонить</a>',
+    explain: 'Полный тег: <a href="tel:+79990001122">Позвонить</a> — href начинается со схемы tel:, номер пишется как есть, с плюсом.',
+  },
 ];
 
 function normalizeTag(s: string) {
@@ -304,7 +310,7 @@ export function LinksTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="8 уровней — сначала выбирай ссылку из списка, потом пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай ссылку из списка, потом пиши сам." />
       <Tasks />
     </div>
   );
