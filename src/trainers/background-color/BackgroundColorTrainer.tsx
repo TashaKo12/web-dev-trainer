@@ -229,20 +229,24 @@ const TASK_META = [
   { badge: "напиши сам", prompt: "Напиши значение background-color именем цвета, чтобы фон стал голубым (skyblue).", explain: "skyblue — одно из именованных CSS-значений цвета." },
   { badge: "напиши сам", prompt: "Напиши значение background-color в HEX-формате, чтобы фон стал белым.", explain: "#ffffff (или #fff) — HEX-код белого цвета." },
   { badge: "почини баг", prompt: "", explain: "Тёмный фон (например #111827) делает белый текст снова читаемым — важно, чтобы цвет текста и цвет фона достаточно отличались." },
+  { badge: "подбери цвет", prompt: "", explain: "Светло-фиолетовый тоже можно подобрать и по названию, и по HEX — главное совпасть с образцом." },
+  { badge: "напиши сам", prompt: "Напиши значение background-color в HEX-формате, чтобы фон стал оранжевым (#f97316).", explain: "#f97316 — HEX-код оранжевого цвета." },
+  { badge: "выбери из списка", prompt: "Какое из значений НЕ является допустимым цветом фона?", explain: '"backgroundish" не существует как CSS-значение — в отличие от coral, #0ea5e9 и rgb(100,100,100).' },
+  { badge: "напиши сам", prompt: "Напиши значение background-color, чтобы фон стал полностью ПРОЗРАЧНЫМ (виден фон страницы под карточкой).", explain: "transparent — специальное ключевое слово, делающее фон невидимым." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "background-color");
+  const stepper = useTaskStepper(9, "background-color");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -253,12 +257,16 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-violet-500 to-purple-700"
     >
-      {task === 0 && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 0 || task === 7) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={["background-color", "color", "border-color", "fill"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <MatchLevel key={task} target="#bfdbfe" onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <TypeLevel key={task} prompt={meta.prompt} placeholder="значение background-color" check={(v) => v.trim().toLowerCase() === "skyblue"} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <TypeLevel key={task} prompt={meta.prompt} placeholder="значение background-color" check={(v) => ["#ffffff", "#fff"].includes(v.trim().toLowerCase())} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <FixBugLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <MatchLevel key={task} target="#ddd6fe" onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <TypeLevel key={task} prompt={meta.prompt} placeholder="значение background-color" check={(v) => v.trim().toLowerCase() === "#f97316"} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <McqLevel key={task} options={["coral", "#0ea5e9", "rgb(100,100,100)", "backgroundish"]} correctIndex={3} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <TypeLevel key={task} prompt={meta.prompt} placeholder="значение background-color" check={(v) => v.trim().toLowerCase() === "transparent"} onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -275,7 +283,7 @@ export function BackgroundColorTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
     </div>
   );

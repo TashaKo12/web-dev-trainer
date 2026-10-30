@@ -130,8 +130,7 @@ function McqLevel({ options, correctIndex, mono = true, onResult }: { options: s
   );
 }
 
-function FontMatchTask({ onResult }: { onResult: (correct: boolean) => void }) {
-  const target: (typeof FONTS)[number] = "monospace";
+function FontMatchTask({ target = "monospace", onResult }: { target?: (typeof FONTS)[number]; onResult: (correct: boolean) => void }) {
   const [value, setValue] = useState<(typeof FONTS)[number]>("sans-serif");
   const [checked, setChecked] = useState(false);
 
@@ -248,20 +247,67 @@ const TASK_META = [
     explain: "@import url('https://fonts.googleapis.com/...') — именно так Google Fonts подключают без скачивания файла.",
   },
   { badge: "напиши сам", prompt: "", explain: "text-decoration: none убирает любое оформление (подчёркивание, зачёркивание) у текста/ссылки." },
+  { badge: "подбери значение", prompt: "", explain: "serif — шрифт с засечками (маленькими штрихами на концах букв), часто используется в книгах и газетах." },
+  { badge: "выбери из списка", prompt: "Что означает line-height: 1.5?", explain: "1.5 — число БЕЗ единиц измерения означает множитель: межстрочный интервал в 1.5 раза больше размера шрифта." },
+  { badge: "подбери расстояние", prompt: "", explain: "letter-spacing можно подбирать и по глазу — главное, чтобы расстояние между буквами совпало с образцом." },
+  { badge: "выбери из списка", prompt: "Какое значение letter-spacing СЖИМАЕТ буквы, уменьшая расстояние между ними?", explain: "Отрицательное значение (например -1px) сближает буквы — положительное, наоборот, раздвигает." },
 ];
 
+function LetterSpacingMatchLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const target = 4;
+  const [value, setValue] = useState(0);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(Math.abs(value - target) <= 1);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Подвинь ползунок letter-spacing так, чтобы расстояние между буквами совпало с образцом.</p>
+      <div className="mb-4 grid gap-4 sm:grid-cols-2">
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Образец</p>
+          <p style={{ letterSpacing: target }} className="rounded-xl bg-slate-50 p-3 text-center text-sm text-slate-600">
+            ПРИВЕТ
+          </p>
+        </div>
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Твой текст</p>
+          <p style={{ letterSpacing: value }} className="rounded-xl bg-slate-50 p-3 text-center text-sm text-slate-600">
+            ПРИВЕТ
+          </p>
+        </div>
+      </div>
+      <input type="range" min={0} max={8} value={value} onChange={(e) => !checked && setValue(Number(e.target.value))} disabled={checked} className="w-full accent-purple-600" />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            className="rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-600 px-5 py-2 text-sm font-bold text-white shadow"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function Tasks() {
-  const stepper = useTaskStepper(5, "typography");
+  const stepper = useTaskStepper(9, "typography");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -292,6 +338,18 @@ function Tasks() {
         />
       )}
       {task === 4 && <DecorationTypeTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <FontMatchTask key={task} target="serif" onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["В 1.5 раза больше размера шрифта", "1.5 пикселя", "Полтора абзаца", "Не имеет смысла"]}
+          correctIndex={0}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 7 && <LetterSpacingMatchLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <McqLevel key={task} options={["-1px", "1px", "0", "normal"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -308,7 +366,7 @@ export function TypographyTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — подбирай значения и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значения и пиши сам." />
       <Tasks />
     </div>
   );
