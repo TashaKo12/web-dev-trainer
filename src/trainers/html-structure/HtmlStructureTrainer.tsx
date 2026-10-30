@@ -321,6 +321,53 @@ function TitlePlacementTask({ onResult }: { onResult: (correct: boolean) => void
   );
 }
 
+function ZonePlacementTask({ question, correctZone, onResult }: { question: string; correctZone: "head" | "body"; onResult: (correct: boolean) => void }) {
+  const [placed, setPlaced] = useState<"head" | "body" | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(placed === correctZone);
+  }
+
+  function zoneClass(id: "head" | "body") {
+    const isSel = placed === id;
+    const isCorrect = checked && id === correctZone;
+    const isWrong = checked && isSel && id !== correctZone;
+    return `rounded-2xl border-2 px-4 py-6 text-left transition ${
+      isCorrect ? "border-emerald-400 bg-emerald-50" : isWrong ? "border-rose-300 bg-rose-50" : isSel ? "border-indigo-400 bg-indigo-50" : "border-slate-200 hover:border-indigo-200"
+    }`;
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">{question}</p>
+      <div className="grid gap-3 sm:grid-cols-2">
+        <button type="button" disabled={checked} onClick={() => setPlaced("head")} className={zoneClass("head")}>
+          <code className="mb-1 block font-bold text-slate-700">&lt;head&gt;</code>
+          <span className="text-xs text-slate-500">служебная часть — не видна на странице</span>
+        </button>
+        <button type="button" disabled={checked} onClick={() => setPlaced("body")} className={zoneClass("body")}>
+          <code className="mb-1 block font-bold text-slate-700">&lt;body&gt;</code>
+          <span className="text-xs text-slate-500">видимое содержимое страницы</span>
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!placed}
+            className="rounded-full bg-gradient-to-r from-sky-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
   const [choice, setChoice] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
@@ -349,13 +396,13 @@ function McqLevel({ options, correctIndex, onResult }: { options: string[]; corr
   );
 }
 
-function FooterTagLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+function FooterTagLevel({ expected = "footer", onResult }: { expected?: string; onResult: (correct: boolean) => void }) {
   const [text, setText] = useState("");
   const [checked, setChecked] = useState(false);
 
   function check() {
     setChecked(true);
-    onResult(text.trim().toLowerCase().replace(/[<>]/g, "") === "footer");
+    onResult(text.trim().toLowerCase().replace(/[<>]/g, "") === expected);
   }
 
   return (
@@ -390,20 +437,24 @@ const TASK_META = [
   { badge: "собери пары", prompt: "Собери пары: тег ↔ что он означает.", explain: "«ul» — список, «li» — пункт списка, «a» — ссылка (от англ. anchor), «img» — картинка (от англ. image)." },
   { badge: "выбери из списка", prompt: "На странице блог с новостями. Какой тег лучше всего подходит для ОДНОГО блока с новостью?", explain: "<article> показывает, что внутри — самостоятельный, законченный материал (новость, статья, пост). <div> ничего не говорит о смысле содержимого, хотя выглядеть блоки могут одинаково." },
   { badge: "напиши сам", prompt: "Напиши название тега (без угловых скобок), который создаёт подвал страницы с копирайтом и контактами.", explain: "footer — семантический тег для подвала страницы или раздела." },
+  { badge: "кликни на зону", prompt: "", explain: 'meta charset="utf-8" — служебная настройка кодировки, она никак не видна на странице, поэтому живёт в <head>, как и title.' },
+  { badge: "выбери из списка", prompt: "Нужен самостоятельный раздел страницы со своим заголовком — например «Отзывы» или «О компании» (не вся страница и не отдельная статья). Какой тег?", explain: "<section> группирует тематически связанный кусок страницы со своим заголовком — в отличие от <div>, у него есть смысл." },
+  { badge: "кликни на зону", prompt: "", explain: "<h1> — видимый заголовок, который читает посетитель, поэтому он живёт в <body>, а не в <head>." },
+  { badge: "напиши сам", prompt: "Напиши название тега (без угловых скобок) для бокового блока с рекламой или похожими статьями — второстепенной информации.", explain: "aside — семантический тег для содержимого, не являющегося главным на странице." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "html-structure");
+  const stepper = useTaskStepper(9, "html-structure");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -420,6 +471,10 @@ function Tasks() {
       {task === 2 && <MatchingTask key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <McqLevel key={task} options={["<div>", "<article>", "<aside>"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <FooterTagLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <ZonePlacementTask key={task} question='Куда поместить <meta charset="utf-8">?' correctZone="head" onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <McqLevel key={task} options={["<div>", "<section>", "<span>", "<b>"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <ZonePlacementTask key={task} question="Куда поместить <h1>Заголовок страницы</h1>?" correctZone="body" onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <FooterTagLevel key={task} expected="aside" onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -432,6 +487,7 @@ export function HtmlStructureTrainer() {
         title={meta.title}
         summary={meta.summary}
         gradient={meta.gradient}
+        section={meta.section}
       />
       <SectionHeading
         kicker="Теория"
@@ -444,7 +500,7 @@ export function HtmlStructureTrainer() {
       <SectionHeading
         kicker="Практика"
         title="Закрепим"
-        description="5 уровней — кликай, собирай пары и пиши сам."
+        description="9 уровней — кликай, собирай пары и пиши сам."
       />
       <Tasks />
     </div>

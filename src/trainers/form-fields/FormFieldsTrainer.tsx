@@ -134,7 +134,15 @@ function PairClickLevel({ onResult }: { onResult: (correct: boolean) => void }) 
   );
 }
 
-function TypeLabelLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+function TypeLabelLevel({
+  prompt = 'Напиши тег label с текстом «Почта», связанный с полем, у которого id="email" (атрибут for должен совпасть с id).',
+  expected = '<label for="email">Почта</label>',
+  onResult,
+}: {
+  prompt?: string;
+  expected?: string;
+  onResult: (correct: boolean) => void;
+}) {
   const [text, setText] = useState("");
   const [checked, setChecked] = useState(false);
 
@@ -144,14 +152,12 @@ function TypeLabelLevel({ onResult }: { onResult: (correct: boolean) => void }) 
 
   function check() {
     setChecked(true);
-    onResult(normalize(text) === normalize('<label for="email">Почта</label>'));
+    onResult(normalize(text) === normalize(expected));
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">
-        Напиши тег label с текстом «Почта», связанный с полем, у которого id="email" (атрибут for должен совпасть с id).
-      </p>
+      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
       <input
         type="text"
         value={text}
@@ -176,25 +182,152 @@ function TypeLabelLevel({ onResult }: { onResult: (correct: boolean) => void }) 
   );
 }
 
+function RequiredFieldLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [required, setRequired] = useState(true);
+  const [value, setValue] = useState("");
+  const [msg, setMsg] = useState<string | null>(null);
+  const [picked, setPicked] = useState<boolean | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function submit() {
+    if (required && !value.trim()) {
+      setMsg("Браузер не даст отправить форму — заполни поле.");
+      return;
+    }
+    setMsg("Форма отправлена! ✅");
+  }
+
+  function check() {
+    setChecked(true);
+    onResult(picked === true);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Включи required, оставь поле пустым и нажми «Отправить» — посмотри, что произойдёт. Потом ответь: мешает
+        ли required отправить форму с пустым обязательным полем?
+      </p>
+      <label className="mb-3 flex items-center gap-2 text-sm font-bold text-cyan-700">
+        <input type="checkbox" checked={required} onChange={(e) => { setRequired(e.target.checked); setMsg(null); }} />
+        required
+      </label>
+      <div className="mb-3 rounded-2xl bg-slate-50 p-4">
+        <input
+          type="text"
+          value={value}
+          onChange={(e) => setValue(e.target.value)}
+          placeholder="Имя"
+          className="mb-2 w-full rounded-xl border-2 border-cyan-200 px-3 py-2 text-sm outline-none focus:border-cyan-400"
+        />
+        <button type="button" onClick={submit} className="rounded-xl bg-cyan-600 px-4 py-2 text-sm font-bold text-white hover:bg-cyan-700">
+          Отправить
+        </button>
+        {msg && <p className="mt-2 text-sm font-semibold text-cyan-700">{msg}</p>}
+      </div>
+      <div className="flex justify-center gap-2">
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked(true)}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === true ? "bg-cyan-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Да, мешает
+        </button>
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked(false)}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === false ? "bg-cyan-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Нет, не мешает
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={picked === null}
+            className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function TypePlaceholderLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function normalize(s: string) {
+    return s.trim().toLowerCase().replace(/\s+/g, " ").replace(/"/g, "'");
+  }
+
+  function check() {
+    setChecked(true);
+    onResult(normalize(text) === normalize('placeholder="Введите имя"'));
+  }
+
+  const ph = /placeholder=['"]([^'"]*)['"]/i.exec(text)?.[1] ?? "";
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Напиши атрибут placeholder со значением «Введите имя» так, как он пишется внутри тега input.</p>
+      <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
+        <input
+          type="text"
+          value={text}
+          onChange={(e) => !checked && setText(e.target.value)}
+          disabled={checked}
+          placeholder='placeholder="..."'
+          className="w-full rounded-xl border-2 border-cyan-200 px-3 py-2 font-mono text-sm outline-none focus:border-cyan-400 disabled:opacity-60"
+        />
+        <input readOnly placeholder={ph} className="w-full rounded-xl border-2 border-slate-200 px-3 py-2 text-sm" />
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Какой текст поля остаётся видимым ДАЖЕ ПОСЛЕ того, как пользователь начал печатать?", explain: "label — не исчезает. placeholder пропадает, как только в поле появляется текст." },
   { badge: "кликни на верную пару", prompt: "", explain: "Правильная связка label↔input держится на совпадении атрибутов for и id." },
   { badge: "напиши сам", prompt: "", explain: '<label for="email">Почта</label> — атрибут for ссылается на id нужного поля.' },
   { badge: "выбери из списка", prompt: "Зачем вообще связывать label с полем через for/id, если можно просто написать текст рядом?", explain: "Клик по label переводит фокус в поле, и это понятнее для людей, использующих программы чтения с экрана." },
+  { badge: "выбери из списка", prompt: "Атрибут required делает поле...", explain: "required — обязательным для заполнения: без него браузер не даст отправить форму." },
+  { badge: "выбери из списка", prompt: "placeholder исчезает из поля, когда...", explain: "...пользователь начинает печатать — placeholder виден только пока поле пустое." },
+  { badge: "напиши сам", prompt: "", explain: 'placeholder="Введите имя" — имя атрибута, знак =, текст подсказки в кавычках.' },
+  { badge: "попробуй вживую", prompt: "", explain: "required действительно блокирует отправку формы с пустым полем — браузер сам проверяет это перед отправкой." },
+  { badge: "напиши сам", prompt: "", explain: '<label for="name">Имя</label> — та же конструкция, что и для email, просто другие for и текст.' },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(4, "form-fields");
+  const stepper = useTaskStepper(9, "form-fields");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={4} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={4}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -205,7 +338,7 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-cyan-500 to-blue-600"
     >
-      {(task === 0 || task === 3) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 0 || task === 3 || task === 4 || task === 5) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={["label", "placeholder", "value", "title"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <PairClickLevel key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <TypeLabelLevel key={task} onResult={(c) => stepper.markResult(c)} />}
@@ -215,6 +348,22 @@ function Tasks() {
           mono={false}
           options={["Просто для красоты", "Чтобы клик по подписи фокусировал поле и это понимали программы экранного доступа", "Это обязательное требование браузера", "Без label форма не отправится"]}
           correctIndex={1}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 4 && (
+        <McqLevel key={task} mono={false} options={["Обязательным для заполнения", "Только для чтения", "Скрытым", "Автозаполняемым"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />
+      )}
+      {task === 5 && (
+        <McqLevel key={task} mono={false} options={["пользователь начинает печатать", "страница загружается", "поле становится required", "никогда не исчезает"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />
+      )}
+      {task === 6 && <TypePlaceholderLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <RequiredFieldLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && (
+        <TypeLabelLevel
+          key={task}
+          prompt='Напиши тег label с текстом «Имя», связанный с полем, у которого id="name".'
+          expected='<label for="name">Имя</label>'
           onResult={(c) => stepper.markResult(c)}
         />
       )}
@@ -234,7 +383,7 @@ export function FormFieldsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="4 уровня — выбирай, кликай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, кликай и пиши сам." />
       <Tasks />
     </div>
   );

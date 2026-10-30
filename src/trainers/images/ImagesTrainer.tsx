@@ -73,7 +73,7 @@ function Theory() {
   );
 }
 
-function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
+function McqLevel({ options, correctIndex, mono = true, onResult }: { options: string[]; correctIndex: number; mono?: boolean; onResult: (correct: boolean) => void }) {
   const [choice, setChoice] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
 
@@ -84,7 +84,7 @@ function McqLevel({ options, correctIndex, onResult }: { options: string[]; corr
 
   return (
     <div>
-      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} />
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} mono={mono} />
       {!checked && (
         <div className="mt-4 flex justify-center">
           <button
@@ -144,7 +144,15 @@ function BrokenAltTask({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
-function TypeTagTask({ onResult }: { onResult: (correct: boolean) => void }) {
+function TypeTagTask({
+  prompt = "Собери тег картинки сам: файл cat.jpg, альтернативный текст — «Кот».",
+  expected = '<img src="cat.jpg" alt="Кот">',
+  onResult,
+}: {
+  prompt?: string;
+  expected?: string;
+  onResult: (correct: boolean) => void;
+}) {
   const [text, setText] = useState("");
   const [checked, setChecked] = useState(false);
 
@@ -154,14 +162,12 @@ function TypeTagTask({ onResult }: { onResult: (correct: boolean) => void }) {
 
   function check() {
     setChecked(true);
-    onResult(normalize(text) === normalize('<img src="cat.jpg" alt="Кот">'));
+    onResult(normalize(text) === normalize(expected));
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">
-        Собери тег картинки сам: файл cat.jpg, альтернативный текст — «Кот».
-      </p>
+      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
       <input
         type="text"
         value={text}
@@ -186,26 +192,132 @@ function TypeTagTask({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
+function AspectRatioLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [onlyHeight, setOnlyHeight] = useState(false);
+  const [picked, setPicked] = useState<"both" | "onlyHeight" | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(picked === "both");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Картинка квадратная (100×100). Переключай варианты и смотри, когда она искажается — потом ответь, какой
+        способ безопаснее.
+      </p>
+      <label className="mb-3 flex items-center gap-2 text-sm font-bold text-pink-700">
+        <input type="checkbox" checked={onlyHeight} onChange={(e) => setOnlyHeight(e.target.checked)} />
+        задать только height (width не указан)
+      </label>
+      <div className="mb-4 flex h-32 items-center justify-center rounded-2xl bg-slate-100">
+        <div style={onlyHeight ? { height: 60, width: 180 } : { width: 100, height: 100 }} className="flex items-center justify-center rounded-lg bg-amber-200 text-2xl">
+          🐱
+        </div>
+      </div>
+      <div className="flex justify-center gap-2">
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("both")}
+          className={`rounded-lg px-4 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed ${picked === "both" ? "bg-pink-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          указать и width, и height
+        </button>
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("onlyHeight")}
+          className={`rounded-lg px-4 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed ${picked === "onlyHeight" ? "bg-pink-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          указать только одно из них
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!picked}
+            className="rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function SizeMatchLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const target = 160;
+  const [width, setWidth] = useState(60);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(Math.abs(width - target) <= 10);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Подвинь ползунок width так, чтобы картинка стала примерно такого же размера, как образец.</p>
+      <div className="mb-3 grid gap-4 sm:grid-cols-2">
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Образец</p>
+          <div style={{ width: target, height: target * 0.7 }} className="flex items-center justify-center rounded-lg bg-amber-200 text-2xl">
+            🐱
+          </div>
+        </div>
+        <div>
+          <p className="mb-1 text-xs font-bold uppercase text-slate-400">Твоя картинка</p>
+          <div style={{ width, height: width * 0.7 }} className="flex items-center justify-center rounded-lg bg-amber-200 text-2xl">
+            🐱
+          </div>
+        </div>
+      </div>
+      <input type="range" min={40} max={220} value={width} onChange={(e) => !checked && setWidth(Number(e.target.value))} disabled={checked} className="w-full accent-pink-600" />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            className="rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-5 py-2 text-sm font-bold text-white shadow"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Какой атрибут img указывает, ОТКУДА браузер возьмёт файл картинки?", explain: "src (source) — путь к файлу изображения." },
   { badge: "выбери из списка", prompt: "Какой атрибут img задаёт текст на случай, если картинка не загрузится (или читается программой для незрячих)?", explain: "alt — альтернативный текст, обязателен для каждой картинки." },
   { badge: "выбери из списка", prompt: "Какой атрибут img задаёт ширину картинки в пикселях?", explain: "width — ширина. У height — такая же роль, но для высоты." },
   { badge: "напиши сам", prompt: "", explain: "Когда картинка не находится, браузер показывает её alt вместо изображения." },
   { badge: "напиши сам", prompt: "", explain: '<img src="cat.jpg" alt="Кот"> — у img нет закрывающего тега, атрибуты идут через пробел.' },
+  { badge: "подбери размер", prompt: "", explain: "Главное — приблизительно совпасть с образцом по width." },
+  { badge: "сравни вживую", prompt: "", explain: "Если указать только ОДНО из width/height, второе браузер подстроит само, сохранив пропорции — картинка не исказится. А если задать оба значения, не подумав о пропорциях, легко получить растянутую или сплющенную картинку." },
+  { badge: "выбери из списка", prompt: "Можно ли оставить картинку совсем без атрибута alt?", explain: "Технически можно, но правильная практика — писать alt всегда: он помогает незрячим пользователям и подстраховывает на случай, если картинка не загрузится." },
+  { badge: "напиши сам", prompt: "", explain: '<img src="dog.png" alt="Собака"> — та же конструкция, что и раньше, с другим файлом и текстом.' },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "images");
+  const stepper = useTaskStepper(9, "images");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -216,12 +328,24 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-pink-500 to-rose-600"
     >
-      {(task === 0 || task === 1 || task === 2) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 0 || task === 1 || task === 2 || task === 7) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={["src", "alt", "width", "href"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <McqLevel key={task} options={["src", "alt", "title", "name"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <McqLevel key={task} options={["size", "scale", "width", "img-width"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <BrokenAltTask key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <TypeTagTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <SizeMatchLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <AspectRatioLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["Да, alt необязателен", "Можно, но правильно писать его всегда", "Только для JPG можно без alt", "Без alt картинка не загрузится"]}
+          correctIndex={1}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 8 && <TypeTagTask key={task} prompt='Собери тег картинки сам: файл dog.png, альтернативный текст — «Собака».' expected='<img src="dog.png" alt="Собака">' onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -238,7 +362,7 @@ export function ImagesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, сравнивай вживую и пиши сам." />
       <Tasks />
     </div>
   );

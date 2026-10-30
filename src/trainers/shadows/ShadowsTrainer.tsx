@@ -156,6 +156,14 @@ const LEVELS: Level[] = [
     badge: "напиши сам",
     explain: "0 10px 20px rgba(0,0,0,0.2) — сначала X (0, без сдвига по горизонтали), потом Y (10px вниз), потом размытие (20px), потом цвет.",
   },
+  {
+    mode: "choose-shadow",
+    options: ["0 10px 20px rgba(0,0,0,.25)", "0 -10px 20px rgba(0,0,0,.25)", "-10px 0 20px rgba(0,0,0,.25)", "0 0 0 rgba(0,0,0,.25)"],
+    target: "0 -10px 20px rgba(0,0,0,.25)",
+    prompt: "А если свет падает СНИЗУ — тень должна лечь СВЕРХУ от карточки. Какой box-shadow подходит?",
+    badge: "выбери из списка",
+    explain: "Отрицательное смещение по Y двигает тень вверх, положительное — вниз.",
+  },
 ];
 
 function ChoosePreview({ radius, shadow }: { radius?: string; shadow?: string }) {
@@ -310,7 +318,7 @@ export function ShadowsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="8 уровней — сначала выбирай значение, потом пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай значение, потом пиши сам." />
       <Tasks />
     </div>
   );

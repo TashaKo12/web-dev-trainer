@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -55,7 +55,7 @@ function Theory() {
   );
 }
 
-function McqLevel({ options, correctIndex, onResult }: { options: string[]; correctIndex: number; onResult: (correct: boolean) => void }) {
+function McqLevel({ options, correctIndex, mono = true, onResult }: { options: string[]; correctIndex: number; mono?: boolean; onResult: (correct: boolean) => void }) {
   const [choice, setChoice] = useState<number | null>(null);
   const [checked, setChecked] = useState(false);
 
@@ -66,7 +66,7 @@ function McqLevel({ options, correctIndex, onResult }: { options: string[]; corr
 
   return (
     <div>
-      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} />
+      <McqOptions options={options} selected={choice} onSelect={(i) => !checked && setChoice(i)} disabled={checked} mono={mono} />
       {!checked && (
         <div className="mt-4 flex justify-center">
           <button
@@ -118,19 +118,19 @@ function SpacesLevel({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
-function TypeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+function TypeLevel({ word = "Привет!", onResult }: { word?: string; onResult: (correct: boolean) => void }) {
   const [text, setText] = useState("");
   const [checked, setChecked] = useState(false);
 
   function check() {
     setChecked(true);
     const v = text.trim().toLowerCase().replace(/\s+/g, "");
-    onResult(v === "<p>привет!</p>");
+    onResult(v === `<p>${word.toLowerCase()}</p>`);
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">Оберни текст «Привет!» в тег абзаца (с открывающим и закрывающим тегом).</p>
+      <p className="mb-3 text-sm text-slate-500">Оберни текст «{word}» в тег абзаца (с открывающим и закрывающим тегом).</p>
       <input
         type="text"
         value={text}
@@ -155,22 +155,32 @@ function TypeLevel({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
-function CountLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+function CountLevel({
+  count = "3",
+  prompt = (
+    <>
+      На странице «Сайт обо мне» три отдельные мысли: «Привет, меня зовут Влад», «Мои любимые игры», «Мои планы
+      на будущее». Чтобы между ними были настоящие отступы абзацев (а не просто переносы строк &lt;br&gt;), сколько
+      тегов &lt;p&gt; понадобится?
+    </>
+  ),
+  onResult,
+}: {
+  count?: string;
+  prompt?: ReactNode;
+  onResult: (correct: boolean) => void;
+}) {
   const [text, setText] = useState("");
   const [checked, setChecked] = useState(false);
 
   function check() {
     setChecked(true);
-    onResult(text.trim() === "3");
+    onResult(text.trim() === count);
   }
 
   return (
     <div>
-      <p className="mb-3 text-sm text-slate-500">
-        На странице «Сайт обо мне» три отдельные мысли: «Привет, меня зовут Влад», «Мои любимые игры», «Мои
-        планы на будущее». Чтобы между ними были настоящие отступы абзацев (а не просто переносы строк &lt;br&gt;),
-        сколько тегов &lt;p&gt; понадобится?
-      </p>
+      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
       <input
         type="text"
         value={text}
@@ -195,25 +205,144 @@ function CountLevel({ onResult }: { onResult: (correct: boolean) => void }) {
   );
 }
 
+const BR_OPTIONS = ["просто нажать Enter в коде", "вставить <br>", "поставить несколько пробелов", "ничего не делать"] as const;
+
+function BreakLineLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [picked, setPicked] = useState<(typeof BR_OPTIONS)[number] | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(picked === "вставить <br>");
+  }
+
+  const broken = picked === "вставить <br>";
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Нужен перенос строки ВНУТРИ одного абзаца (а не новый абзац с отступом) — например, в адресе. Выбери
+        способ и проверь на предпросмотре.
+      </p>
+      <div className="mb-3 rounded-xl bg-slate-50 p-3">
+        <p className="text-slate-700">
+          Улица Ленина, 10{broken ? <br /> : " "}
+          Квартира 5
+        </p>
+      </div>
+      <div className="flex flex-wrap gap-2">
+        {BR_OPTIONS.map((opt) => (
+          <button
+            key={opt}
+            type="button"
+            disabled={checked}
+            onClick={() => setPicked(opt)}
+            className={`rounded-lg px-3 py-1.5 text-xs font-bold transition disabled:cursor-not-allowed ${
+              picked === opt ? "bg-orange-400 text-white" : "bg-slate-100 text-slate-600 hover:bg-orange-100"
+            }`}
+          >
+            {opt}
+          </button>
+        ))}
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!picked}
+            className="rounded-full bg-gradient-to-r from-orange-400 to-amber-500 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ParaGapLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [count, setCount] = useState<1 | 2 | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(count === 2);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Нужен заметный отступ МЕЖДУ абзацами «Привет!» и «Как дела?» — как между двумя разными мыслями. Сколько
+        тегов &lt;p&gt; нужно использовать?
+      </p>
+      <div className="mb-3 rounded-xl bg-slate-50 p-3">
+        {count === 2 ? (
+          <>
+            <p className="text-slate-700">Привет!</p>
+            <p className="text-slate-700">Как дела?</p>
+          </>
+        ) : (
+          <p className="text-slate-700">
+            Привет!{count === 1 ? " " : ""}Как дела?
+          </p>
+        )}
+      </div>
+      <div className="flex justify-center gap-2">
+        {([1, 2] as const).map((n) => (
+          <button
+            key={n}
+            type="button"
+            disabled={checked}
+            onClick={() => setCount(n)}
+            className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${
+              count === n ? "bg-orange-400 text-white" : "bg-slate-100 text-slate-600 hover:bg-orange-100"
+            }`}
+          >
+            {n} тег{n === 2 ? "а" : ""} p
+          </button>
+        ))}
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!count}
+            className="rounded-full bg-gradient-to-r from-orange-400 to-amber-500 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Нужно начать новый абзац обычного текста. Какой тег для этого придуман?", explain: "p (paragraph) — тег абзаца. У него есть отступы сверху и снизу." },
   { badge: "выбери из списка", prompt: "", explain: "Браузер всегда «склеивает» несколько пробелов/переносов строк подряд в HTML-коде в один пробел на экране." },
   { badge: "напиши сам", prompt: "", explain: "<p>Привет!</p> — открывающий и закрывающий тег вокруг текста." },
   { badge: "напиши сам", prompt: "", explain: "Три отдельные мысли — три тега <p>. Каждый абзац получает собственные отступы автоматически." },
+  { badge: "выбери способ", prompt: "", explain: "<br> — единственный из вариантов, который реально создаёт перенос строки внутри одного абзаца." },
+  { badge: "выбери число", prompt: "", explain: "Заметный отступ между мыслями получается только у ДВУХ отдельных тегов p — один абзац просто склеивает весь текст в одну строку без отступа внутри." },
+  { badge: "напиши сам", prompt: "", explain: "<p>Пока!</p> — та же конструкция, что и раньше, просто с другим словом внутри." },
+  { badge: "выбери из списка", prompt: "Чем <p> отличается от <div> с тем же текстом внутри?", explain: "У <p> по умолчанию есть отступы сверху и снизу (margin), а у <div> их нет — внешне разница именно в этом, хотя оба блочные." },
+  { badge: "напиши число", prompt: "", explain: "Четыре отдельные мысли — четыре тега <p>, по одному на каждую." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(4, "paragraphs");
+  const stepper = useTaskStepper(9, "paragraphs");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={4} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={4}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -229,6 +358,26 @@ function Tasks() {
       {task === 1 && <SpacesLevel key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <TypeLevel key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <CountLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <BreakLineLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <ParaGapLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <TypeLevel key={task} word="Пока!" onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={["Ничем — это одно и то же", "У p по умолчанию есть отступы сверху/снизу, у div — нет", "div нельзя использовать для текста", "p работает только внутри head"]}
+          correctIndex={1}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 8 && (
+        <CountLevel
+          key={task}
+          count="4"
+          prompt='На странице четыре отдельные мысли: «Привет», «Обо мне», «Мои увлечения», «Контакты». Сколько тегов p понадобится, чтобы у каждой был свой отступ?'
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
     </LevelShell>
   );
 }
@@ -245,7 +394,7 @@ export function ParagraphsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="4 уровня — выбирай и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
     </div>
   );

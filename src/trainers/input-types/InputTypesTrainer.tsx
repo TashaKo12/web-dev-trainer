@@ -149,26 +149,88 @@ function RequiredAttrLevel({ onResult }: { onResult: (correct: boolean) => void 
   );
 }
 
+function ChooseTypeLevel({
+  prompt,
+  options,
+  target,
+  onResult,
+}: {
+  prompt: string;
+  options: string[];
+  target: string;
+  onResult: (correct: boolean) => void;
+}) {
+  const [selected, setSelected] = useState<string | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(selected === target);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">{prompt}</p>
+      <div className="grid gap-4 sm:grid-cols-[1fr_1fr]">
+        <div className="flex flex-wrap gap-2">
+          {options.map((opt) => (
+            <button
+              key={opt}
+              type="button"
+              disabled={checked}
+              onClick={() => setSelected(opt)}
+              className={`rounded-lg px-3 py-1.5 font-mono text-xs font-bold transition disabled:cursor-not-allowed ${
+                selected === opt ? "bg-cyan-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-cyan-100"
+              }`}
+            >
+              type="{opt}"
+            </button>
+          ))}
+        </div>
+        <div className="flex items-center rounded-2xl bg-slate-50 p-4">
+          <input type={selected ?? "text"} className="w-full rounded-xl border-2 border-cyan-200 px-3 py-2 text-sm outline-none focus:border-cyan-400" />
+        </div>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!selected}
+            className="rounded-full bg-gradient-to-r from-cyan-500 to-blue-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Пользователь вводит email. Какой атрибут type сразу подскажет браузеру проверять формат адреса?", explain: 'type="email" — браузер сам проверит, что введён похожий на email текст (есть @ и домен).' },
   { badge: "выбери из списка", prompt: "Какой type скрывает вводимые символы точками, чтобы их никто не подсмотрел?", explain: 'type="password" — вводимый текст заменяется точками/звёздочками.' },
   { badge: "напиши сам", prompt: "Какой атрибут не даст форме отправиться, пока поле не заполнено?", explain: "required — делает поле обязательным для заполнения перед отправкой." },
   { badge: "выбери из списка", prompt: "Как называется атрибут, который показывает серую подсказку внутри ПУСТОГО поля (например «Введите имя»)?", explain: "placeholder — подсказка, которая пропадает, как только пользователь начинает печатать." },
   { badge: "выбери из списка", prompt: 'Нужно поле для номера телефона с подсказкой "+7 000 000-00-00". Выбери правильно оформленный тег.', explain: 'Верно: type="tel" и placeholder в кавычках, значение полностью в двойных кавычках.' },
+  { badge: "выбери и смотри", prompt: "", explain: 'type="number" — показывает стрелочки вверх/вниз и не даёт ввести буквы, идеально для возраста, количества и т.п.' },
+  { badge: "выбери и смотри", prompt: "", explain: 'type="date" — показывает встроенный календарь браузера для выбора даты.' },
+  { badge: "выбери и смотри", prompt: "", explain: 'type="checkbox" — переключатель да/нет, можно отметить или снять галочку.' },
+  { badge: "выбери и смотри", prompt: "", explain: 'type="radio" — кружок для выбора ОДНОГО варианта из нескольких (настоящая группа радиокнопок требует ещё и одинаковый атрибут name у всех вариантов).' },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "input-types");
+  const stepper = useTaskStepper(9, "input-types");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -179,7 +241,7 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-cyan-500 to-blue-600"
     >
-      <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>
+      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={['type="text"', 'type="email"', 'type="tel"', 'type="password"']} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <McqLevel key={task} options={['type="text"', 'type="tel"', 'type="password"', 'type="hidden"']} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <RequiredAttrLevel key={task} onResult={(c) => stepper.markResult(c)} />}
@@ -194,6 +256,42 @@ function Tasks() {
             '<input type="tel">+7 000 000-00-00</input>',
           ]}
           correctIndex={2}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 5 && (
+        <ChooseTypeLevel
+          key={task}
+          prompt="Нужно поле для ВОЗРАСТА — только числа, со стрелочками вверх/вниз. Выбери type и посмотри на поле."
+          options={["text", "number", "tel", "date"]}
+          target="number"
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 6 && (
+        <ChooseTypeLevel
+          key={task}
+          prompt="Нужно поле для выбора ДАТЫ рождения — со встроенным календарём. Выбери type и посмотри на поле."
+          options={["date", "text", "time", "month"]}
+          target="date"
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 7 && (
+        <ChooseTypeLevel
+          key={task}
+          prompt='Нужен переключатель «согласен с условиями» — просто галочка да/нет. Выбери type и посмотри на поле.'
+          options={["checkbox", "radio", "text", "button"]}
+          target="checkbox"
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 8 && (
+        <ChooseTypeLevel
+          key={task}
+          prompt="Нужно выбрать ОДИН вариант из нескольких взаимоисключающих (например, пол). Выбери type и посмотри на поле."
+          options={["radio", "checkbox", "text", "password"]}
+          target="radio"
           onResult={(c) => stepper.markResult(c)}
         />
       )}
@@ -213,7 +311,7 @@ export function InputTypesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай из списка и пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка и пиши сам." />
       <Tasks />
     </div>
   );

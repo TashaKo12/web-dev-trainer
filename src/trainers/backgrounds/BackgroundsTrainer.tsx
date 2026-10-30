@@ -149,6 +149,16 @@ const LEVELS: Level[] = [
     explain: "repeat-x повторяет только по горизонтали, repeat-y — только по вертикали.",
   },
   {
+    mode: "choose",
+    prop: "size",
+    base: { size: "auto", position: "center", repeat: "no-repeat" },
+    options: ["auto", "cover", "contain", "50% 50%"],
+    target: "50% 50%",
+    prompt: "Нужно, чтобы картинка заняла ровно половину ширины и половину высоты блока — какое значение background-size?",
+    badge: "выбери из списка",
+    explain: "50% 50% задаёт ширину и высоту отдельно, в процентах от размеров блока.",
+  },
+  {
     mode: "type",
     prop: "size",
     base: { size: "auto", position: "center", repeat: "no-repeat" },
@@ -308,7 +318,7 @@ export function BackgroundsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="8 уровней — сначала выбирай значение, потом пиши сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай значение, потом пиши сам." />
       <Tasks />
     </div>
   );
