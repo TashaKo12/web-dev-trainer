@@ -356,7 +356,7 @@ export const trainers: TrainerMeta[] = [
     title: "Псевдоклассы :hover и :active",
     summary:
       "Наведи курсор или нажми кнопку мыши — посмотри, как меняется элемент.",
-    taskCount: 5,
+    taskCount: 9,
     gradient: "from-pink-500 to-rose-600",
     section: "css",
   },
@@ -366,7 +366,7 @@ export const trainers: TrainerMeta[] = [
     emoji: "🫥",
     title: "Прозрачность: opacity",
     summary: "От 0 (невидимо) до 1 (полностью видно) — место под элементом остаётся занятым.",
-    taskCount: 2,
+    taskCount: 9,
     gradient: "from-pink-400 to-rose-500",
     section: "css",
   },
@@ -389,7 +389,7 @@ export const trainers: TrainerMeta[] = [
     title: "Доступ к элементам HTML в JS",
     summary:
       "Разберись, что вернёт getElementById, querySelector и их соседи по DOM.",
-    taskCount: 7,
+    taskCount: 9,
     gradient: "from-violet-500 to-indigo-600",
     section: "js",
   },

@@ -207,6 +207,64 @@ function OpacityPredictTask({ onResult }: { onResult: (correct: boolean) => void
   );
 }
 
+function FocusDemoLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [focused, setFocused] = useState(false);
+  const [picked, setPicked] = useState<"yes" | "no" | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(picked === "yes");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Кликни в поле ниже, чтобы поставить туда курсор — сработает псевдокласс{" "}
+        <code className="rounded bg-slate-100 px-1">:focus</code>. Пока поле в фокусе, ответь: подсвечена ли
+        сейчас рамка?
+      </p>
+      <input
+        type="text"
+        onFocus={() => setFocused(true)}
+        onBlur={() => setFocused(false)}
+        placeholder="кликни сюда"
+        className={`mb-4 w-full rounded-xl border-2 px-3 py-2 text-sm outline-none transition ${focused ? "border-pink-500 bg-pink-50" : "border-slate-200"}`}
+      />
+      <div className="flex justify-center gap-2">
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("yes")}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === "yes" ? "bg-pink-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Да, подсвечена
+        </button>
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("no")}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === "no" ? "bg-pink-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Нет, обычная
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!picked}
+            className="rounded-full bg-gradient-to-r from-pink-500 to-rose-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Какой псевдокласс срабатывает, когда курсор мыши просто НАВЕДЁН на элемент (без клика)?", explain: ":hover — состояние наведения курсора." },
   { badge: "выбери из списка", prompt: "Какой псевдокласс срабатывает, пока кнопка мыши ЗАЖАТА на элементе (ещё не отпущена)?", explain: ":active — состояние нажатия, действует только в момент удержания кнопки мыши." },
@@ -217,20 +275,24 @@ const TASK_META = [
   },
   { badge: "выбери из списка", prompt: "Как правильно написать селектор для состояния наведения на элемент с классом .card?", explain: ".card:hover — класс и псевдокласс пишутся слитно, без пробела." },
   { badge: "наведи на карточки", prompt: "Проверь на практике разницу между :hover и :active.", explain: ":hover реагирует на простое наведение курсора, а :active — только на нажатие кнопки мыши." },
+  { badge: "выбери из списка", prompt: "Какой псевдокласс срабатывает, когда поле ввода получает ФОКУС (кликнули в него или перешли по Tab)?", explain: ":focus — состояние, когда элемент активен для ввода." },
+  { badge: "кликни и проверь", prompt: "", explain: ":focus подсвечивает элемент, пока он активен для ввода — ровно это ты и видел, пока поле было в фокусе." },
+  { badge: "выбери из списка", prompt: "Какой псевдокласс красит ссылку, которую пользователь уже ПОСЕЩАЛ раньше?", explain: ":visited — состояние уже посещённой ссылки, отличается от обычной :link." },
+  { badge: "выбери из списка", prompt: "Если и :hover, и :active написаны для одного элемента, в каком порядке их принято писать в CSS, чтобы :active побеждал при одновременном наведении и нажатии?", explain: "Принятый порядок — LVHA: :link, :visited, :hover, :active. Более поздние правила перекрывают более ранние при равной специфичности, поэтому :active пишут последним." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "pseudo-classes");
+  const stepper = useTaskStepper(9, "pseudo-classes");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -247,6 +309,18 @@ function Tasks() {
       {task === 2 && <OpacityPredictTask key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <McqLevel key={task} options={[".card:hover", ".card-hover", ":hover.card", ".card::hover"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <HoverPickTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <McqLevel key={task} options={[":hover", ":active", ":focus", ":visited"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <FocusDemoLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <McqLevel key={task} options={[":hover", ":active", ":link", ":visited"]} correctIndex={3} onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && (
+        <McqLevel
+          key={task}
+          mono={false}
+          options={[":link, :visited, :hover, :active", ":active, :hover, :visited, :link", "Порядок не важен", ":hover всегда побеждает"]}
+          correctIndex={0}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
     </LevelShell>
   );
 }
@@ -263,7 +337,7 @@ export function PseudoClassesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай, наблюдай и наводи курсор." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, наблюдай, наводи курсор и кликай." />
       <Tasks />
     </div>
   );
