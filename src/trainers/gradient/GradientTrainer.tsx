@@ -133,23 +133,131 @@ function DirectionMatchLevel({ target, onResult }: { target: string; onResult: (
   );
 }
 
+function TypeGradientLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [text, setText] = useState("");
+  const [checked, setChecked] = useState(false);
+
+  function normalize(s: string) {
+    return s.trim().toLowerCase().replace(/\s+/g, "");
+  }
+
+  function check() {
+    setChecked(true);
+    onResult(normalize(text) === "tobottom,#f97316,#ec4899");
+  }
+
+  const applied = /^[^,]+,\s*#?\w+,\s*#?\w+$/.test(text.trim()) ? `linear-gradient(${text})` : undefined;
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Напиши аргументы linear-gradient (без самих слов "linear-gradient" и скобок), чтобы цвет шёл сверху вниз:
+        направление, запятая, #f97316, запятая, #ec4899.
+      </p>
+      <input
+        type="text"
+        value={text}
+        onChange={(e) => !checked && setText(e.target.value)}
+        disabled={checked}
+        placeholder="направление, цвет1, цвет2"
+        className="mb-3 w-full rounded-xl border-2 border-fuchsia-200 px-3 py-2 font-mono text-sm outline-none focus:border-fuchsia-400 disabled:opacity-60"
+      />
+      <div style={{ backgroundImage: applied }} className="h-20 rounded-xl bg-slate-100" />
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!text.trim()}
+            className="rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
+function ColorCountLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [three, setThree] = useState(false);
+  const [picked, setPicked] = useState<"two" | "more" | null>(null);
+  const [checked, setChecked] = useState(false);
+
+  function check() {
+    setChecked(true);
+    onResult(picked === "more");
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">Включи третий цвет и посмотри на градиент. Можно ли указать в linear-gradient БОЛЬШЕ двух цветов?</p>
+      <label className="mb-3 flex items-center gap-2 text-sm font-bold text-fuchsia-700">
+        <input type="checkbox" checked={three} onChange={(e) => setThree(e.target.checked)} />
+        добавить третий цвет
+      </label>
+      <div
+        style={{ backgroundImage: three ? "linear-gradient(to right, #f97316, #22c55e, #3b82f6)" : "linear-gradient(to right, #f97316, #3b82f6)" }}
+        className="mb-4 h-20 rounded-xl"
+      />
+      <div className="flex justify-center gap-2">
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("two")}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === "two" ? "bg-fuchsia-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Нет, максимум 2
+        </button>
+        <button
+          type="button"
+          disabled={checked}
+          onClick={() => setPicked("more")}
+          className={`rounded-lg px-4 py-1.5 text-sm font-bold transition disabled:cursor-not-allowed ${picked === "more" ? "bg-fuchsia-500 text-white" : "bg-slate-100 text-slate-600"}`}
+        >
+          Да, можно больше
+        </button>
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={!picked}
+            className="rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Какое CSS-свойство принимает значение linear-gradient(...)?", explain: "background-image — градиент технически является особым значением именно этого свойства, хотя и не картинка в привычном смысле." },
   { badge: "подбери направление", prompt: "", explain: "to bottom — переход цветов сверху вниз." },
+  { badge: "подбери направление", prompt: "", explain: "to right — переход цветов слева направо." },
+  { badge: "подбери направление", prompt: "", explain: "135deg — направление, заданное углом в градусах, по диагонали." },
+  { badge: "подбери направление", prompt: "", explain: "to left — переход цветов справа налево." },
+  { badge: "напиши сам", prompt: "", explain: "to bottom, #f97316, #ec4899 — направление и два цвета через запятую." },
+  { badge: "проверь вживую", prompt: "", explain: "В linear-gradient можно указать сколько угодно цветов, не только два — браузер сам равномерно распределит переходы между ними." },
+  { badge: "выбери из списка", prompt: "Чем radial-gradient отличается от linear-gradient?", explain: "radial-gradient расходится от центра наружу (кругом или эллипсом), а linear-gradient идёт по прямой линии в заданном направлении." },
+  { badge: "выбери из списка", prompt: "Какая запись CSS-правила с градиентом верная?", explain: "background-image: linear-gradient(to right, red, blue); — правильное название свойства, функции и порядок аргументов." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(2, "gradient");
+  const stepper = useTaskStepper(9, "gradient");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={2} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={2}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -160,9 +268,40 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-fuchsia-500 to-pink-600"
     >
-      {task === 0 && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(task === 0 || task === 7 || task === 8) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={["background-image", "background-color", "color", "border-image"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <DirectionMatchLevel key={task} target="to bottom" onResult={(c) => stepper.markResult(c)} />}
+      {task === 2 && <DirectionMatchLevel key={task} target="to right" onResult={(c) => stepper.markResult(c)} />}
+      {task === 3 && <DirectionMatchLevel key={task} target="135deg" onResult={(c) => stepper.markResult(c)} />}
+      {task === 4 && <DirectionMatchLevel key={task} target="to left" onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <TypeGradientLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <ColorCountLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && (
+        <McqLevel
+          key={task}
+          options={[
+            "radial расходится от центра, linear идёт по прямой",
+            "Это одно и то же",
+            "radial работает только с чёрным цветом",
+            "linear работает только в Safari",
+          ]}
+          correctIndex={0}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
+      {task === 8 && (
+        <McqLevel
+          key={task}
+          options={[
+            "background-image: linear-gradient(to right, red, blue);",
+            "background: gradient(red, blue, to right);",
+            "background-image: gradient linear(red, blue);",
+            "linear-gradient: background-image(red, blue);",
+          ]}
+          correctIndex={0}
+          onResult={(c) => stepper.markResult(c)}
+        />
+      )}
     </LevelShell>
   );
 }
@@ -179,7 +318,7 @@ export function GradientTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="2 уровня — выбирай и подбирай направление." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, подбирай направление и пиши сам." />
       <Tasks />
     </div>
   );
