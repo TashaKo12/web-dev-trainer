@@ -261,7 +261,7 @@ export const trainers: TrainerMeta[] = [
     title: "CSS Box Model",
     summary:
       "Подвигай слои margin, border и padding и увидь, как из них складывается размер блока.",
-    taskCount: 5,
+    taskCount: 9,
     gradient: "from-amber-500 to-orange-600",
     section: "css",
   },
@@ -271,7 +271,7 @@ export const trainers: TrainerMeta[] = [
     emoji: "🔲",
     title: "Рамка: border и border-bottom",
     summary: "Толщина, стиль линии и цвет — border-bottom рисует рамку только снизу.",
-    taskCount: 3,
+    taskCount: 9,
     gradient: "from-amber-500 to-orange-700",
     section: "css",
   },

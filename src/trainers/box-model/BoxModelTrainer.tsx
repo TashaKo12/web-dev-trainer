@@ -100,7 +100,7 @@ function Slider({
   );
 }
 
-function LayerClickTask({ onResult }: { onResult: (correct: boolean) => void }) {
+function LayerClickTask({ target = "padding", onResult }: { target?: string; onResult: (correct: boolean) => void }) {
   const [selected, setSelected] = useState<string | null>(null);
   const [checked, setChecked] = useState(false);
 
@@ -111,7 +111,7 @@ function LayerClickTask({ onResult }: { onResult: (correct: boolean) => void }) 
 
   function check() {
     setChecked(true);
-    onResult(selected === "padding");
+    onResult(selected === target);
   }
 
   const layers = [
@@ -124,7 +124,7 @@ function LayerClickTask({ onResult }: { onResult: (correct: boolean) => void }) 
   return (
     <div>
       <p className="mb-3 text-sm text-slate-500">
-        Нажми на тот слой диаграммы, который называется <strong>padding</strong>.
+        Нажми на тот слой диаграммы, который называется <strong>{target}</strong>.
       </p>
       <div className="flex justify-center">
         <div className={`${layers[0].cls} p-5`} onClick={() => pick("margin")}>
@@ -145,7 +145,7 @@ function LayerClickTask({ onResult }: { onResult: (correct: boolean) => void }) 
       </div>
       {selected && (
         <p className="mt-3 text-center text-sm font-bold text-indigo-600">
-          Выбрано: {selected} {checked && (selected === "padding" ? "✅" : "❌")}
+          Выбрано: {selected} {checked && (selected === target ? "✅" : "❌")}
         </p>
       )}
       {!checked && (
@@ -307,26 +307,83 @@ function LayerOrderTask({ onResult }: { onResult: (correct: boolean) => void }) 
   );
 }
 
+function MarginCollapseLevel({ onResult }: { onResult: (correct: boolean) => void }) {
+  const [picked, setPicked] = useState<number | null>(null);
+  const [checked, setChecked] = useState(false);
+  const options = [50, 30, 20, 10];
+
+  function check() {
+    setChecked(true);
+    onResult(picked === 30);
+  }
+
+  return (
+    <div>
+      <p className="mb-3 text-sm text-slate-500">
+        Два блока стоят друг под другом. У верхнего margin-bottom: 20px, у нижнего margin-top: 30px. Соседние
+        вертикальные margin у блоков в обычном потоке «схлопываются» — побеждает БОЛЬШИЙ. Какой промежуток
+        получится между блоками?
+      </p>
+      <div className="mb-4 rounded-2xl bg-slate-100 p-4">
+        <div className="rounded-lg bg-amber-200 p-2 text-center text-xs font-bold text-amber-800">Блок А (margin-bottom: 20px)</div>
+        <div style={{ height: 30 }} />
+        <div className="rounded-lg bg-sky-200 p-2 text-center text-xs font-bold text-sky-800">Блок Б (margin-top: 30px)</div>
+      </div>
+      <div className="flex flex-wrap justify-center gap-2">
+        {options.map((n) => (
+          <button
+            key={n}
+            type="button"
+            disabled={checked}
+            onClick={() => setPicked(n)}
+            className={`rounded-lg px-4 py-1.5 font-mono text-sm font-bold transition disabled:cursor-not-allowed ${
+              picked === n ? "bg-amber-500 text-white" : "bg-slate-100 text-slate-600 hover:bg-amber-100"
+            }`}
+          >
+            {n}px
+          </button>
+        ))}
+      </div>
+      {!checked && (
+        <div className="mt-4 flex justify-center">
+          <button
+            type="button"
+            onClick={check}
+            disabled={picked === null}
+            className="rounded-full bg-gradient-to-r from-amber-500 to-orange-600 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40"
+          >
+            Проверить
+          </button>
+        </div>
+      )}
+    </div>
+  );
+}
+
 const TASK_META = [
   { badge: "выбери из списка", prompt: "Какое свойство создаёт пространство МЕЖДУ рамкой (border) и содержимым внутри блока?", explain: "padding — внутренний отступ, он раздвигает содержимое от рамки блока." },
   { badge: "выбери из списка", prompt: "Какое свойство создаёт пространство СНАРУЖИ блока — между ним и соседними элементами?", explain: "margin — внешний отступ, он отодвигает блок от других элементов на странице." },
   { badge: "подвинь ползунки", prompt: "", explain: "Подходит любая пара значений, где padding + border = 15 — например 10 и 5, или 0 и 15." },
   { badge: "кликай по порядку", prompt: "", explain: "Правильный порядок: content → padding → border → margin — от центра наружу." },
   { badge: "кликни по диаграмме", prompt: "", explain: "padding находится сразу вокруг содержимого, внутри рамки (border)." },
+  { badge: "посчитай вживую", prompt: "", explain: "Соседние вертикальные margin схлопываются в один, равный БОЛЬШЕМУ из них — 30px, а не их сумме (50px)." },
+  { badge: "выбери из списка", prompt: "Какое из перечисленных свойств НЕ входит в box model?", explain: "color красит текст и не имеет отношения к размеру блока — margin, border и padding как раз составляют box model." },
+  { badge: "кликни по диаграмме", prompt: "", explain: "margin — самый внешний слой, он отделяет блок от соседних элементов на странице." },
+  { badge: "кликни по диаграмме", prompt: "", explain: "border — рамка, которая лежит между padding и margin." },
 ];
 
 function Tasks() {
-  const stepper = useTaskStepper(5, "box-model");
+  const stepper = useTaskStepper(9, "box-model");
   const task = stepper.index;
   const meta = TASK_META[task];
 
   if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={5} onRestart={() => stepper.restart()} />;
+    return <CompletionBanner score={stepper.score} total={9} onRestart={() => stepper.restart()} />;
   }
 
   return (
     <LevelShell
-      total={5}
+      total={9}
       index={task}
       statuses={stepper.statuses}
       status={stepper.status}
@@ -337,12 +394,16 @@ function Tasks() {
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-amber-500 to-orange-600"
     >
-      {meta.prompt && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
+      {(meta.prompt || task === 6) && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
       {task === 0 && <McqLevel key={task} options={["margin", "padding", "border", "gap"]} correctIndex={1} onResult={(c) => stepper.markResult(c)} />}
       {task === 1 && <McqLevel key={task} options={["padding", "border", "margin", "outline"]} correctIndex={2} onResult={(c) => stepper.markResult(c)} />}
       {task === 2 && <TargetWidthTask key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 3 && <LayerOrderTask key={task} onResult={(c) => stepper.markResult(c)} />}
       {task === 4 && <LayerClickTask key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 5 && <MarginCollapseLevel key={task} onResult={(c) => stepper.markResult(c)} />}
+      {task === 6 && <McqLevel key={task} options={["color", "padding", "border", "margin"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
+      {task === 7 && <LayerClickTask key={task} target="margin" onResult={(c) => stepper.markResult(c)} />}
+      {task === 8 && <LayerClickTask key={task} target="border" onResult={(c) => stepper.markResult(c)} />}
     </LevelShell>
   );
 }
@@ -359,7 +420,7 @@ export function BoxModelTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="5 уровней — выбирай, двигай ползунки и кликай по диаграмме." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, двигай ползунки и кликай по диаграмме." />
       <Tasks />
     </div>
   );
