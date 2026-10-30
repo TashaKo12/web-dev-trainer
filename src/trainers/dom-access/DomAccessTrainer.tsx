@@ -150,6 +150,20 @@ const TASKS: Task[] = [
     result: ["item3"],
     explain: "document.querySelector('.special').nextElementSibling — следующий элемент того же уровня, то есть сосед справа/ниже.",
   },
+  {
+    mode: "type",
+    prompt: "Напиши код сам: найди <ul>, воспользовавшись closest('ul') у элемента с классом special.",
+    expectedCode: "document.querySelector('.special').closest('ul')",
+    result: ["list"],
+    explain: "document.querySelector('.special').closest('ul') — поднимается от «Банана» вверх, пока не найдёт ближайший <ul>.",
+  },
+  {
+    mode: "type",
+    prompt: "Напиши код сам: найди ПЕРВЫЙ элемент с классом item через querySelector (не querySelectorAll).",
+    expectedCode: "document.querySelector('.item')",
+    result: ["item1"],
+    explain: "document.querySelector('.item') — в отличие от querySelectorAll, возвращает только один, самый первый подходящий элемент.",
+  },
 ];
 
 function ClickTask({
@@ -286,7 +300,7 @@ export function DomAccessTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
-      <SectionHeading kicker="Практика" title="Закрепим" description="7 уровней — сначала кликай по странице, потом пиши код сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по странице, потом пиши код сам." />
       <Tasks />
     </div>
   );
