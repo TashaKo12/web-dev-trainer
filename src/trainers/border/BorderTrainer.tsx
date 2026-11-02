@@ -45,7 +45,7 @@ function Theory() {
   const [bottomOnly, setBottomOnly] = useState(false);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-6 text-slate-600">
         border задаётся сразу тремя значениями: толщина, стиль линии и цвет. border-bottom делает рамку только
         снизу — частый приём для подчёркивания заголовков.
@@ -377,7 +377,9 @@ export function BorderTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, подбирай и пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

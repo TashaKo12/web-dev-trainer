@@ -27,15 +27,15 @@ export function TrainerHero({
         {emoji}
       </div>
       {tab && (
-        <div className={`mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-mono text-xs font-bold ${tab.cls}`}>
+        <div className={`mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-mono text-xs font-bold dark:brightness-125 ${tab.cls}`}>
           📄 {tab.file}
           <span className="opacity-60">— это файл с {tab.label === "CSS" ? "стилями" : tab.label === "JS" ? "кодом" : "разметкой"}</span>
         </div>
       )}
-      <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl">
+      <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl dark:text-slate-100">
         {title}
       </h1>
-      <p className="mx-auto mt-2 max-w-xl text-slate-500">{summary}</p>
+      <p className="mx-auto mt-2 max-w-xl text-slate-500 dark:text-slate-400">{summary}</p>
     </div>
   );
 }

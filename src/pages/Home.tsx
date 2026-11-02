@@ -32,10 +32,10 @@ export function Home() {
   return (
     <div>
       <div className="mb-10 text-center">
-        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl">
+        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">
           Выбери тренажёр и прокачай веб-разработку 🚀
         </h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate-500">
+        <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
           Сначала короткая интерактивная теория с живыми примерами, потом —
           задания на закрепление. Прогресс сохраняется в этом браузере.
         </p>
@@ -47,12 +47,12 @@ export function Home() {
         return (
           <div key={section.key} className="mb-12">
             <div className="mb-5 flex flex-wrap items-center gap-3">
-              <span className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-mono text-xs font-bold ${section.cls}`}>
+              <span className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-mono text-xs font-bold dark:brightness-125 ${section.cls}`}>
                 📄 {section.file}
               </span>
-              <h2 className="text-xl font-extrabold text-slate-800">{section.title}</h2>
+              <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">{section.title}</h2>
             </div>
-            <p className="mb-5 max-w-2xl text-sm text-slate-500">{section.description}</p>
+            <p className="mb-5 max-w-2xl text-sm text-slate-500 dark:text-slate-400">{section.description}</p>
 
             <div className="grid gap-5 sm:grid-cols-2">
               {items.map((t) => {
@@ -61,7 +61,7 @@ export function Home() {
                   <Link
                     key={t.id}
                     to={t.path}
-                    className="group relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.1)]"
+                    className="group relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition hover:-translate-y-1 hover:shadow-[0_16px_40px_rgb(0,0,0,0.1)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]"
                   >
                     <div
                       className={`absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-to-br ${t.gradient} opacity-15 blur-xl`}

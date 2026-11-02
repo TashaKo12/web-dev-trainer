@@ -43,7 +43,7 @@ function Theory() {
   const shadow = `0 ${offsetY}px ${blur}px rgba(0,0,0,0.2)`;
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-6 text-slate-600">
         border-radius скругляет уголки блока, box-shadow рисует вокруг него тень. Подвигай ползунки — карточка
         справа меняется вживую.
@@ -333,7 +333,9 @@ export function ShadowsTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай значение, потом пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

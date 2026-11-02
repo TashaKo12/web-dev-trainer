@@ -63,7 +63,7 @@ function Theory() {
   const allFilled = SLOTS.every((s) => placed[s.id]);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         Собери скелет веб-страницы: выбери тег-карточку снизу, а затем нажми на
         нужный раздел макета, чтобы поставить тег туда. Не все теги здесь
@@ -214,7 +214,7 @@ function MoreTagsTheory() {
   }
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         Кроме header, nav, main и footer на странице часто встречаются ещё несколько тегов. Нажимай на кнопки —
         соответствующий кусок примера страницы подсветится.
@@ -710,7 +710,9 @@ export function HtmlStructureTrainer() {
         title="Закрепим"
         description="10 уровней — кликай, собирай пары и пиши сам."
       />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

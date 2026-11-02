@@ -15,7 +15,7 @@ function Theory() {
   const [nested, setNested] = useState(false);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         <code className="rounded bg-slate-100 px-1">ul</code> — маркированный список (порядок не важен),{" "}
         <code className="rounded bg-slate-100 px-1">ol</code> — нумерованный (порядок важен). Каждый пункт — это{" "}
@@ -113,28 +113,43 @@ function ClickMenu({ selected, onPick }: { selected: PartKey | null; onPick: (k:
     const isSel = selected === key;
     return `${base} cursor-pointer rounded px-1 transition ${isSel ? "bg-lime-100 ring-2 ring-lime-400" : "hover:bg-slate-100"}`;
   }
+  const ulWrapSelected = selected === "ul-wrap";
   return (
     <div className="rounded-2xl bg-white p-4 text-left shadow-inner">
-      <div className={cls("ul-wrap", "inline-block text-xs font-bold text-slate-400")} onClick={() => onPick("ul-wrap")}>
-        &lt;ul&gt; (весь список напитков)
+      <div
+        onClick={() => onPick("ul-wrap")}
+        className={`cursor-pointer rounded-xl border-2 border-dashed p-3 transition ${
+          ulWrapSelected ? "border-lime-400 bg-lime-50" : "border-slate-200 hover:border-lime-300"
+        }`}
+      >
+        <p className="mb-2 text-xs font-bold text-slate-400">
+          &lt;ul&gt; — нажми на эту рамку, чтобы выбрать весь список целиком
+        </p>
+        <ul className="list-disc pl-5 text-slate-700">
+          <li className={cls("li1", "")} onClick={(e) => { e.stopPropagation(); onPick("li1"); }}>
+            Молоко
+          </li>
+          <li className={cls("li2", "")} onClick={(e) => { e.stopPropagation(); onPick("li2"); }}>
+            Лимонад
+          </li>
+          <li onClick={(e) => e.stopPropagation()}>
+            Соки:
+            <div
+              onClick={(e) => { e.stopPropagation(); onPick("nested-ul"); }}
+              className={`mt-1 cursor-pointer rounded-lg border-2 border-dashed p-2 pl-3 transition ${
+                selected === "nested-ul" ? "border-lime-400 bg-lime-50" : "border-slate-200 hover:border-lime-300"
+              }`}
+            >
+              <ul className="list-[circle] pl-5 text-slate-600">
+                <li className={cls("nested-li", "")} onClick={(e) => { e.stopPropagation(); onPick("nested-li"); }}>
+                  Яблочный
+                </li>
+                <li onClick={(e) => e.stopPropagation()}>Ананасовый</li>
+              </ul>
+            </div>
+          </li>
+        </ul>
       </div>
-      <ul className="mt-1 list-disc pl-5 text-slate-700">
-        <li className={cls("li1", "")} onClick={() => onPick("li1")}>
-          Молоко
-        </li>
-        <li className={cls("li2", "")} onClick={() => onPick("li2")}>
-          Лимонад
-        </li>
-        <li>
-          Соки:
-          <ul className={cls("nested-ul", "list-[circle] pl-5 text-slate-600")} onClick={(e) => { e.stopPropagation(); onPick("nested-ul"); }}>
-            <li className={cls("nested-li", "")} onClick={(e) => { e.stopPropagation(); onPick("nested-li"); }}>
-              Яблочный
-            </li>
-            <li>Ананасовый</li>
-          </ul>
-        </li>
-      </ul>
     </div>
   );
 }
@@ -429,7 +444,9 @@ export function ListsTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, кликай по списку и пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

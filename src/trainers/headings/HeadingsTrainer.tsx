@@ -24,7 +24,7 @@ function Theory() {
   const [active, setActive] = useState<(typeof LEVELS_H)[number]>("h1");
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         Заголовков шесть уровней — от <code className="rounded bg-slate-100 px-1">h1</code> (самый крупный и
         важный) до <code className="rounded bg-slate-100 px-1">h6</code> (самый мелкий). Нажимай на теги —
@@ -296,7 +296,9 @@ export function HeadingsTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, кликай на мини-странице и пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

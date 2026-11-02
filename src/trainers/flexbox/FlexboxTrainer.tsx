@@ -108,7 +108,7 @@ function Theory() {
   const [config, setConfig] = useState<FlexConfig>(DEFAULT_CONFIG);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-6 text-slate-600">
         Меняй значения свойств — блоки внутри контейнера сразу
         перестраиваются. Это и есть flexbox: ты не задаёшь позицию каждого
@@ -349,7 +349,9 @@ export function FlexboxTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Собери образец" description="9 уровней — сначала выбирай значения из списка, потом пиши их сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

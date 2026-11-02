@@ -34,7 +34,7 @@ function Theory() {
   const totalFootprintW = borderBoxW + margin * 2;
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-6 text-slate-600">
         Подвигай ползунки — размеры слоёв реально поменяются, как в настоящем
         CSS. Каждый блок состоит из содержимого, отступа внутри (padding),
@@ -435,7 +435,9 @@ export function BoxModelTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, двигай ползунки и кликай по диаграмме." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

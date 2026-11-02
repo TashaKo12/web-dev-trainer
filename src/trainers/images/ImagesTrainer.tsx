@@ -17,7 +17,7 @@ function Theory() {
   const [height, setHeight] = useState(100);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         У тега <code className="rounded bg-slate-100 px-1">img</code> нет закрывающего тега. src — откуда взять
         картинку, alt — текст на случай, если она не загрузится, width/height — размер в пикселях.
@@ -417,7 +417,9 @@ export function ImagesTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, сравнивай вживую и пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

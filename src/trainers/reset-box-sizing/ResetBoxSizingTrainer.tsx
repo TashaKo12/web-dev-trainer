@@ -19,7 +19,7 @@ function Theory() {
   const renderedW = borderBox ? contentW : contentW + padding * 2 + border * 2;
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-6 text-slate-600">
         <code className="rounded bg-slate-100 px-1">* {"{"} margin: 0; padding: 0; {"}"}</code> убирает отступы,
         которые браузер ставит по умолчанию (у h1, p, ul и других). А{" "}
@@ -312,7 +312,9 @@ export function ResetBoxSizingTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, считай ширину и проверяй вживую." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

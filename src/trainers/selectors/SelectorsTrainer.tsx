@@ -31,7 +31,7 @@ function Theory() {
   const { keys, error } = computeMatches(containerRef.current, selector);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         Это мини-страница. Введи CSS-селектор — все элементы, которые ему
         соответствуют, подсветятся розовым прямо на странице.
@@ -250,7 +250,9 @@ export function SelectorsTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай селектор из списка, потом пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

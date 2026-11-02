@@ -14,7 +14,7 @@ function Theory() {
   const [sticky, setSticky] = useState(false);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         На странице мало текста — без исправления footer «прилипает» прямо под текстом, а не к низу экрана.
         Включи галочку, чтобы применить приём с flexbox.
@@ -285,7 +285,9 @@ export function PageLayoutTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка, кликай по макету и проверяй вживую." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

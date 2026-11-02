@@ -30,7 +30,7 @@ function Theory() {
   const [color, setColor] = useState<(typeof COLORS)[number]>("#ec4899");
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         HTML и CSS — это ДВА РАЗНЫХ файла. index.html описывает содержимое страницы, а style.css — её оформление.
         Чтобы браузер применил стили, в &lt;head&gt; страницы ставят{" "}
@@ -462,7 +462,9 @@ export function CssIntroTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, проверяй вживую и пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

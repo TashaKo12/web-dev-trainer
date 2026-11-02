@@ -29,7 +29,7 @@ function Theory() {
   const [weight, setWeight] = useState<(typeof WEIGHTS)[number]>(400);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-6 text-slate-600">
         <code className="rounded bg-slate-100 px-1">font-weight</code> задаёт насыщенность (жирность) шрифта — от
         тонкого до очень жирного. У именованных значений: normal = 400, bold = 700.
@@ -307,7 +307,9 @@ export function FontWeightTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значение, выбирай и пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

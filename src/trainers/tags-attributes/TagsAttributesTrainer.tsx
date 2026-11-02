@@ -31,7 +31,7 @@ function Theory() {
   const [selfClosing, setSelfClosing] = useState(false);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         HTML-страница состоит из тегов. У тега есть имя, может быть несколько атрибутов (доп. настроек) и
         содержимое внутри. Нажимай на кнопки ниже — соответствующая часть подсветится прямо в коде.
@@ -365,7 +365,9 @@ export function TagsAttributesTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по частям тега, потом собирай тег сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

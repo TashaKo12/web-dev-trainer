@@ -6,11 +6,20 @@
   color-scheme: light;
 }
 
+html.dark {
+  color-scheme: dark;
+}
+
 body {
   margin: 0;
   font-family: "Nunito", system-ui, sans-serif;
   background: linear-gradient(180deg, #f5f3ff 0%, #eef2ff 40%, #f8fafc 100%);
   min-height: 100vh;
+  transition: background-color 0.2s ease;
+}
+
+html.dark body {
+  background: linear-gradient(180deg, #0b0a16 0%, #120f24 40%, #0a0e1a 100%);
 }
 
 code,

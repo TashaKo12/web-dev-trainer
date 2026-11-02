@@ -81,7 +81,7 @@ function Theory() {
   const [repeat, setRepeat] = useState<(typeof REPEATS)[number]>("repeat");
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-6 text-slate-600">
         Фоновую картинку блока можно тянуть, двигать и повторять — тремя свойствами. Меняй значения слева —
         карточка справа сразу перестраивается, как в настоящем CSS.
@@ -333,7 +333,9 @@ export function BackgroundsTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай значение, потом пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"

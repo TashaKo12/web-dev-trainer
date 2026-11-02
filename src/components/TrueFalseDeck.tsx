@@ -56,7 +56,7 @@ export function TrueFalseDeck({
           : { emoji: "💪", title: "Неплохо — можно пролистать ещё раз." };
 
     return (
-      <div className="rounded-3xl border border-white/70 bg-white/90 p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+      <div className="rounded-3xl border border-white/70 bg-white/90 p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
         <div className="mb-2 text-5xl">{emoji}</div>
         <h3 className="mb-1 text-xl font-extrabold text-slate-800">{title}</h3>
         <p className="mb-5 text-slate-500">
@@ -74,7 +74,7 @@ export function TrueFalseDeck({
   }
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <div className="mb-4 flex items-center justify-between gap-3">
         <span className="whitespace-nowrap text-xs font-bold uppercase tracking-wide text-slate-400">
           Карточка {index + 1} из {total}

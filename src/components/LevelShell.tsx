@@ -30,7 +30,7 @@ export function LevelShell({
   const answered = status !== "idle";
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-md sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-md sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <div className="flex flex-col gap-5 sm:flex-row">
         <LevelSidebar total={total} current={index} statuses={statuses} onJump={onJump} />
 

@@ -15,7 +15,7 @@ function Theory() {
   const [clicks, setClicks] = useState(0);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
       <p className="mb-5 text-slate-600">
         <code className="rounded bg-slate-100 px-1">button</code> — кликабельный элемент для ДЕЙСТВИЯ (не для
         перехода на другую страницу — для этого есть ссылка a). Атрибут{" "}
@@ -404,7 +404,9 @@ export function ButtonsTrainer() {
         <Theory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, нажимай и пиши сам." />
-      <Tasks />
+      <div className="mb-10">
+        <Tasks />
+      </div>
       <SectionHeading
         kicker="Проверь себя"
         title="Верно или неверно?"
