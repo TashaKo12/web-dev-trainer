@@ -1,3 +1,4 @@
+import { Check, X } from "lucide-react";
 import type { TaskStatus } from "./useTaskStepper";
 
 export function LevelSidebar({
@@ -33,7 +34,13 @@ export function LevelSidebar({
               isCurrent ? "ring-2 ring-indigo-300 ring-offset-2" : ""
             }`}
           >
-            {status === "correct" ? "✓" : status === "wrong" ? "✗" : i + 1}
+            {status === "correct" ? (
+              <Check className="h-4 w-4" strokeWidth={2.5} />
+            ) : status === "wrong" ? (
+              <X className="h-4 w-4" strokeWidth={2.5} />
+            ) : (
+              i + 1
+            )}
           </button>
         );
       })}

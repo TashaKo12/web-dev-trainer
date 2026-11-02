@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Image } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -156,8 +157,9 @@ function PickUniqueLevel({ onResult }: { onResult: (correct: boolean) => void })
         <code className="rounded bg-slate-100 px-1">id</code>, а не <code className="rounded bg-slate-100 px-1">class</code>?
       </p>
       <div className="space-y-2">
-        <div className={cls("logo")} onClick={() => !checked && setPicked("logo")}>
-          🖼️ Логотип сайта (один на всю страницу)
+        <div className={`flex items-center justify-center gap-1.5 ${cls("logo")}`} onClick={() => !checked && setPicked("logo")}>
+          <Image className="h-3.5 w-3.5" strokeWidth={2} />
+          Логотип сайта (один на всю страницу)
         </div>
         <div className="grid grid-cols-3 gap-2">
           <div className={cls("card1")} onClick={() => !checked && setPicked("card1")}>
@@ -315,7 +317,7 @@ const TRUE_FALSE: TrueFalseStatement[] = [
 export function IdAttributeTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="id — уникальное имя для одного элемента"

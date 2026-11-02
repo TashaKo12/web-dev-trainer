@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { FileCode, CircleCheck } from "lucide-react";
 import { trainers, type TrainerMeta } from "../trainers/registry";
 import { getAllProgress } from "../lib/progress";
 
@@ -33,7 +34,7 @@ export function Home() {
     <div>
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">
-          Выбери тренажёр и прокачай веб-разработку 🚀
+          Выбери тренажёр и прокачай веб-разработку
         </h1>
         <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
           Сначала короткая интерактивная теория с живыми примерами, потом —
@@ -48,7 +49,8 @@ export function Home() {
           <div key={section.key} className="mb-12">
             <div className="mb-5 flex flex-wrap items-center gap-3">
               <span className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-mono text-xs font-bold dark:brightness-125 ${section.cls}`}>
-                📄 {section.file}
+                <FileCode className="h-3.5 w-3.5" strokeWidth={2} />
+                {section.file}
               </span>
               <h2 className="text-xl font-extrabold text-slate-800 dark:text-slate-100">{section.title}</h2>
             </div>
@@ -57,6 +59,7 @@ export function Home() {
             <div className="grid gap-5 sm:grid-cols-2">
               {items.map((t) => {
                 const p = progress[t.id];
+                const Icon = t.icon;
                 return (
                   <Link
                     key={t.id}
@@ -66,7 +69,11 @@ export function Home() {
                     <div
                       className={`absolute -right-8 -top-8 h-28 w-28 rounded-full bg-gradient-to-br ${t.gradient} opacity-15 blur-xl`}
                     />
-                    <div className="mb-3 text-4xl">{t.emoji}</div>
+                    <div
+                      className={`mb-3 flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-to-br ${t.gradient}`}
+                    >
+                      <Icon className="h-5 w-5 text-white" strokeWidth={1.75} />
+                    </div>
                     <h3 className="mb-1.5 text-lg font-extrabold text-slate-800">
                       {t.title}
                     </h3>
@@ -78,8 +85,9 @@ export function Home() {
                         Начать →
                       </span>
                       {p ? (
-                        <span className="text-slate-400">
-                          {p.score}/{p.total} ✅
+                        <span className="flex items-center gap-1 text-slate-400">
+                          {p.score}/{p.total}
+                          <CircleCheck className="h-3.5 w-3.5" strokeWidth={2} />
                         </span>
                       ) : (
                         <span className="text-slate-300">не пройдено</span>

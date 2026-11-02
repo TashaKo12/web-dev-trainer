@@ -1,3 +1,5 @@
+import { Trophy, Sparkles, Target } from "lucide-react";
+
 export function CompletionBanner({
   score,
   total,
@@ -8,16 +10,18 @@ export function CompletionBanner({
   onRestart: () => void;
 }) {
   const ratio = score / total;
-  const { emoji, title } =
+  const { Icon, title } =
     ratio === 1
-      ? { emoji: "🏆", title: "Идеально! Все задания решены верно." }
+      ? { Icon: Trophy, title: "Идеально! Все задания решены верно." }
       : ratio >= 0.6
-        ? { emoji: "🎉", title: "Отличный результат!" }
-        : { emoji: "💪", title: "Неплохое начало — есть что повторить." };
+        ? { Icon: Sparkles, title: "Отличный результат!" }
+        : { Icon: Target, title: "Неплохое начало — есть что повторить." };
 
   return (
     <div className="rounded-3xl border border-indigo-100 bg-gradient-to-br from-indigo-50 to-violet-50 p-6 text-center shadow-sm dark:border-indigo-800/40 dark:from-indigo-950/40 dark:to-violet-950/40 sm:p-8">
-      <div className="mb-2 text-5xl">{emoji}</div>
+      <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
+        <Icon className="h-7 w-7" strokeWidth={1.75} />
+      </div>
       <h3 className="mb-1 text-xl font-extrabold text-slate-800">{title}</h3>
       <p className="mb-5 text-slate-500">
         Правильных ответов: <span className="font-bold text-slate-700">{score}</span> из{" "}

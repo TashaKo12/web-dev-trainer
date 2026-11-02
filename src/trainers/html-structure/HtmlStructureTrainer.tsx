@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Megaphone } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -252,8 +253,9 @@ function MoreTagsTheory() {
         </div>
         <div className={boxClass("aside")}>
           <span className="mb-2 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">aside</span>
-          <div className="mb-3 rounded-lg bg-amber-50 p-2 text-center text-[11px] font-bold text-amber-700">
-            📢 Реклама: корм для собак −20%
+          <div className="mb-3 flex items-center justify-center gap-1 rounded-lg bg-amber-50 p-2 text-center text-[11px] font-bold text-amber-700">
+            <Megaphone className="h-3 w-3" strokeWidth={2} />
+            Реклама: корм для собак −20%
           </div>
           <p className="mb-1 text-[11px] font-bold text-slate-500">Похожие статьи</p>
           <ul className="space-y-1 text-[11px] text-slate-500">
@@ -683,7 +685,7 @@ export function HtmlStructureTrainer() {
   return (
     <div>
       <TrainerHero
-        emoji={meta.emoji}
+        icon={meta.icon}
         title={meta.title}
         summary={meta.summary}
         gradient={meta.gradient}

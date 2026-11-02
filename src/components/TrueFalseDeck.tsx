@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Trophy, Sparkles, Target, Check, X } from "lucide-react";
 
 export type TrueFalseStatement = {
   text: string;
@@ -48,16 +49,18 @@ export function TrueFalseDeck({
 
   if (showResult) {
     const ratio = score / total;
-    const { emoji, title } =
+    const { Icon, title } =
       ratio === 1
-        ? { emoji: "🏆", title: "Идеально! Угадал все карточки." }
+        ? { Icon: Trophy, title: "Идеально! Угадал все карточки." }
         : ratio >= 0.6
-          ? { emoji: "🎉", title: "Отличный результат!" }
-          : { emoji: "💪", title: "Неплохо — можно пролистать ещё раз." };
+          ? { Icon: Sparkles, title: "Отличный результат!" }
+          : { Icon: Target, title: "Неплохо — можно пролистать ещё раз." };
 
     return (
       <div className="rounded-3xl border border-white/70 bg-white/90 p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-        <div className="mb-2 text-5xl">{emoji}</div>
+        <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
+          <Icon className="h-7 w-7" strokeWidth={1.75} />
+        </div>
         <h3 className="mb-1 text-xl font-extrabold text-slate-800">{title}</h3>
         <p className="mb-5 text-slate-500">
           Угадано: <span className="font-bold text-slate-700">{score}</span> из {total}
@@ -98,16 +101,18 @@ export function TrueFalseDeck({
           <button
             type="button"
             onClick={() => pick(true)}
-            className="flex-1 rounded-2xl border-2 border-emerald-200 bg-emerald-50 py-3 text-sm font-bold text-emerald-700 transition hover:border-emerald-400"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border-2 border-emerald-200 bg-emerald-50 py-3 text-sm font-bold text-emerald-700 transition hover:border-emerald-400"
           >
-            ✅ Верно
+            <Check className="h-4 w-4" strokeWidth={2.5} />
+            Верно
           </button>
           <button
             type="button"
             onClick={() => pick(false)}
-            className="flex-1 rounded-2xl border-2 border-rose-200 bg-rose-50 py-3 text-sm font-bold text-rose-700 transition hover:border-rose-400"
+            className="flex flex-1 items-center justify-center gap-1.5 rounded-2xl border-2 border-rose-200 bg-rose-50 py-3 text-sm font-bold text-rose-700 transition hover:border-rose-400"
           >
-            ❌ Неверно
+            <X className="h-4 w-4" strokeWidth={2.5} />
+            Неверно
           </button>
         </div>
       ) : (

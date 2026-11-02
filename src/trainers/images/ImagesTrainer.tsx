@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Image, ImageOff } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -60,12 +61,12 @@ function Theory() {
               style={{ width, height }}
               className="flex flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-rose-300 bg-rose-50 px-3 text-center"
             >
-              <span className="text-2xl">🖼️🚫</span>
+              <ImageOff className="h-7 w-7 text-rose-400" strokeWidth={1.75} />
               <span className="text-xs italic text-rose-500">{alt || "(alt пустой)"}</span>
             </div>
           ) : (
-            <div style={{ width, height }} className="flex items-center justify-center rounded-xl bg-amber-200 text-3xl">
-              🐱
+            <div style={{ width, height }} className="flex items-center justify-center overflow-hidden rounded-xl bg-amber-200 p-3">
+              <Image className="h-full w-full text-amber-700" strokeWidth={1.5} />
             </div>
           )}
         </div>
@@ -118,7 +119,7 @@ function BrokenAltTask({ onResult }: { onResult: (correct: boolean) => void }) {
         Файл cat.png не нашёлся. Напиши, какой текст появится на странице ВМЕСТО картинки.
       </p>
       <div className="mb-4 flex h-24 w-40 flex-col items-center justify-center gap-1 rounded-xl border-2 border-dashed border-rose-300 bg-rose-50">
-        <span className="text-2xl">🖼️🚫</span>
+        <ImageOff className="h-7 w-7 text-rose-400" strokeWidth={1.75} />
         {checked && <span className="text-xs italic text-rose-500">Мой рыжий кот</span>}
       </div>
       <input
@@ -214,8 +215,8 @@ function AspectRatioLevel({ onResult }: { onResult: (correct: boolean) => void }
         задать только height (width не указан)
       </label>
       <div className="mb-4 flex h-32 items-center justify-center rounded-2xl bg-slate-100">
-        <div style={onlyHeight ? { height: 60, width: 180 } : { width: 100, height: 100 }} className="flex items-center justify-center rounded-lg bg-amber-200 text-2xl">
-          🐱
+        <div style={onlyHeight ? { height: 60, width: 180 } : { width: 100, height: 100 }} className="flex items-center justify-center overflow-hidden rounded-lg bg-amber-200 p-2">
+          <Image className="h-full w-full text-amber-700" strokeWidth={1.5} />
         </div>
       </div>
       <div className="flex justify-center gap-2">
@@ -268,14 +269,14 @@ function SizeMatchLevel({ onResult }: { onResult: (correct: boolean) => void }) 
       <div className="mb-3 grid gap-4 sm:grid-cols-2">
         <div>
           <p className="mb-1 text-xs font-bold uppercase text-slate-400">Образец</p>
-          <div style={{ width: target, height: target * 0.7 }} className="flex items-center justify-center rounded-lg bg-amber-200 text-2xl">
-            🐱
+          <div style={{ width: target, height: target * 0.7 }} className="flex items-center justify-center overflow-hidden rounded-lg bg-amber-200 p-2">
+            <Image className="h-full w-full text-amber-700" strokeWidth={1.5} />
           </div>
         </div>
         <div>
           <p className="mb-1 text-xs font-bold uppercase text-slate-400">Твоя картинка</p>
-          <div style={{ width, height: width * 0.7 }} className="flex items-center justify-center rounded-lg bg-amber-200 text-2xl">
-            🐱
+          <div style={{ width, height: width * 0.7 }} className="flex items-center justify-center overflow-hidden rounded-lg bg-amber-200 p-2">
+            <Image className="h-full w-full text-amber-700" strokeWidth={1.5} />
           </div>
         </div>
       </div>
@@ -407,7 +408,7 @@ function Tasks() {
 export function ImagesTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="src, alt, width и height"

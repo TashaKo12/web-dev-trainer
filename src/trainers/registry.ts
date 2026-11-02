@@ -1,9 +1,49 @@
+import type { LucideIcon } from "lucide-react";
+import {
+  Tag,
+  LayoutTemplate,
+  Heading1,
+  Pilcrow,
+  List,
+  Box,
+  IdCard,
+  MousePointerClick,
+  Image,
+  FolderTree,
+  Link,
+  PanelsTopLeft,
+  Table,
+  ClipboardList,
+  TextCursorInput,
+  Keyboard,
+  Plug,
+  Target,
+  Palette,
+  PaintBucket,
+  AlignLeft,
+  ALargeSmall,
+  Bold,
+  Type,
+  Layers,
+  Square,
+  Blend,
+  Wallpaper,
+  Paintbrush,
+  Eraser,
+  StretchHorizontal,
+  Grid3x3,
+  LayoutPanelTop,
+  MousePointer,
+  Droplet,
+  RefreshCw,
+  Braces,
+} from "lucide-react";
 import type { TrainerId } from "../lib/progress";
 
 export type TrainerMeta = {
   id: TrainerId;
   path: string;
-  emoji: string;
+  icon: LucideIcon;
   title: string;
   summary: string;
   taskCount: number;
@@ -16,7 +56,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "tags-attributes",
     path: "/tags-attributes",
-    emoji: "🧩",
+    icon: Tag,
     title: "Что такое теги и атрибуты",
     summary:
       "Разбери HTML-тег на части: имя тега, атрибут, значение атрибута — и собери свой.",
@@ -27,7 +67,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "html-structure",
     path: "/html-structure",
-    emoji: "🏗️",
+    icon: LayoutTemplate,
     title: "HTML-теги и структура страницы",
     summary:
       "Собери скелет веб-страницы из блоков и разберись, какой тег за что отвечает.",
@@ -38,7 +78,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "headings",
     path: "/headings",
-    emoji: "🔠",
+    icon: Heading1,
     title: "Заголовки h1–h6",
     summary:
       "Один главный заголовок h1 и разделы поменьше h2–h6 — разберись, какой тег когда ставить.",
@@ -49,7 +89,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "paragraphs",
     path: "/paragraphs",
-    emoji: "📄",
+    icon: Pilcrow,
     title: "Абзац p",
     summary: "Тег p — обычный текст страницы. Когда начинать новый абзац и чем он отличается от переноса строки.",
     taskCount: 9,
@@ -59,7 +99,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "lists",
     path: "/lists",
-    emoji: "📑",
+    icon: List,
     title: "Списки: ul, ol и вложенные",
     summary: "Маркированный ul и нумерованный ol — собери список сам, попробуй и вложенный список внутри пункта.",
     taskCount: 9,
@@ -69,7 +109,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "div-classes",
     path: "/div-classes",
-    emoji: "🗂️",
+    icon: Box,
     title: "Блоки div и классы",
     summary: "div группирует содержимое в блок, а атрибут class даёт этому блоку имя, за которое цепляется CSS.",
     taskCount: 9,
@@ -79,7 +119,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "id-attribute",
     path: "/id-attribute",
-    emoji: "🆔",
+    icon: IdCard,
     title: "Атрибут id",
     summary: "id — тоже имя для элемента, но, в отличие от class, уникальное: встречается на странице только один раз.",
     taskCount: 9,
@@ -89,7 +129,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "buttons",
     path: "/buttons",
-    emoji: "🔘",
+    icon: MousePointerClick,
     title: "Кнопка button",
     summary: "button — для действий на странице (не для переходов). disabled отключает кликабельность.",
     taskCount: 9,
@@ -99,7 +139,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "images",
     path: "/images",
-    emoji: "🖼️",
+    icon: Image,
     title: "Изображения img",
     summary: "src, alt, width и height — набор атрибутов, с которых начинается любая картинка на странице.",
     taskCount: 9,
@@ -109,7 +149,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "image-paths",
     path: "/image-paths",
-    emoji: "🧭",
+    icon: FolderTree,
     title: "Пути к картинкам",
     summary:
       "Впиши src сам и смотри вживую, когда фото появляется, а когда — нет.",
@@ -120,7 +160,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "links",
     path: "/links",
-    emoji: "🔗",
+    icon: Link,
     title: "Тег a и атрибут href",
     summary:
       "Собери ссылку сам — куда она ведёт, когда открывается в новой вкладке, и чем якорь отличается от обычной ссылки.",
@@ -131,7 +171,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "semantic-tags",
     path: "/semantic-tags",
-    emoji: "🏛️",
+    icon: PanelsTopLeft,
     title: "Семантические теги: header, nav, main, footer",
     summary: "Теги, называющие СМЫСЛ блока: шапка, меню, главное содержимое, боковая колонка, подвал.",
     taskCount: 9,
@@ -141,7 +181,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "tables",
     path: "/tables",
-    emoji: "📊",
+    icon: Table,
     title: "HTML-таблицы",
     summary:
       "table, tr, td, th и объединение ячеек через rowspan и colspan.",
@@ -152,7 +192,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "form-basics",
     path: "/form-basics",
-    emoji: "📋",
+    icon: ClipboardList,
     title: "Форма form",
     summary: "form объединяет поля в одну отправку — попробуй отправить поле нажатием Enter.",
     taskCount: 9,
@@ -162,7 +202,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "form-fields",
     path: "/form-fields",
-    emoji: "🏷️",
+    icon: TextCursorInput,
     title: "Поля формы: label и placeholder",
     summary: "label — подпись, которая не исчезает. placeholder — подсказка внутри поля, которая исчезает.",
     taskCount: 9,
@@ -172,7 +212,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "input-types",
     path: "/input-types",
-    emoji: "⌨️",
+    icon: Keyboard,
     title: "Типы полей ввода",
     summary:
       "type, placeholder и required — собери форму регистрации из подходящих полей.",
@@ -185,7 +225,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "css-intro",
     path: "/css-intro",
-    emoji: "🔌",
+    icon: Plug,
     title: "Как подключить стили",
     summary: "CSS живёт в ОТДЕЛЬНОМ файле style.css. Разберись, как связать его с HTML через тег link.",
     taskCount: 9,
@@ -195,7 +235,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "selectors",
     path: "/selectors",
-    emoji: "🎯",
+    icon: Target,
     title: "CSS-селекторы",
     summary:
       "Пиши селекторы и смотри, какие элементы страницы они подсвечивают.",
@@ -206,7 +246,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "text-color",
     path: "/text-color",
-    emoji: "🎨",
+    icon: Palette,
     title: "Цвет текста: color",
     summary: "Свойство color красит сам текст. Подбирай значение и смотри на результат вживую.",
     taskCount: 9,
@@ -216,7 +256,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "background-color",
     path: "/background-color",
-    emoji: "🪣",
+    icon: PaintBucket,
     title: "Цвет фона: background-color",
     summary: "background-color красит не текст, а фон блока целиком. Не перепутай с color!",
     taskCount: 9,
@@ -226,7 +266,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "text-align",
     path: "/text-align",
-    emoji: "📐",
+    icon: AlignLeft,
     title: "Выравнивание текста: text-align",
     summary: "left, center, right, justify — куда прижимается текст внутри своего блока.",
     taskCount: 9,
@@ -236,7 +276,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "font-size",
     path: "/font-size",
-    emoji: "🔡",
+    icon: ALargeSmall,
     title: "Размер текста: font-size",
     summary: "font-size задаёт размер шрифта — обычно в пикселях.",
     taskCount: 9,
@@ -246,7 +286,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "font-weight",
     path: "/font-weight",
-    emoji: "🅱️",
+    icon: Bold,
     title: "Насыщенность шрифта: font-weight",
     summary: "От тонкого (300) до очень жирного (900). bold = 700, normal = 400.",
     taskCount: 9,
@@ -256,7 +296,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "typography",
     path: "/typography",
-    emoji: "🔤",
+    icon: Type,
     title: "Шрифты и оформление текста",
     summary:
       "font-family, letter-spacing, line-height, text-decoration — и как подключить свой или Google-шрифт.",
@@ -267,7 +307,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "box-model",
     path: "/box-model",
-    emoji: "📦",
+    icon: Layers,
     title: "CSS Box Model",
     summary:
       "Подвигай слои margin, border и padding и увидь, как из них складывается размер блока.",
@@ -278,7 +318,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "border",
     path: "/border",
-    emoji: "🔲",
+    icon: Square,
     title: "Рамка: border и border-bottom",
     summary: "Толщина, стиль линии и цвет — border-bottom рисует рамку только снизу.",
     taskCount: 9,
@@ -288,7 +328,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "shadows",
     path: "/shadows",
-    emoji: "🪪",
+    icon: Blend,
     title: "Тени и скругления: border-radius, box-shadow",
     summary:
       "Скругли уголки карточки и подвинь её тень — border-radius и box-shadow вживую.",
@@ -299,7 +339,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "backgrounds",
     path: "/backgrounds",
-    emoji: "🏞️",
+    icon: Wallpaper,
     title: "Фон блока: background-image",
     summary:
       "background-size, background-position, background-repeat — растяни, подвинь и размножь картинку на фоне блока.",
@@ -310,7 +350,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "gradient",
     path: "/gradient",
-    emoji: "🌈",
+    icon: Paintbrush,
     title: "Градиент: linear-gradient",
     summary: "Плавный переход цветов вместо обычной картинки, как значение background-image.",
     taskCount: 9,
@@ -320,7 +360,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "reset-box-sizing",
     path: "/reset-box-sizing",
-    emoji: "🧹",
+    icon: Eraser,
     title: "Сброс отступов: * и box-sizing",
     summary: "* { margin: 0; padding: 0; } убирает умолчания браузера, border-box меняет формулу ширины блока.",
     taskCount: 9,
@@ -330,7 +370,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "flexbox",
     path: "/flexbox",
-    emoji: "🧲",
+    icon: StretchHorizontal,
     title: "Flexbox: выравнивание и направление",
     summary:
       "Расставь карточки по контейнеру с помощью flex-свойств — всё меняется вживую.",
@@ -341,7 +381,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "grid",
     path: "/grid",
-    emoji: "▦",
+    icon: Grid3x3,
     title: "CSS Grid: сетка из карточек",
     summary: "grid-template-columns и gap расставляют карточки ровной сеткой из колонок и рядов.",
     taskCount: 9,
@@ -351,7 +391,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "page-layout",
     path: "/page-layout",
-    emoji: "🧱",
+    icon: LayoutPanelTop,
     title: "Макет страницы: header, main, footer",
     summary:
       "Собери скелет страницы и прижми footer к низу экрана с помощью flexbox.",
@@ -362,7 +402,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "pseudo-classes",
     path: "/pseudo-classes",
-    emoji: "🖱️",
+    icon: MousePointer,
     title: "Псевдоклассы :hover и :active",
     summary:
       "Наведи курсор или нажми кнопку мыши — посмотри, как меняется элемент.",
@@ -373,7 +413,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "opacity",
     path: "/opacity",
-    emoji: "🫥",
+    icon: Droplet,
     title: "Прозрачность: opacity",
     summary: "От 0 (невидимо) до 1 (полностью видно) — место под элементом остаётся занятым.",
     taskCount: 9,
@@ -383,7 +423,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "transitions",
     path: "/transitions",
-    emoji: "🌀",
+    icon: RefreshCw,
     title: "Плавные переходы: transition",
     summary: "Сглаживает смену состояний — например, цвета или размера при :hover.",
     taskCount: 9,
@@ -395,7 +435,7 @@ export const trainers: TrainerMeta[] = [
   {
     id: "dom-access",
     path: "/dom-access",
-    emoji: "🧰",
+    icon: Braces,
     title: "Доступ к элементам HTML в JS",
     summary:
       "Разберись, что вернёт getElementById, querySelector и их соседи по DOM.",

@@ -46,7 +46,7 @@ export function MiniPage({
           }}
           className={cls("item1", "item rounded bg-white px-2 py-1")}
         >
-          🍎 Яблоко
+          Яблоко
         </li>
         <li
           onClick={(e) => {
@@ -55,7 +55,7 @@ export function MiniPage({
           }}
           className={cls("item2", "item special rounded bg-white px-2 py-1")}
         >
-          🍌 Банан
+          Банан
         </li>
         <li
           onClick={(e) => {
@@ -64,7 +64,7 @@ export function MiniPage({
           }}
           className={cls("item3", "item rounded bg-white px-2 py-1")}
         >
-          🍒 Вишня
+          Вишня
         </li>
       </ul>
       <p onClick={() => handle("note")} className={cls("note", "note text-xs text-slate-400")}>

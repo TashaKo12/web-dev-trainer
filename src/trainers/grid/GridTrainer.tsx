@@ -10,7 +10,7 @@ import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "grid")!;
 
-const CARDS = ["🍕", "🍔", "🍟", "🌮", "🍩", "🍦"];
+const CARDS = ["1", "2", "3", "4", "5", "6"];
 
 const COLUMNS = ["1fr", "1fr 1fr", "1fr 1fr 1fr", "repeat(4, 1fr)"] as const;
 
@@ -275,7 +275,7 @@ function Tasks() {
 export function GridTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="Сетка из карточек"

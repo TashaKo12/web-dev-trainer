@@ -208,7 +208,7 @@ function RequiredFieldLevel({ onResult }: { onResult: (correct: boolean) => void
       setMsg("Браузер не даст отправить форму — заполни поле.");
       return;
     }
-    setMsg("Форма отправлена! ✅");
+    setMsg("Форма отправлена!");
   }
 
   function check() {
@@ -388,7 +388,7 @@ function Tasks() {
 export function FormFieldsTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="label — подпись, placeholder — подсказка"

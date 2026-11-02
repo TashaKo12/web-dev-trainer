@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { FileCode } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -43,11 +44,12 @@ function Theory() {
             key={t}
             type="button"
             onClick={() => setTab(t)}
-            className={`rounded-t-lg px-4 py-2 font-mono text-xs font-bold transition ${
+            className={`flex items-center gap-1.5 rounded-t-lg px-4 py-2 font-mono text-xs font-bold transition ${
               tab === t ? (t === "html" ? "bg-sky-100 text-sky-700" : "bg-violet-100 text-violet-700") : "text-slate-400 hover:bg-slate-50"
             }`}
           >
-            📄 {t === "html" ? "index.html" : "style.css"}
+            <FileCode className="h-3.5 w-3.5" strokeWidth={2} />
+            {t === "html" ? "index.html" : "style.css"}
           </button>
         ))}
       </div>
@@ -452,7 +454,7 @@ function TypeRelLevel({ onResult }: { onResult: (correct: boolean) => void }) {
 export function CssIntroTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="style.css — другой файл, про оформление"

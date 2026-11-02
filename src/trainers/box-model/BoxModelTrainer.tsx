@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { Check, X } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -158,8 +159,9 @@ function LayerClickTask({ target = "padding", onResult }: { target?: string; onR
         </div>
       </div>
       {selected && (
-        <p className="mt-3 text-center text-sm font-bold text-indigo-600">
-          Выбрано: {selected} {checked && (selected === target ? "✅" : "❌")}
+        <p className="mt-3 flex items-center justify-center gap-1 text-center text-sm font-bold text-indigo-600">
+          Выбрано: {selected}
+          {checked && (selected === target ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <X className="h-4 w-4" strokeWidth={2.5} />)}
         </p>
       )}
       {!checked && (
@@ -229,8 +231,9 @@ function TargetWidthTask({ onResult }: { onResult: (correct: boolean) => void })
         <div className="space-y-4">
           <Slider label="padding" color="text-sky-600" value={padding} max={40} onChange={(v) => !checked && setPadding(v)} />
           <Slider label="border" color="text-orange-700" value={border} max={20} onChange={(v) => !checked && setBorder(v)} />
-          <div className={`rounded-xl p-3 text-center font-mono text-sm font-bold ${width === target ? "bg-emerald-50 text-emerald-700" : "bg-slate-50 text-slate-600"}`}>
-            {contentW} + 2×{padding} + 2×{border} = {width}px {width === target && "✅"}
+          <div className={`flex items-center justify-center gap-1 rounded-xl p-3 text-center font-mono text-sm font-bold ${width === target ? "bg-emerald-50 text-emerald-700" : "bg-slate-50 text-slate-600"}`}>
+            {contentW} + 2×{padding} + 2×{border} = {width}px
+            {width === target && <Check className="h-4 w-4" strokeWidth={2.5} />}
           </div>
         </div>
         <div className="flex items-center justify-center rounded-2xl bg-slate-100 p-4">
@@ -425,7 +428,7 @@ function Tasks() {
 export function BoxModelTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="Подвигай слои блока"

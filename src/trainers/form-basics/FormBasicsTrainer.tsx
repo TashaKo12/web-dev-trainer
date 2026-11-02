@@ -30,7 +30,7 @@ function Theory() {
 
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key !== "Enter") return;
-    setMsg(wrapped ? "Форма отправлена нажатием Enter! ✅" : "Ничего не произошло — поле не внутри <form>.");
+    setMsg(wrapped ? "Форма отправлена нажатием Enter!" : "Ничего не произошло — поле не внутри <form>.");
   }
 
   return (
@@ -96,7 +96,7 @@ function EnterTestLevel({ onResult }: { onResult: (correct: boolean) => void }) 
 
   function onKeyDown(e: React.KeyboardEvent) {
     if (e.key !== "Enter" || wrapped === null) return;
-    setMsg(wrapped ? "Отправилось нажатием Enter! ✅" : "Ничего не произошло.");
+    setMsg(wrapped ? "Отправилось нажатием Enter!" : "Ничего не произошло.");
   }
 
   function check(answer: boolean) {
@@ -209,7 +209,7 @@ function ClickSubmitLevel({ onResult }: { onResult: (correct: boolean) => void }
 
   function submit() {
     if (wrapped === null) return;
-    setMsg(wrapped ? "Отправилось кликом по кнопке! ✅" : "Кнопка нажалась, но форма не отправилась — рядом просто нет <form>.");
+    setMsg(wrapped ? "Отправилось кликом по кнопке!" : "Кнопка нажалась, но форма не отправилась — рядом просто нет <form>.");
   }
 
   function check(answer: boolean) {
@@ -387,7 +387,7 @@ function Tasks() {
 export function FormBasicsTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="form объединяет поля в одну отправку"

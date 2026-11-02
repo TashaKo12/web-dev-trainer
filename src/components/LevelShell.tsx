@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { CircleCheck } from "lucide-react";
 import { LevelSidebar } from "./LevelSidebar";
 import type { TaskStatus } from "./useTaskStepper";
 
@@ -54,7 +55,12 @@ export function LevelShell({
                 Следующий уровень →
               </button>
             )}
-            {status === "correct" && <span className="font-bold text-emerald-600">✅ Верно!</span>}
+            {status === "correct" && (
+              <span className="flex items-center gap-1.5 font-bold text-emerald-600">
+                <CircleCheck className="h-4 w-4" strokeWidth={2} />
+                Верно!
+              </span>
+            )}
             {status === "wrong" && <span className="font-bold text-rose-500">Не совсем — но ты уже близко</span>}
           </div>
 

@@ -53,7 +53,7 @@ function Theory() {
         return;
       }
     }
-    setSubmitMsg("Форма отправлена! ✅");
+    setSubmitMsg("Форма отправлена!");
   }
 
   return (
@@ -316,7 +316,7 @@ function Tasks() {
 export function InputTypesTrainer() {
   return (
     <div>
-      <TrainerHero emoji={meta.emoji} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
         title="Собери форму из полей"

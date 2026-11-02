@@ -66,24 +66,6 @@ pre {
 .bg-blob-c { animation: float-c 28s ease-in-out infinite; }
 .bg-blob-d { animation: float-d 22s ease-in-out infinite; }
 
-@keyframes loading-bar {
-  from { width: 0%; }
-  to { width: 100%; }
-}
-
-.animate-loading-bar {
-  animation: loading-bar 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
-}
-
-@keyframes logo-pulse {
-  0%, 100% { transform: translateY(0) scale(1); }
-  50% { transform: translateY(-10px) scale(1.08); }
-}
-
-.animate-logo-pulse {
-  animation: logo-pulse 1.6s ease-in-out infinite;
-}
-
 @keyframes fade-in {
   from { opacity: 0; transform: translateY(6px); }
   to { opacity: 1; transform: translateY(0); }
@@ -93,8 +75,37 @@ pre {
   animation: fade-in 0.4s ease-out both;
 }
 
+@keyframes spin-cw {
+  to { transform: rotate(360deg); }
+}
+
+@keyframes spin-ccw {
+  to { transform: rotate(-360deg); }
+}
+
+@keyframes pulse-dot {
+  0%, 100% { opacity: 0.4; transform: scale(1); }
+  50% { opacity: 1; transform: scale(1.35); }
+}
+
+@keyframes progress-fill {
+  from { transform: scaleX(0); }
+  to { transform: scaleX(1); }
+}
+
+.loading-spin-slow { animation: spin-cw 26s linear infinite; }
+.loading-spin-medium { animation: spin-ccw 18s linear infinite; }
+.loading-spin-fast { animation: spin-cw 12s linear infinite; }
+.loading-pulse-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
+
+.loading-progress-fill {
+  transform-origin: left;
+  animation: progress-fill 1.3s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
 @media (prefers-reduced-motion: reduce) {
-  .bg-blob-a, .bg-blob-b, .bg-blob-c, .bg-blob-d, .animate-logo-pulse {
+  .bg-blob-a, .bg-blob-b, .bg-blob-c, .bg-blob-d,
+  .loading-spin-slow, .loading-spin-medium, .loading-spin-fast, .loading-pulse-dot {
     animation: none;
   }
 }
