@@ -93,9 +93,6 @@ pre {
   to { transform: scaleX(1); }
 }
 
-.loading-spin-slow { animation: spin-cw 26s linear infinite; }
-.loading-spin-medium { animation: spin-ccw 18s linear infinite; }
-.loading-spin-fast { animation: spin-cw 12s linear infinite; }
 .loading-pulse-dot { animation: pulse-dot 2.2s ease-in-out infinite; }
 
 .loading-progress-fill {
@@ -104,9 +101,11 @@ pre {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .bg-blob-a, .bg-blob-b, .bg-blob-c, .bg-blob-d,
-  .loading-spin-slow, .loading-spin-medium, .loading-spin-fast, .loading-pulse-dot {
+  .bg-blob-a, .bg-blob-b, .bg-blob-c, .bg-blob-d, .loading-pulse-dot {
     animation: none;
+  }
+  .loading-scene * {
+    animation: none !important;
   }
 }
 
