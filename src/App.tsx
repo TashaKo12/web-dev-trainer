@@ -1,5 +1,7 @@
+import { useState } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
+import { LoadingScreen } from "./components/LoadingScreen";
 import { Home } from "./pages/Home";
 import { TagsAttributesTrainer } from "./trainers/tags-attributes/TagsAttributesTrainer";
 import { HtmlStructureTrainer } from "./trainers/html-structure/HtmlStructureTrainer";
@@ -40,8 +42,11 @@ import { TransitionsTrainer } from "./trainers/transitions/TransitionsTrainer";
 import { DomAccessTrainer } from "./trainers/dom-access/DomAccessTrainer";
 
 function App() {
+  const [loading, setLoading] = useState(true);
+
   return (
     <HashRouter>
+      {loading && <LoadingScreen onDone={() => setLoading(false)} />}
       <Routes>
         <Route element={<Layout />}>
           <Route index element={<Home />} />
