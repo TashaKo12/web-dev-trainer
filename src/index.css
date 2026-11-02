@@ -98,3 +98,310 @@ pre {
     animation: none;
   }
 }
+
+/* Dark-mode retrofit for content cards (inside <main> only — header/footer keep their own hand-tuned dark styles). */
+html.dark main .bg-white,
+html.dark main .bg-white\/70 {
+  background-color: rgb(51 65 85 / 0.8); /* slate-700/80 */
+}
+
+html.dark main .bg-white\/90 {
+  background-color: rgb(15 23 42 / 0.85); /* slate-900/85 */
+}
+
+html.dark main .border-white\/60,
+html.dark main .border-white\/70 {
+  border-color: rgb(71 85 105 / 0.5); /* slate-600/50 */
+}
+
+html.dark main .bg-slate-50,
+html.dark main .bg-slate-200 {
+  background-color: rgb(30 41 59 / 0.6); /* slate-800/60 */
+}
+
+html.dark main .bg-slate-100,
+html.dark main .bg-slate-300 {
+  background-color: rgb(51 65 85 / 0.7); /* slate-700/70 */
+}
+
+html.dark main .border-slate-200,
+html.dark main .border-slate-300,
+html.dark main .border-slate-400 {
+  border-color: #475569; /* slate-600 */
+}
+
+html.dark main .text-slate-900,
+html.dark main .text-slate-800 {
+  color: #f1f5f9; /* slate-100 */
+}
+
+html.dark main .text-slate-700 {
+  color: #e2e8f0; /* slate-200 */
+}
+
+html.dark main .text-slate-600 {
+  color: #cbd5e1; /* slate-300 */
+}
+
+html.dark main .text-slate-500 {
+  color: #94a3b8; /* slate-400 */
+}
+
+html.dark main .text-slate-400 {
+  color: #64748b; /* slate-500 */
+}
+
+html.dark main .bg-amber-50,
+html.dark main .bg-amber-100 {
+  background-color: rgb(120 53 15 / 0.35);
+}
+
+html.dark main .text-amber-600,
+html.dark main .text-amber-700,
+html.dark main .text-amber-800 {
+  color: #fcd34d;
+}
+
+html.dark main .border-amber-200,
+html.dark main .border-amber-300,
+html.dark main .border-amber-400 {
+  border-color: #b45309;
+}
+
+html.dark main .bg-emerald-50,
+html.dark main .bg-emerald-100 {
+  background-color: rgb(6 78 59 / 0.35);
+}
+
+html.dark main .text-emerald-600,
+html.dark main .text-emerald-700,
+html.dark main .text-emerald-800 {
+  color: #6ee7b7;
+}
+
+html.dark main .border-emerald-200,
+html.dark main .border-emerald-300,
+html.dark main .border-emerald-400 {
+  border-color: #047857;
+}
+
+html.dark main .bg-rose-50,
+html.dark main .bg-rose-100 {
+  background-color: rgb(136 19 55 / 0.35);
+}
+
+html.dark main .text-rose-600,
+html.dark main .text-rose-700,
+html.dark main .text-rose-800 {
+  color: #fda4af;
+}
+
+html.dark main .border-rose-200,
+html.dark main .border-rose-300,
+html.dark main .border-rose-400 {
+  border-color: #be123c;
+}
+
+html.dark main .bg-indigo-50,
+html.dark main .bg-indigo-100 {
+  background-color: rgb(49 46 129 / 0.35);
+}
+
+html.dark main .text-indigo-600,
+html.dark main .text-indigo-700,
+html.dark main .text-indigo-800 {
+  color: #a5b4fc;
+}
+
+html.dark main .border-indigo-200,
+html.dark main .border-indigo-300,
+html.dark main .border-indigo-400 {
+  border-color: #4338ca;
+}
+
+html.dark main .bg-sky-50,
+html.dark main .bg-sky-100 {
+  background-color: rgb(12 74 110 / 0.35);
+}
+
+html.dark main .text-sky-600,
+html.dark main .text-sky-700,
+html.dark main .text-sky-800 {
+  color: #7dd3fc;
+}
+
+html.dark main .border-sky-200,
+html.dark main .border-sky-300,
+html.dark main .border-sky-400 {
+  border-color: #0369a1;
+}
+
+html.dark main .bg-orange-50,
+html.dark main .bg-orange-100 {
+  background-color: rgb(124 45 18 / 0.35);
+}
+
+html.dark main .text-orange-600,
+html.dark main .text-orange-700,
+html.dark main .text-orange-800 {
+  color: #fdba74;
+}
+
+html.dark main .border-orange-200,
+html.dark main .border-orange-300,
+html.dark main .border-orange-400 {
+  border-color: #c2410c;
+}
+
+html.dark main .bg-violet-50,
+html.dark main .bg-violet-100 {
+  background-color: rgb(76 29 149 / 0.35);
+}
+
+html.dark main .text-violet-600,
+html.dark main .text-violet-700,
+html.dark main .text-violet-800 {
+  color: #c4b5fd;
+}
+
+html.dark main .border-violet-200,
+html.dark main .border-violet-300,
+html.dark main .border-violet-400 {
+  border-color: #6d28d9;
+}
+
+html.dark main .bg-cyan-50,
+html.dark main .bg-cyan-100 {
+  background-color: rgb(22 78 99 / 0.35);
+}
+
+html.dark main .text-cyan-600,
+html.dark main .text-cyan-700,
+html.dark main .text-cyan-800 {
+  color: #67e8f9;
+}
+
+html.dark main .border-cyan-200,
+html.dark main .border-cyan-300,
+html.dark main .border-cyan-400 {
+  border-color: #0e7490;
+}
+
+html.dark main .bg-pink-50,
+html.dark main .bg-pink-100 {
+  background-color: rgb(131 24 67 / 0.35);
+}
+
+html.dark main .text-pink-600,
+html.dark main .text-pink-700,
+html.dark main .text-pink-800 {
+  color: #f9a8d4;
+}
+
+html.dark main .border-pink-200,
+html.dark main .border-pink-300,
+html.dark main .border-pink-400 {
+  border-color: #be185d;
+}
+
+html.dark main .bg-teal-50,
+html.dark main .bg-teal-100 {
+  background-color: rgb(19 78 74 / 0.35);
+}
+
+html.dark main .text-teal-600,
+html.dark main .text-teal-700,
+html.dark main .text-teal-800 {
+  color: #5eead4;
+}
+
+html.dark main .border-teal-200,
+html.dark main .border-teal-300,
+html.dark main .border-teal-400 {
+  border-color: #0f766e;
+}
+
+html.dark main .bg-lime-50,
+html.dark main .bg-lime-100 {
+  background-color: rgb(54 83 20 / 0.35);
+}
+
+html.dark main .text-lime-600,
+html.dark main .text-lime-700,
+html.dark main .text-lime-800 {
+  color: #bef264;
+}
+
+html.dark main .border-lime-200,
+html.dark main .border-lime-300,
+html.dark main .border-lime-400 {
+  border-color: #4d7c0f;
+}
+
+html.dark main .bg-blue-50,
+html.dark main .bg-blue-100 {
+  background-color: rgb(30 58 138 / 0.35);
+}
+
+html.dark main .text-blue-600,
+html.dark main .text-blue-700,
+html.dark main .text-blue-800 {
+  color: #93c5fd;
+}
+
+html.dark main .border-blue-200,
+html.dark main .border-blue-300,
+html.dark main .border-blue-400 {
+  border-color: #1d4ed8;
+}
+
+html.dark main .bg-purple-50,
+html.dark main .bg-purple-100 {
+  background-color: rgb(88 28 135 / 0.35);
+}
+
+html.dark main .text-purple-600,
+html.dark main .text-purple-700,
+html.dark main .text-purple-800 {
+  color: #d8b4fe;
+}
+
+html.dark main .border-purple-200,
+html.dark main .border-purple-300,
+html.dark main .border-purple-400 {
+  border-color: #7e22ce;
+}
+
+html.dark main .bg-fuchsia-50,
+html.dark main .bg-fuchsia-100 {
+  background-color: rgb(112 26 117 / 0.35);
+}
+
+html.dark main .text-fuchsia-600,
+html.dark main .text-fuchsia-700,
+html.dark main .text-fuchsia-800 {
+  color: #f0abfc;
+}
+
+html.dark main .border-fuchsia-200,
+html.dark main .border-fuchsia-300,
+html.dark main .border-fuchsia-400 {
+  border-color: #a21caf;
+}
+
+html.dark main .bg-yellow-50,
+html.dark main .bg-yellow-100 {
+  background-color: rgb(113 63 18 / 0.35);
+}
+
+html.dark main .text-yellow-600,
+html.dark main .text-yellow-700,
+html.dark main .text-yellow-800 {
+  color: #fde047;
+}
+
+html.dark main .border-yellow-200,
+html.dark main .border-yellow-300,
+html.dark main .border-yellow-400 {
+  border-color: #a16207;
+}
