@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -198,6 +199,19 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "Чему эквивалентно grid-template-columns: repeat(3, 1fr)?", explain: "repeat(3, 1fr) — короткая запись для 1fr 1fr 1fr, то есть трёх одинаковых колонок." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "display: grid превращает элемент в сетку, расставляющую детей по рядам и колонкам.", answer: true, explain: "Да, это свойство включает Grid-раскладку." },
+  { text: "grid-template-columns: 1fr 1fr создаёт три равные колонки.", answer: false, explain: "1fr 1fr — это ровно ДВЕ колонки, по количеству значений fr через пробел." },
+  { text: "grid управляет только колонками, со строками он работать не умеет.", answer: false, explain: "Grid двумерный — он управляет и колонками, и строками одновременно, в отличие от flexbox." },
+  { text: "repeat(4, 1fr) — это короткая запись для четырёх одинаковых колонок 1fr 1fr 1fr 1fr.", answer: true, explain: "Да, repeat() просто повторяет указанное значение нужное число раз." },
+  { text: "Единица fr означает долю свободного пространства контейнера.", answer: true, explain: "fr (от fraction) — это часть доступного места, которую получает колонка или ряд." },
+  { text: "Свойство gap задаёт промежуток между ячейками сетки.", answer: true, explain: "Да, gap — это расстояние между соседними ячейками grid (и flex)." },
+  { text: "Чтобы получить промежуток между ячейками grid, обязательно нужно использовать margin у каждой карточки.", answer: false, explain: "Для этого есть отдельное свойство gap — margin на карточках не нужен." },
+  { text: "grid-template-columns: repeat(3, 1fr) и grid-template-columns: 1fr 1fr 1fr дают одинаковый результат.", answer: true, explain: "Да, repeat(3, 1fr) — это просто более короткая запись трёх одинаковых колонок." },
+  { text: "В grid все колонки обязаны быть одинаковой ширины — разную ширину задать нельзя.", answer: false, explain: "Можно указывать разные значения, например 1fr 2fr 3fr — колонки получат разные доли пространства." },
+  { text: "flexbox и grid — это одно и то же свойство, просто с разными названиями.", answer: false, explain: "Это разные инструменты: flexbox выстраивает элементы в одну линию, а grid — двумерная сетка из строк и колонок." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "grid");
   const task = stepper.index;
@@ -272,6 +286,12 @@ export function GridTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и подбирай колонки." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

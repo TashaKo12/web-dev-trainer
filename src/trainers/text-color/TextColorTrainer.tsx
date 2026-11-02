@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "text-color")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "color красит сам текст, а не фон вокруг него.", answer: true, explain: "Да, за фон отвечает другое свойство — background-color." },
+  { text: "Значение color можно задать только HEX-кодом, никак иначе.", answer: false, explain: "Нет, можно и именем цвета (red, tomato), и HEX-кодом, и через rgb()." },
+  { text: "#000000 — это HEX-код чёрного цвета.", answer: true, explain: "Да, все нули дают чёрный цвет." },
+  { text: "rgb(220, 38, 38) задаёт цвет тремя числами: красный, зелёный, синий каналы.", answer: true, explain: "Верно, именно так устроена запись rgb()." },
+  { text: '"colorful" — это допустимое именованное CSS-значение цвета.', answer: false, explain: "Нет, такого именованного цвета не существует, в отличие от, например, tomato." },
+  { text: "Белый текст на белом фоне будет отлично читаться.", answer: false, explain: "Нет, он сольётся с фоном и станет невидимым — нужен контрастный цвет." },
+  { text: "orange — это допустимое именованное CSS-значение цвета.", answer: true, explain: "Да, orange — один из стандартных именованных цветов CSS." },
+  { text: "Короткую запись HEX-кода #000 можно использовать вместо #000000.", answer: true, explain: "Да, если пары символов повторяются, можно писать сокращённо из трёх символов." },
+  { text: "color влияет только на цвет границы (border) элемента.", answer: false, explain: "Нет, color влияет на цвет текста. За границу отвечает отдельное свойство border-color." },
+  { text: "Можно подобрать один и тот же цвет и именем, и HEX-кодом, и через rgb().", answer: true, explain: "Да, это разные способы записи, но результат может быть абсолютно одинаковым." },
+];
 
 const SWATCHES = ["#1e293b", "#dc2626", "#16a34a", "#2563eb", "#9333ea", "#ffffff"] as const;
 
@@ -329,6 +343,12 @@ export function TextColorTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

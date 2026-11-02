@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -281,6 +282,19 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "Если и :hover, и :active написаны для одного элемента, в каком порядке их принято писать в CSS, чтобы :active побеждал при одновременном наведении и нажатии?", explain: "Принятый порядок — LVHA: :link, :visited, :hover, :active. Более поздние правила перекрывают более ранние при равной специфичности, поэтому :active пишут последним." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: ":hover срабатывает только от клика мышью, а не от наведения.", answer: false, explain: ":hover срабатывает от простого наведения курсора, клик для него не нужен." },
+  { text: ":active действует, пока кнопка мыши зажата на элементе.", answer: true, explain: "Да, :active активен только в момент удержания кнопки мыши." },
+  { text: "Селектор .card:hover пишется с пробелом между .card и :hover.", answer: false, explain: "Класс и псевдокласс пишутся слитно, без пробела: .card:hover." },
+  { text: ":focus срабатывает, когда поле ввода получает фокус (кликнули в него или перешли по Tab).", answer: true, explain: "Да, :focus — это состояние элемента, активного для ввода." },
+  { text: ":visited красит ссылку, которую пользователь уже посещал раньше.", answer: true, explain: "Да, :visited применяется к уже открытым пользователем ссылкам." },
+  { text: "Принятый порядок написания LVHA означает :link, :visited, :hover, :active.", answer: true, explain: "Да, это мнемоника для правильного порядка — более поздние правила перекрывают более ранние." },
+  { text: ":hover и :active — это один и тот же псевдокласс с разными названиями.", answer: false, explain: "Это разные состояния: :hover — наведение, :active — зажатая кнопка мыши." },
+  { text: "Псевдоклассы всегда пишутся с двумя двоеточиями, например ::hover.", answer: false, explain: "Псевдоклассы пишутся с ОДНИМ двоеточием (:hover), два двоеточия — это псевдоэлементы." },
+  { text: "Если написать :active раньше :hover в CSS-файле, порядок повлияет на то, какое правило победит при одинаковой специфичности.", answer: true, explain: "Да, при равной специфичности побеждает правило, написанное позже в файле." },
+  { text: "Элемент может одновременно находиться и в состоянии :hover, и в состоянии :active.", answer: true, explain: "Да, это происходит, когда пользователь навёл курсор И зажал кнопку мыши одновременно." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "pseudo-classes");
   const task = stepper.index;
@@ -339,6 +353,12 @@ export function PseudoClassesTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, наблюдай, наводи курсор и кликай." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

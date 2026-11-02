@@ -3,6 +3,7 @@ import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -294,6 +295,19 @@ function FlexLevel({ level, onResult }: { level: Level; onResult: (correct: bool
   );
 }
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "Чтобы включить flexbox, нужно написать display: flex на контейнере.", answer: true, explain: "Да, именно display: flex превращает блок в flex-контейнер для его детей." },
+  { text: "flex-direction: column меняет направление оси на вертикальное.", answer: true, explain: "column выстраивает блоки друг под другом сверху вниз вместо ряда." },
+  { text: "justify-content управляет положением блоков по поперечной оси, а align-items — по главной.", answer: false, explain: "Наоборот: justify-content — это главная ось, align-items — поперечная." },
+  { text: "justify-content: space-between добавляет одинаковый отступ со всех сторон у каждого блока, включая крайние.", answer: false, explain: "space-between прижимает первый и последний блок к краям без отступа, а остальное пространство делит между блоками." },
+  { text: "По умолчанию flex-wrap равен nowrap — блоки не переносятся на новую строку, даже если не помещаются.", answer: true, explain: "Да, nowrap — значение по умолчанию, блоки будут сжиматься или вылезать за контейнер, но не переноситься." },
+  { text: "align-items: stretch — это поведение по умолчанию для поперечной оси.", answer: true, explain: "Если не задавать align-items, блоки растягиваются на всю высоту (или ширину) контейнера — это и есть stretch." },
+  { text: "justify-content: space-around даёт каждому блоку одинаковый отступ с обеих сторон.", answer: true, explain: "В отличие от space-between, у space-around даже крайние блоки получают отступ от края контейнера." },
+  { text: "flexbox работает только с горизонтальным расположением блоков, вертикальное им не поддерживается.", answer: false, explain: "flex-direction: column делает ось вертикальной — flexbox отлично работает и в колонку." },
+  { text: "Чтобы собрать блоки по центру и по горизонтали, и по вертикали, обычно используют justify-content: center вместе с align-items: center.", answer: true, explain: "Именно так — одно свойство центрирует по главной оси, второе по поперечной." },
+  { text: "flex-wrap: wrap разрешает блокам, которым не хватило места в ряду, перейти на следующую строку.", answer: true, explain: "Да, wrap включает перенос — лишние блоки уезжают на новую строку вместо сжатия." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(LEVELS.length, "flexbox");
 
@@ -336,6 +350,12 @@ export function FlexboxTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Собери образец" description="9 уровней — сначала выбирай значения из списка, потом пиши их сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

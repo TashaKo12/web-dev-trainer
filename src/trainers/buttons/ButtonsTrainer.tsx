@@ -5,6 +5,7 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "buttons")!;
@@ -291,6 +292,59 @@ const TASK_META = [
   { badge: "сравни вживую", prompt: "", explain: "Кнопка Б помечена disabled, поэтому её счётчик не увеличивается, сколько по ней ни кликай — реагирует только обычная кнопка А." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "button используют для перехода на другую страницу сайта.",
+    answer: false,
+    explain: "Нет, для переходов служит ссылка a. button — для действий на текущей странице.",
+  },
+  {
+    text: "Атрибут disabled полностью отключает клики по кнопке.",
+    answer: true,
+    explain: "Да, пока стоит disabled, кнопка не реагирует на клики, сколько бы раз по ней ни нажали.",
+  },
+  {
+    text: "У disabled-атрибута обязательно нужно писать значение, например disabled=\"true\".",
+    answer: false,
+    explain: "Нет, disabled пишут просто именем без значения — его присутствие само по себе уже отключает кнопку.",
+  },
+  {
+    text: "type=\"reset\" у кнопки внутри формы отправляет данные на сервер.",
+    answer: false,
+    explain: "Нет, reset сбрасывает поля формы к исходным значениям. За отправку отвечает type=\"submit\".",
+  },
+  {
+    text: "type=\"button\" сам по себе ничего не делает без дополнительного JavaScript.",
+    answer: true,
+    explain: "Верно, обычная кнопка типа button не отправляет и не сбрасывает форму — её поведение описывают отдельно через скрипт.",
+  },
+  {
+    text: "Кнопку можно сделать из обычного div со стилями, и она будет вести себя точно так же, как настоящий button.",
+    answer: false,
+    explain: "Нет, div без button теряет встроенную поддержку клавиатуры и хуже распознаётся программами экранного доступа.",
+  },
+  {
+    text: "Disabled-кнопку можно нажать с помощью клавиатуры, даже если мышкой она не реагирует.",
+    answer: false,
+    explain: "Нет, disabled отключает кнопку полностью — и для мыши, и для клавиатуры.",
+  },
+  {
+    text: "На одной странице может быть несколько кнопок button одновременно.",
+    answer: true,
+    explain: "Да, количество кнопок на странице ничем не ограничено.",
+  },
+  {
+    text: "button — единственный способ сделать на странице кликабельный элемент.",
+    answer: false,
+    explain: "Нет, кликабельными можно сделать и другие элементы (например, ссылку a), просто у них разное предназначение.",
+  },
+  {
+    text: "Если убрать disabled, кнопка снова начнёт реагировать на клики.",
+    answer: true,
+    explain: "Да, disabled — это просто переключаемое состояние, а не постоянное свойство кнопки.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "buttons");
   const task = stepper.index;
@@ -351,6 +405,12 @@ export function ButtonsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, нажимай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

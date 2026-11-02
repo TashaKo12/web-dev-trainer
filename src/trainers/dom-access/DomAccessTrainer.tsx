@@ -3,6 +3,7 @@ import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 import { MiniPage, type ElKey } from "./MiniPage";
@@ -256,6 +257,19 @@ function TypeTask({
   );
 }
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "document.getElementById всегда возвращает только один элемент.", answer: true, explain: "Да, id уникален на странице, поэтому getElementById находит ровно один элемент." },
+  { text: "document.querySelectorAll возвращает только первый подходящий элемент, как querySelector.", answer: false, explain: "querySelectorAll возвращает ВСЕ подходящие элементы, а не только первый — в этом его отличие от querySelector." },
+  { text: "children у элемента — это все его потомки на любой глубине вложенности.", answer: false, explain: "children — это только ПРЯМЫЕ потомки (дети), а не внуки и правнуки." },
+  { text: "parentElement поднимается ровно на один уровень вверх — к родителю элемента.", answer: true, explain: "Да, parentElement всегда даёт ближайшего родителя, не выше." },
+  { text: "closest ищет ближайшего ПОДХОДЯЩЕГО предка и может подняться выше, чем просто родитель.", answer: true, explain: "Да, closest идёт вверх по дереву, пока не найдёт элемент, подходящий под селектор." },
+  { text: "nextElementSibling находит следующий элемент того же уровня вложенности (соседа).", answer: true, explain: "Да, это сосед справа/ниже на том же уровне, а не потомок и не родитель." },
+  { text: "previousElementSibling и nextElementSibling находят один и тот же элемент.", answer: false, explain: "Это противоположные направления: previousElementSibling — сосед слева/выше, nextElementSibling — справа/ниже." },
+  { text: "document.querySelector можно использовать и с id, и с классом, и с именем тега в виде CSS-селектора.", answer: true, explain: "Да, querySelector принимает любой CSS-селектор: #id, .class, тег и даже более сложные комбинации." },
+  { text: "Индексы в коллекции элементов (например, children[1]) начинаются с единицы.", answer: false, explain: "Как и в большинстве языков программирования, индексы начинаются с 0: children[0] — первый элемент." },
+  { text: "getElementsByClassName возвращает коллекцию элементов, а не один элемент.", answer: true, explain: "Да, так как класс может встречаться у нескольких элементов, этот метод возвращает коллекцию, а не один элемент." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(TASKS.length, "dom-access");
 
@@ -302,6 +316,12 @@ export function DomAccessTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по странице, потом пиши код сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

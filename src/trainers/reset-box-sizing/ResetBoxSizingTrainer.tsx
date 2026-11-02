@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -241,6 +242,19 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "Почему border-box так часто включают ГЛОБАЛЬНО, через * в самом начале файла?", explain: "Чтобы для ВСЕХ элементов сразу работала простая и предсказуемая формула ширины — не нужно отдельно считать padding/border для каждого блока." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "Селектор * применяет правило ко всем элементам страницы без исключений.", answer: true, explain: "Да, * — это универсальный селектор, он выбирает вообще все элементы." },
+  { text: "У браузера по умолчанию нет никаких отступов у h1, p, ul — все отступы ставит только разработчик.", answer: false, explain: "На самом деле у браузера есть свои умолчания margin для многих тегов, из-за них и возникают щели." },
+  { text: "box-sizing: border-box заставляет padding и border добавляться ПОВЕРХ заданного width.", answer: false, explain: "Наоборот — border-box «съедает» padding и border внутри заданной ширины, а не добавляет их сверху." },
+  { text: "content-box — это значение box-sizing по умолчанию.", answer: true, explain: "Да, если box-sizing вообще не указывать, браузер использует content-box." },
+  { text: "С border-box ширина блока на экране всегда равна значению width, сколько бы ни было padding и border.", answer: true, explain: "В этом и смысл border-box — итоговая ширина остаётся ровно такой, как задано в width." },
+  { text: "border-box обычно включают глобально через *, чтобы не считать padding и border вручную для каждого блока.", answer: true, explain: "Именно так — одна строка в начале файла делает формулу ширины простой и предсказуемой для всех элементов." },
+  { text: "Сброс margin у всех элементов никак не влияет на расстояние между заголовком и абзацем.", answer: false, explain: "Сброс margin убирает щели между блоками — отступы браузера по умолчанию исчезают." },
+  { text: "box-sizing можно задать только для всей страницы сразу, а для одного конкретного блока — нельзя.", answer: false, explain: "box-sizing — обычное CSS-свойство, его можно задать и одному отдельному элементу." },
+  { text: "При content-box итоговая ширина блока — это width плюс padding с двух сторон плюс border с двух сторон.", answer: true, explain: "Да, это и есть формула content-box: содержимое плюс рамки вокруг него добавляются сверху." },
+  { text: "Сброс отступов (* { margin: 0; padding: 0; }) и box-sizing: border-box решают одну и ту же задачу.", answer: false, explain: "Это разные задачи: сброс убирает умолчания браузера, а border-box меняет формулу расчёта ширины блока." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "reset-box-sizing");
   const task = stepper.index;
@@ -299,6 +313,12 @@ export function ResetBoxSizingTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, считай ширину и проверяй вживую." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "text-align")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "text-align управляет тем, куда прижимается текст внутри его блока.", answer: true, explain: "Именно так — left, center, right и justify меняют положение текста внутри родительского блока." },
+  { text: "Значение по умолчанию для text-align — center.", answer: false, explain: "По умолчанию используется left — текст прижимается к левому краю, если ничего не указать." },
+  { text: "text-align: justify растягивает КАЖДУЮ строку текста по ширине, включая последнюю.", answer: false, explain: "Все строки, кроме последней (обычно короткой), растягиваются по ширине — последняя остаётся как есть." },
+  { text: "text-align: right прижимает текст к правому краю блока.", answer: true, explain: "Да, right — это выравнивание по правому краю." },
+  { text: "text-align умеет менять цвет текста.", answer: false, explain: "Нет, это свойство отвечает только за горизонтальное положение текста, а не за цвет." },
+  { text: "center сдвигает текст целиком к середине, не меняя форму строк.", answer: true, explain: "В отличие от justify, center просто центрирует строки, не растягивая их." },
+  { text: "text-align можно применить к любому блочному элементу с текстом внутри, например к <p>.", answer: true, explain: "Да, это свойство работает на родительском блоке и выравнивает его содержимое." },
+  { text: "У text-align всего два возможных значения: left и right.", answer: false, explain: "На самом деле их минимум четыре: left, center, right и justify." },
+  { text: "justify часто используют в газетах и книгах, чтобы текст выглядел ровными колонками.", answer: true, explain: "Да, это классический приём типографики — текст с ровными краями с обеих сторон." },
+  { text: "Чтобы центрировать кнопку внутри блока, можно поставить text-align: center на сам этот блок.", answer: true, explain: "Да, text-align на родителе центрирует и инлайновое содержимое внутри него, включая кнопки." },
+];
 
 const ALIGNS = ["left", "center", "right", "justify"] as const;
 type Align = (typeof ALIGNS)[number];
@@ -299,6 +313,12 @@ export function TextAlignTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значение, выбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

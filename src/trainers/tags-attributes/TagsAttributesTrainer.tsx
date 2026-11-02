@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 import { TagCode, type TagExample } from "./TagCode";
 
@@ -26,6 +27,8 @@ function Theory() {
   const [attrName, setAttrName] = useState("class");
   const [attrValue, setAttrValue] = useState("title");
   const [content, setContent] = useState("Заголовок");
+
+  const [selfClosing, setSelfClosing] = useState(false);
 
   return (
     <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
@@ -64,6 +67,55 @@ function Theory() {
         <div className="mt-3">
           <TagCode example={{ tagName: tagName || "тег", attrs: attrName ? [{ name: attrName, value: attrValue }] : [], content }} />
         </div>
+      </div>
+
+      <div className="mt-6 border-t border-slate-100 pt-6">
+        <p className="mb-3 text-sm font-bold text-amber-700">Самозакрывающиеся теги</p>
+        <p className="mb-3 text-sm text-slate-600">
+          У большинства тегов есть содержимое и отдельный закрывающий тег — как у <code className="rounded bg-slate-100 px-1">p</code>. Но у
+          некоторых тегов просто нечему быть внутри: <code className="rounded bg-slate-100 px-1">img</code> — это картинка, а не
+          контейнер для текста. У таких тегов нет закрывающей пары — они сами себя «закрывают». Переключи, чтобы сравнить.
+        </p>
+        <div className="mb-3 flex gap-2">
+          <button
+            type="button"
+            onClick={() => setSelfClosing(false)}
+            className={`rounded-full border-2 px-4 py-1.5 text-xs font-bold transition ${
+              !selfClosing ? "border-amber-500 bg-amber-50 text-amber-700" : "border-slate-200 text-slate-500 hover:border-amber-200"
+            }`}
+          >
+            Обычный тег
+          </button>
+          <button
+            type="button"
+            onClick={() => setSelfClosing(true)}
+            className={`rounded-full border-2 px-4 py-1.5 text-xs font-bold transition ${
+              selfClosing ? "border-amber-500 bg-amber-50 text-amber-700" : "border-slate-200 text-slate-500 hover:border-amber-200"
+            }`}
+          >
+            Самозакрывающийся тег
+          </button>
+        </div>
+        {selfClosing ? (
+          <>
+            <TagCode example={{ tagName: "img", attrs: [{ name: "src", value: "cat.jpg" }, { name: "alt", value: "Кот" }], selfClosing: true }} />
+            <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+              У img нет содержимого и нет тега <code className="rounded bg-white px-1">{"</img>"}</code> — вся нужная информация (какую
+              картинку показать) умещается в атрибутах. Слэш перед {" "}
+              <code className="rounded bg-white px-1">{">"}</code> можно поставить (<code className="rounded bg-white px-1">{"/>"}</code>),
+              а можно не ставить — браузер поймёт одинаково. Так же устроены <code className="rounded bg-white px-1">br</code>,{" "}
+              <code className="rounded bg-white px-1">input</code> и <code className="rounded bg-white px-1">hr</code>.
+            </div>
+          </>
+        ) : (
+          <>
+            <TagCode example={{ tagName: "p", attrs: [], content: "Текст абзаца" }} />
+            <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+              У p есть содержимое («Текст абзаца»), поэтому обязательно нужен закрывающий тег{" "}
+              <code className="rounded bg-white px-1">{"</p>"}</code> — иначе браузер не поймёт, где текст абзаца заканчивается.
+            </div>
+          </>
+        )}
       </div>
     </div>
   );
@@ -140,6 +192,59 @@ const LEVELS: Level[] = [
     question: 'Собери тег ссылки a с атрибутом href="contact.html" и текстом «Контакты».',
     expected: '<a href="contact.html">Контакты</a>',
     explain: 'Тег: <a href="contact.html">Контакты</a> — у ссылки есть закрывающий тег, текст лежит между ними.',
+  },
+];
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "Имя тега всегда пишется сразу после открывающей скобки <.",
+    answer: true,
+    explain: "Да — например, в <h1> имя тега h1 идёт сразу после <.",
+  },
+  {
+    text: "У одного тега не может быть больше одного атрибута.",
+    answer: false,
+    explain: "Может — например, у <img src=\"cat.jpg\" alt=\"Кот\"> сразу два атрибута: src и alt.",
+  },
+  {
+    text: "Значение атрибута всегда пишется в кавычках.",
+    answer: true,
+    explain: "Верно — после знака = значение атрибута заключают в кавычки, например class=\"title\".",
+  },
+  {
+    text: "Тег <img> обязательно должен иметь закрывающий тег </img>.",
+    answer: false,
+    explain: "Нет — img самозакрывающийся, ему нечего содержать внутри, поэтому закрывающего тега нет.",
+  },
+  {
+    text: "В закрывающем теге перед именем тега ставится слэш /.",
+    answer: true,
+    explain: "Да, например у <p>...</p> закрывающий тег — это </p>, со слэшем перед p.",
+  },
+  {
+    text: "Атрибуты пишутся внутри закрывающего тега.",
+    answer: false,
+    explain: "Нет, атрибуты пишутся только внутри ОТКРЫВАЮЩЕГО тега, закрывающий тег атрибутов не содержит.",
+  },
+  {
+    text: "Содержимое тега — это то, что находится между открывающим и закрывающим тегом.",
+    answer: true,
+    explain: "Верно, например в <p>Привет!</p> содержимое — это слово «Привет!».",
+  },
+  {
+    text: "У тега a атрибут href указывает, куда ведёт ссылка.",
+    answer: true,
+    explain: "Да, href — главный атрибут ссылки, в нём записан адрес перехода.",
+  },
+  {
+    text: "Имя атрибута и его значение разделяются запятой.",
+    answer: false,
+    explain: "Нет, они разделяются знаком равно =, например class=\"intro\" — без запятой.",
+  },
+  {
+    text: "Несколько атрибутов одного тега пишутся через пробел.",
+    answer: true,
+    explain: "Верно — например, src=\"cat.jpg\" alt=\"Кот\" разделены пробелом.",
   },
 ];
 
@@ -261,6 +366,12 @@ export function TagsAttributesTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по частям тега, потом собирай тег сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "form-fields")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "label остаётся видимым, даже когда пользователь уже начал печатать в поле.", answer: true, explain: "Да, в отличие от placeholder, label никуда не исчезает." },
+  { text: "placeholder исчезает, как только пользователь начинает печатать.", answer: true, explain: "Верно, это подсказка внутри поля, которая пропадает при вводе текста." },
+  { text: "Атрибут for у label должен совпадать со значением атрибута id нужного поля.", answer: true, explain: "Да, именно так label связывается с конкретным полем." },
+  { text: "Клик по правильно связанному label не делает ничего особенного.", answer: false, explain: "Наоборот — клик по label переводит фокус в связанное с ним поле." },
+  { text: "required делает поле необязательным для заполнения.", answer: false, explain: "Наоборот — required делает поле ОБЯЗАТЕЛЬНЫМ, без него браузер не даст отправить форму." },
+  { text: "Если убрать required, браузер больше не будет проверять, заполнено ли поле, перед отправкой.", answer: true, explain: "Да, без required браузер отправит форму, даже если поле пустое." },
+  { text: "placeholder и label — это одно и то же, просто разные названия.", answer: false, explain: "Нет, это два разных атрибута/тега с разным поведением: label не исчезает, placeholder — исчезает." },
+  { text: "Связывать label с полем полезно для программ чтения с экрана.", answer: true, explain: "Да, это помогает людям, использующим такие программы, понимать, какая подпись к какому полю относится." },
+  { text: "Текст placeholder всегда виден, даже если в поле уже что-то введено.", answer: false, explain: "Нет, как только появляется введённый текст, placeholder скрывается под ним." },
+  { text: "label можно связать с полем только если у поля указан атрибут id.", answer: true, explain: "Да, у поля обязательно должен быть id, чтобы for у label мог на него сослаться." },
+];
 
 function Theory() {
   const [text, setText] = useState("");
@@ -385,6 +399,12 @@ export function FormFieldsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, кликай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

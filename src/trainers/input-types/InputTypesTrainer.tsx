@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "input-types")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: 'type="password" заменяет вводимые символы точками.', answer: true, explain: "Да, именно так работает type=\"password\" — текст скрывается от посторонних глаз." },
+  { text: 'type="email" заставляет браузер проверять формат адреса.', answer: true, explain: "Верно, браузер сам подскажет, если введённый текст не похож на email." },
+  { text: "required разрешает отправить форму с незаполненным полем.", answer: false, explain: "Наоборот — required не даст отправить форму, пока поле пустое." },
+  { text: "placeholder — это текст, который остаётся в поле даже после того, как пользователь напечатал свой ответ.", answer: false, explain: "Нет, placeholder исчезает, как только появляется введённый текст — это задача label, не placeholder." },
+  { text: 'type="number" показывает стрелочки вверх/вниз и не даёт ввести буквы.', answer: true, explain: "Да, это удобно для возраста, количества и других чисел." },
+  { text: 'type="date" показывает встроенный календарь браузера.', answer: true, explain: "Верно, это один из самых удобных готовых интерфейсов для выбора даты." },
+  { text: 'type="checkbox" позволяет выбрать только ОДИН вариант из нескольких.', answer: false, explain: "Нет, checkbox — это независимая галочка да/нет. Один вариант из нескольких — это radio." },
+  { text: 'type="radio" нужен, чтобы выбрать один вариант из нескольких взаимоисключающих.', answer: true, explain: "Да, именно для этого и существуют радиокнопки." },
+  { text: "Для телефона принято использовать type=\"tel\".", answer: true, explain: "Да, это специальный тип для номеров телефонов." },
+  { text: "Атрибут type у input всегда одинаковый и его нельзя менять.", answer: false, explain: "Можно и нужно — именно значение type определяет, как поле выглядит и ведёт себя (text, email, password, number и т.д.)." },
+];
 
 type FieldKey = "name" | "email" | "phone" | "password";
 
@@ -313,6 +327,12 @@ export function InputTypesTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

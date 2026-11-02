@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "typography")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "letter-spacing меняет расстояние МЕЖДУ СТРОКАМИ текста.", answer: false, explain: "letter-spacing меняет расстояние между буквами. За межстрочный интервал отвечает line-height." },
+  { text: "line-height: 1.5 означает, что межстрочный интервал в 1.5 раза больше размера шрифта.", answer: true, explain: "Число без единиц измерения в line-height — это множитель от font-size." },
+  { text: "monospace — это шрифт, у которого все буквы одинаковой ширины.", answer: true, explain: "Да, моноширинные шрифты часто используют в коде именно поэтому." },
+  { text: "serif — это шрифт БЕЗ засечек на концах букв.", answer: false, explain: "Наоборот — serif как раз означает шрифт С засечками. Без засечек — это sans-serif." },
+  { text: "text-decoration: none убирает подчёркивание и другое оформление текста.", answer: true, explain: "Да, none убирает любое text-decoration — подчёркивание, зачёркивание и прочее." },
+  { text: "Чтобы подключить свой файл шрифта в CSS, используют правило @font-face.", answer: true, explain: "Да, @font-face указывает имя шрифта и путь к файлу." },
+  { text: "Отрицательное значение letter-spacing (например -1px) раздвигает буквы ещё дальше друг от друга.", answer: false, explain: "Наоборот — отрицательное значение сближает буквы. Раздвигает их положительное значение." },
+  { text: "Шрифты с Google Fonts можно подключить без скачивания файла, с помощью @import url(...).", answer: true, explain: "Да, Google Fonts даёт готовую ссылку, которую подключают через @import прямо в CSS." },
+  { text: "font-family всегда может быть только одним конкретным шрифтом — указать запасной вариант нельзя.", answer: false, explain: "Можно перечислить несколько шрифтов через запятую — если первый не найдётся, браузер попробует следующий." },
+  { text: "text-shadow добавляет тексту тень, похожую на box-shadow у блоков.", answer: true, explain: "Да, text-shadow работает похожим образом, но применяется именно к тексту, а не к блоку целиком." },
+];
 
 const FONTS = ["sans-serif", "serif", "monospace", "cursive"] as const;
 const ALIGNS = ["left", "center", "right", "justify"] as const;
@@ -368,6 +382,12 @@ export function TypographyTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значения и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

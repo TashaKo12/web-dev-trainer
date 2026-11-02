@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "font-size")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "font-size задаёт размер шрифта текста.", answer: true, explain: "Да, именно это свойство управляет тем, насколько крупный или мелкий текст." },
+  { text: "Самая распространённая единица измерения для font-size — px (пиксели).", answer: true, explain: "px — самая понятная и часто используемая единица для размера текста." },
+  { text: "Если не указать font-size вообще, браузер сделает текст размером 0px и он исчезнет.", answer: false, explain: "По умолчанию браузер применяет 16px — текст виден, просто со стандартным размером." },
+  { text: "Для заголовков обычно выбирают font-size БОЛЬШЕ, чем для обычного текста абзаца.", answer: true, explain: "Да, крупный размер помогает заголовку выделяться на фоне остального текста." },
+  { text: "16px — это слишком мелко для комфортного чтения основного текста.", answer: false, explain: "16px — как раз общепринятый комфортный минимум для чтения обычного текста." },
+  { text: "Единица измерения \"kg\" подходит для font-size.", answer: false, explain: "kg — это килограммы, единица веса, а не размера шрифта. Для текста используют px, em, rem и похожие." },
+  { text: "Маленькие подписи (например, под фото) обычно делают с font-size больше, чем у заголовков.", answer: false, explain: "Наоборот — подписи делают мельче заголовков, чтобы не отвлекать внимание от главного." },
+  { text: "font-size можно менять с помощью ползунка (range input) и смотреть результат вживую.", answer: true, explain: "Да, значение в CSS можно подставлять динамически — именно так работает интерактивная демонстрация в теории." },
+  { text: "Значение font-size: 24px означает, что текст станет РОВНО 24 пикселя в высоту символов.", answer: true, explain: "px задаёт точный, фиксированный размер шрифта в пикселях." },
+  { text: "font-size влияет на то, где именно текст расположен на странице (слева, по центру и т.д.).", answer: false, explain: "За расположение текста отвечает text-align, а не font-size — font-size меняет только размер." },
+];
 
 function Theory() {
   const [size, setSize] = useState(24);
@@ -274,6 +288,12 @@ export function FontSizeTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значение, выбирай и почини баг." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

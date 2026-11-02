@@ -4,9 +4,23 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "backgrounds")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "background-repeat: no-repeat показывает картинку только один раз, без повторения.", answer: true, explain: "Да, no-repeat выключает мозаичное повторение картинки по блоку." },
+  { text: "background-size: cover может обрезать часть картинки, зато заполняет блок целиком.", answer: true, explain: "Да, cover растягивает картинку так, чтобы покрыть весь блок — лишнее обрезается." },
+  { text: "background-size: contain обрезает картинку по краям.", answer: false, explain: "Наоборот — contain вписывает картинку целиком без обрезки, а свободное место остаётся пустым." },
+  { text: "repeat-x повторяет картинку и по горизонтали, и по вертикали.", answer: false, explain: "repeat-x повторяет только по горизонтали. Для обеих осей сразу используют просто repeat." },
+  { text: "background-position: bottom right ставит картинку в правый нижний угол блока.", answer: true, explain: "Да, слова работают одновременно по вертикали (top/center/bottom) и горизонтали (left/center/right)." },
+  { text: "Значение background-size: 100% 100% растягивает картинку без сохранения пропорций.", answer: true, explain: "Да, ширина и высота задаются отдельно, поэтому картинка может исказиться." },
+  { text: "У background-position всегда можно использовать только ключевые слова вроде top или center, числа не подходят.", answer: false, explain: "Можно использовать и проценты, например 50% 20% — это тоже допустимое значение." },
+  { text: "repeat-y повторяет картинку одной лентой сверху вниз.", answer: true, explain: "Да, repeat-y — это повтор только по вертикали." },
+  { text: "Если background-repeat не указать вовсе, картинка не будет повторяться.", answer: false, explain: "По умолчанию у background-repeat значение repeat — картинка будет повторяться мозаикой, если не указать иначе." },
+  { text: "background-size, background-position и background-repeat можно использовать одновременно на одном блоке.", answer: true, explain: "Да, это три независимых свойства, которые вместе управляют поведением одной и той же фоновой картинки." },
+];
 
 const SCENE_SVG = `data:image/svg+xml,${encodeURIComponent(
   '<svg xmlns="http://www.w3.org/2000/svg" width="60" height="60" viewBox="0 0 60 60"><rect width="60" height="60" fill="#bae6fd"/><circle cx="44" cy="14" r="8" fill="#fbbf24"/><path d="M0 44 Q15 28 30 44 T60 44 V60 H0 Z" fill="#34d399"/></svg>',
@@ -320,6 +334,12 @@ export function BackgroundsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай значение, потом пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

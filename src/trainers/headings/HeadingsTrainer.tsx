@@ -5,6 +5,7 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "headings")!;
@@ -193,6 +194,59 @@ const TASK_META = [
   { badge: "напиши сам", prompt: "А внутри h3 нужен ещё один уровень вложенности — ещё мельче. Какой тег?", explain: "h4 — следующий уровень после h3." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "На странице может быть сколько угодно тегов h1.",
+    answer: false,
+    explain: "Нет, рекомендуется использовать h1 только один раз — как главный заголовок страницы.",
+  },
+  {
+    text: "h2 крупнее и важнее по смыслу, чем h3.",
+    answer: true,
+    explain: "Да, чем меньше цифра, тем выше заголовок в иерархии — h2 старше h3.",
+  },
+  {
+    text: "Теги заголовков выбирают только по тому, насколько крупным должен выглядеть текст.",
+    answer: false,
+    explain: "Нет, заголовки выбирают по смыслу (главный раздел или подраздел), а размер потом можно изменить через CSS.",
+  },
+  {
+    text: "h6 — самый мелкий уровень заголовка из всех существующих.",
+    answer: true,
+    explain: "Верно, h6 — последний, самый глубокий уровень заголовков в HTML.",
+  },
+  {
+    text: "На одной странице можно использовать несколько тегов h2.",
+    answer: true,
+    explain: "Да, в отличие от h1 — подзаголовков разделов может быть сколько угодно.",
+  },
+  {
+    text: "h4 должен обязательно идти сразу после h1, пропускать h2 и h3 нельзя.",
+    answer: false,
+    explain: "На практике пропускать уровни не рекомендуется для удобства, но технически браузер это не запрещает.",
+  },
+  {
+    text: "Заголовки h1–h6 влияют только на внешний вид, а не на структуру страницы.",
+    answer: false,
+    explain: "Неверно — заголовки в первую очередь описывают структуру документа, а не просто размер шрифта.",
+  },
+  {
+    text: "Чем меньше цифра в теге заголовка, тем он главнее.",
+    answer: true,
+    explain: "Да, h1 — самый главный, h6 — самый незначительный по иерархии.",
+  },
+  {
+    text: "Программы для незрячих пользователей используют заголовки, чтобы понять структуру страницы.",
+    answer: true,
+    explain: "Верно, правильная иерархия заголовков помогает скринридерам быстро ориентироваться по странице.",
+  },
+  {
+    text: "Для названия всей страницы правильнее использовать h3, а не h1.",
+    answer: false,
+    explain: "Нет, для главного заголовка всей страницы используют именно h1.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "headings");
   const task = stepper.index;
@@ -243,6 +297,12 @@ export function HeadingsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, кликай на мини-странице и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "div-classes")!;
@@ -139,6 +140,59 @@ const TASK_META = [
   { badge: "напиши сам", prompt: "", explain: 'class="card rounded" — оба класса через пробел в одних кавычках, как и в прошлый раз с "card highlight".' },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "div сам по себе как-то особо выглядит на странице без всякого CSS.",
+    answer: false,
+    explain: "Нет, div — это просто контейнер без собственного вида, пока к нему не применили стили.",
+  },
+  {
+    text: "Один и тот же class можно повесить сразу на много разных элементов.",
+    answer: true,
+    explain: "Да, в этом и смысл class — одно оформление можно применить к сколь угодно большому числу блоков.",
+  },
+  {
+    text: "id, в отличие от class, должен быть уникальным на странице.",
+    answer: true,
+    explain: "Верно, id — идентификатор ровно одного, конкретного элемента, повторяться он не должен.",
+  },
+  {
+    text: "У одного элемента может быть сразу несколько классов одновременно.",
+    answer: true,
+    explain: "Да, классы просто перечисляют через пробел внутри одного атрибута class.",
+  },
+  {
+    text: "class можно вешать только на теги div, на остальные теги — нельзя.",
+    answer: false,
+    explain: "Нет, class — универсальный атрибут, его можно поставить практически на любой HTML-тег.",
+  },
+  {
+    text: "Несколько классов у одного элемента пишут через запятую: class=\"card, highlight\".",
+    answer: false,
+    explain: "Нет, классы разделяют просто пробелом внутри одних кавычек: class=\"card highlight\", без запятой.",
+  },
+  {
+    text: "div используют, когда для содержимого нет более подходящего по смыслу тега.",
+    answer: true,
+    explain: "Да, div — универсальный «тег на крайний случай», когда семантический тег не подходит.",
+  },
+  {
+    text: "Одно и то же имя id можно использовать для двух разных элементов на одной странице.",
+    answer: false,
+    explain: "Нет, id обязан быть уникальным — его используют, чтобы однозначно сослаться ровно на один элемент.",
+  },
+  {
+    text: "class помогает CSS понять, какие элементы нужно оформить одинаково.",
+    answer: true,
+    explain: "Верно, именно за имя класса и «цепляется» CSS-стиль при оформлении блоков.",
+  },
+  {
+    text: "div — это сокращение от слова division (раздел, деление).",
+    answer: true,
+    explain: "Да, исторически div происходит именно от слова division — раздел документа.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "div-classes");
   const task = stepper.index;
@@ -205,6 +259,12 @@ export function DivClassesTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

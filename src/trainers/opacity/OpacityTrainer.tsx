@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -204,6 +205,19 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "Можно ли указать opacity больше 1 (например 1.5) или меньше 0 (например -0.5)?", explain: "Нет — браузер автоматически округлит такое значение до ближайшей границы: 1 или 0 соответственно." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "opacity: 0 делает элемент полностью невидимым, но место под ним остаётся занятым.", answer: true, explain: "Да, в отличие от display: none, opacity: 0 не убирает элемент из макета." },
+  { text: "opacity: 1 — это значение по умолчанию, элемент виден без искажений.", answer: true, explain: "Да, если opacity не менять, элемент полностью непрозрачен." },
+  { text: "Значение opacity можно указывать больше 1, например 1.5, чтобы сделать элемент ярче обычного.", answer: false, explain: "Браузер автоматически округлит такое значение до 1 — больше полной непрозрачности не бывает." },
+  { text: "opacity: 0 полностью убирает элемент из потока документа, как display: none.", answer: false, explain: "opacity: 0 только прячет элемент визуально — место под ним остаётся, и клики по нему всё ещё проходят." },
+  { text: "opacity: 0.5 делает элемент видимым примерно наполовину.", answer: true, explain: "Да, 0.5 — это ровно половинная прозрачность." },
+  { text: "Отрицательное значение opacity, например -0.5, сделает элемент 'ещё прозрачнее', чем 0.", answer: false, explain: "Браузер округлит отрицательное значение до 0 — прозрачнее полностью невидимого элемент стать не может." },
+  { text: "display: none и opacity: 0 всегда дают одинаковый визуальный и структурный результат.", answer: false, explain: "display: none убирает элемент из макета полностью, а opacity: 0 оставляет место занятым и клики активными." },
+  { text: "opacity влияет только на фон элемента, а не на его текст и содержимое.", answer: false, explain: "opacity делает прозрачным весь элемент целиком — и фон, и текст, и всё содержимое внутри." },
+  { text: "Если элемент еле виден из-за низкого opacity, его можно сделать заметнее, увеличив значение opacity.", answer: true, explain: "Да, чем ближе opacity к 1, тем лучше видно элемент." },
+  { text: "opacity можно задавать только целыми числами — 0 или 1, дробные значения не работают.", answer: false, explain: "Можно использовать и дробные значения, например 0.3 или 0.7, для частичной прозрачности." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "opacity");
   const task = stepper.index;
@@ -273,6 +287,12 @@ export function OpacityTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, подбирай значение и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

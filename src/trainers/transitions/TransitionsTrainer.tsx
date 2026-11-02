@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -519,6 +520,19 @@ const TASK_META = [
   { badge: "подбери скорость", prompt: "", explain: "0.1s — очень быстрая, почти незаметная на глаз реакция." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "transition делает переход между двумя состояниями элемента плавным.", answer: true, explain: "Да, именно для этого и нужен transition — сглаживать смену состояний." },
+  { text: "transition-property: all анимирует только одно конкретное свойство.", answer: false, explain: "all означает 'анимировать ЛЮБЫЕ изменяющиеся свойства сразу', а не одно." },
+  { text: "Без transition изменение свойства (например, цвета при :hover) происходит мгновенно, скачком.", answer: true, explain: "Да, без transition браузер просто сразу переключает значение, без плавности." },
+  { text: "transition-duration: 3s — это очень быстрый, почти незаметный переход.", answer: false, explain: "3 секунды — это довольно медленно и может раздражать; быстрый переход — это что-то вроде 0.1s." },
+  { text: "transition-timing-function: ease — значение по умолчанию, со старта и в конце движение плавное и медленное, а быстрее всего в середине.", answer: true, explain: "Да, именно так работает ease, в отличие от linear с равномерной скоростью." },
+  { text: "Короткая запись transition: all 0.3s — сначала указывается свойство, потом время.", answer: true, explain: "Да, в сокращённой записи порядок такой: свойство, затем время (можно добавить ещё и timing-function)." },
+  { text: "transition — это бесконечно повторяющаяся анимация, как @keyframes.", answer: false, explain: "transition анимирует переход МЕЖДУ двумя состояниями один раз, а не зацикленно, в отличие от @keyframes." },
+  { text: "Время в transition-duration можно записать и в секундах (0.5s), и в миллисекундах (500ms).", answer: true, explain: "Да, оба формата работают одинаково — 0.5s и 500ms это одно и то же время." },
+  { text: "linear-переход движется с одинаковой скоростью от начала до конца, без ускорений и замедлений.", answer: true, explain: "Да, linear — это равномерная скорость на всём протяжении анимации." },
+  { text: "Чтобы transition сработал, элементу обязательно нужен :hover — без него transition не используется.", answer: false, explain: "transition реагирует на ЛЮБОЕ изменение свойства — это может быть смена класса через JS, а не только :hover." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "transitions");
   const task = stepper.index;
@@ -577,6 +591,12 @@ export function TransitionsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сравнивай вживую, подвигай, выбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

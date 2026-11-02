@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "form-basics")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "form объединяет поля в одну отправку.", answer: true, explain: "Да, это главное назначение тега form." },
+  { text: "Enter отправит поле, даже если оно не лежит внутри form.", answer: false, explain: "Нет, отправка по Enter работает только для полей внутри тега form." },
+  { text: "Кнопка внутри form без атрибута type по умолчанию ведёт себя как кнопка отправки.", answer: true, explain: 'Да, по умолчанию это type="submit".' },
+  { text: "Атрибут action указывает, куда отправятся данные формы.", answer: true, explain: "Верно, именно за это отвечает action." },
+  { text: "Атрибут method определяет цвет формы.", answer: false, explain: "Нет, method определяет способ отправки данных (например GET или POST), а не цвет." },
+  { text: "method=\"post\" показывает данные формы прямо в адресной строке браузера.", answer: false, explain: "Наоборот — POST прячет данные внутри запроса. В адресной строке данные показывает GET." },
+  { text: "Кнопка отправки работает, даже если она физически находится снаружи тега form.", answer: false, explain: "Нет, кнопка должна быть внутри form (или связана с ним через атрибут), иначе клик ничего не отправит." },
+  { text: "Для формы с паролем принято использовать method=\"post\", а не GET.", answer: true, explain: "Да, чтобы пароль не засветился в адресной строке и истории браузера." },
+  { text: "<form></form> без единого атрибута — это уже рабочий, хоть и пустой контейнер для полей.", answer: true, explain: "Да, form может существовать и без атрибутов — их можно добавить позже." },
+  { text: "GET и POST — это два способа отправки данных формы.", answer: true, explain: "Верно, это два самых распространённых значения атрибута method." },
+];
 
 function Theory() {
   const [wrapped, setWrapped] = useState(true);
@@ -384,6 +398,12 @@ export function FormBasicsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, пробуй вживую и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "paragraphs")!;
@@ -331,6 +332,59 @@ const TASK_META = [
   { badge: "напиши число", prompt: "", explain: "Четыре отдельные мысли — четыре тега <p>, по одному на каждую." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "Браузер показывает все пробелы и переносы строк из HTML-кода точно так, как они написаны.",
+    answer: false,
+    explain: "Нет, браузер склеивает несколько пробелов и переносов строк подряд в один обычный пробел.",
+  },
+  {
+    text: "У тега p по умолчанию есть отступы сверху и снизу.",
+    answer: true,
+    explain: "Да, именно эти отступы визуально отделяют один абзац от другого.",
+  },
+  {
+    text: "Чтобы перенести строку ВНУТРИ одного абзаца, используют тег <br>.",
+    answer: true,
+    explain: "Верно, <br> создаёт перенос строки без создания нового абзаца с отступом.",
+  },
+  {
+    text: "Просто нажать Enter внутри HTML-кода — и на странице появится перенос строки.",
+    answer: false,
+    explain: "Нет, браузер проигнорирует перенос строки в коде и покажет текст слитно, если не использовать <br> или новый <p>.",
+  },
+  {
+    text: "У каждого тега p обязательно должен быть закрывающий тег </p>.",
+    answer: true,
+    explain: "Да, p — парный тег, у него есть и открывающий, и закрывающий тег.",
+  },
+  {
+    text: "div и p визуально выглядят абсолютно одинаково с одним и тем же текстом внутри.",
+    answer: false,
+    explain: "Нет, у p по умолчанию есть отступы сверху и снизу, а у div таких отступов нет.",
+  },
+  {
+    text: "Чтобы получить заметный отступ между двумя мыслями, нужно обернуть их в один общий тег p.",
+    answer: false,
+    explain: "Нет, для отступа между мыслями нужны ДВА отдельных тега p — один тег просто склеит весь текст в одну строку.",
+  },
+  {
+    text: "Несколько пробелов подряд в коде браузер превращает ровно в один пробел на экране.",
+    answer: true,
+    explain: "Да, это и называется «схлопывание пробелов» — особенность того, как HTML обрабатывает пробельные символы.",
+  },
+  {
+    text: "Тег p можно использовать только для одного предложения, а не для нескольких.",
+    answer: false,
+    explain: "Нет, внутри одного p может быть сколько угодно предложений — главное, чтобы это была одна смысловая мысль.",
+  },
+  {
+    text: "Если на странице три отдельные мысли, то для правильных отступов нужно три тега p.",
+    answer: true,
+    explain: "Верно, каждая отдельная мысль обычно оформляется своим собственным тегом p.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "paragraphs");
   const task = stepper.index;
@@ -396,6 +450,12 @@ export function ParagraphsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

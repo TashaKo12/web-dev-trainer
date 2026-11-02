@@ -4,9 +4,23 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "links")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "Тег a превращает текст в ссылку.", answer: true, explain: "Да, именно a отвечает за ссылки в HTML." },
+  { text: "Атрибут href указывает, какого цвета будет ссылка.", answer: false, explain: "Цвет задаётся через CSS. href указывает, КУДА ведёт ссылка." },
+  { text: 'target="_blank" открывает ссылку в новой вкладке.', answer: true, explain: "Верно — это именно то, для чего нужен этот атрибут." },
+  { text: 'href="#contacts" перезагружает всю страницу заново.', answer: false, explain: "Нет, ссылка-якорь просто прокручивает к элементу с id=\"contacts\", без перезагрузки." },
+  { text: "Ссылка на внешний сайт обязательно начинается с http:// или https://.", answer: true, explain: "Да, это и отличает внешнюю ссылку от ссылки на страницу своего сайта." },
+  { text: "mailto: открывает почтовую программу с готовым письмом.", answer: true, explain: "Верно, это специальная схема ссылки именно для этого." },
+  { text: "tel: нужен, чтобы ссылка вела на страницу «Телефоны».", answer: false, explain: "Нет, tel: запускает звонок на указанный номер, а не открывает страницу." },
+  { text: "Без атрибута href тег a всё равно будет выглядеть и работать как обычная ссылка.", answer: false, explain: "Без href ссылка не ведёт никуда и обычно не выглядит кликабельной." },
+  { text: "В одном теге a можно одновременно использовать и href, и target.", answer: true, explain: "Да, атрибутов у тега может быть несколько сразу." },
+  { text: 'href="/reviews" (со слэшем в начале) — то же самое, что mailto:.', answer: false, explain: "Нет, слэш в начале — это ссылка на страницу своего сайта от корня, а не почтовая схема." },
+];
 
 function parseTag(code: string): { href: string; target: boolean; text: string } {
   const hrefMatch = code.match(/href\s*=\s*"([^"]*)"/i);
@@ -312,6 +326,12 @@ export function LinksTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай ссылку из списка, потом пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

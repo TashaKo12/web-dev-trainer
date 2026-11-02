@@ -5,6 +5,7 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "html-structure")!;
@@ -172,6 +173,99 @@ function Theory() {
           </p>
         </div>
       )}
+    </div>
+  );
+}
+
+const TAG_INFO = [
+  {
+    key: "article",
+    label: "article",
+    desc: "Самостоятельный, законченный кусок контента — например, отдельная статья или новость. Вынеси его со страницы отдельно — он всё равно будет иметь смысл сам по себе.",
+  },
+  {
+    key: "section",
+    label: "section",
+    desc: "Тематический раздел большого блока — помогает разбить длинный материал на смысловые части, обычно со своим подзаголовком.",
+  },
+  {
+    key: "aside",
+    label: "aside",
+    desc: "Боковая, второстепенная информация рядом с основным текстом: реклама, похожие статьи, ссылки по теме — не то, ради чего пришёл читатель.",
+  },
+  {
+    key: "span",
+    label: "span",
+    desc: "Маленький кусочек текста ВНУТРИ строки, без своего блока — удобно, чтобы оформить стилем отдельное слово или фразу.",
+  },
+  {
+    key: "b",
+    label: "b",
+    desc: "Делает текст жирным — просто внешний вид, без смысла «это важно» (в отличие от тега strong).",
+  },
+] as const;
+
+function MoreTagsTheory() {
+  const [active, setActive] = useState<(typeof TAG_INFO)[number]["key"]>("article");
+  const info = TAG_INFO.find((t) => t.key === active)!;
+
+  function boxClass(key: string) {
+    return `rounded-xl border-2 p-3 transition ${active === key ? "border-indigo-400 bg-indigo-50" : "border-transparent"}`;
+  }
+
+  return (
+    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+      <p className="mb-5 text-slate-600">
+        Кроме header, nav, main и footer на странице часто встречаются ещё несколько тегов. Нажимай на кнопки —
+        соответствующий кусок примера страницы подсветится.
+      </p>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {TAG_INFO.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setActive(t.key)}
+            className={`rounded-full border-2 px-4 py-1.5 font-mono text-xs font-bold transition ${
+              active === t.key ? "border-sky-500 bg-sky-50 text-sky-700" : "border-slate-200 text-slate-500 hover:border-sky-200"
+            }`}
+          >
+            &lt;{t.label}&gt;
+          </button>
+        ))}
+      </div>
+
+      <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
+        <div className={boxClass("article")}>
+          <span className="mb-2 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">article</span>
+          <h4 className="mb-2 text-sm font-extrabold text-slate-700">Собака научилась открывать холодильник</h4>
+          <div className={boxClass("section")}>
+            <span className="mb-1 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">section</span>
+            <p className="text-xs leading-relaxed text-slate-600">
+              Хозяева заметили это{" "}
+              <span className={`rounded px-1 ${active === "span" ? "bg-amber-200 font-bold text-amber-900" : ""}`}>случайно</span> — а
+              теперь это происходит{" "}
+              <b className={active === "b" ? "rounded bg-amber-200 px-1 text-amber-900" : ""}>каждый день</b>, и холодильник пришлось
+              закрыть на магнит.
+            </p>
+          </div>
+        </div>
+        <div className={boxClass("aside")}>
+          <span className="mb-2 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">aside</span>
+          <div className="mb-3 rounded-lg bg-amber-50 p-2 text-center text-[11px] font-bold text-amber-700">
+            📢 Реклама: корм для собак −20%
+          </div>
+          <p className="mb-1 text-[11px] font-bold text-slate-500">Похожие статьи</p>
+          <ul className="space-y-1 text-[11px] text-slate-500">
+            <li>• Кот открыл дверь лапой</li>
+            <li>• 5 странных привычек питомцев</li>
+          </ul>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-sky-50 p-4 text-sm text-sky-800">
+        <code className="rounded bg-white px-1">&lt;{info.label}&gt;</code> — {info.desc}
+      </div>
     </div>
   );
 }
@@ -495,6 +589,59 @@ const TASK_META = [
   { badge: "напиши сам", prompt: "", explain: "<title>Мой сайт</title> — текст между тегами попадает прямо на вкладку браузера, его видит каждый, у кого открыта эта страница." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "На одной странице может быть только один тег <header>.",
+    answer: false,
+    explain: "Нет — <header> может быть и у всей страницы, и отдельно у каждой статьи или раздела.",
+  },
+  {
+    text: "Тег <main> должен встречаться на странице только один раз.",
+    answer: true,
+    explain: "Да, <main> обозначает единственный главный контент страницы — дублировать его не нужно.",
+  },
+  {
+    text: "<nav> подходит для абсолютно любого набора ссылок на странице.",
+    answer: false,
+    explain: "Нет, <nav> — для крупных блоков навигации (меню сайта), а не для каждой случайной ссылки в тексте.",
+  },
+  {
+    text: "<footer> обычно содержит копирайт и контактную информацию.",
+    answer: true,
+    explain: "Верно, это классическое содержимое подвала страницы или раздела.",
+  },
+  {
+    text: "Всё, что находится в <head>, видно прямо на странице в браузере.",
+    answer: false,
+    explain: "Нет, <head> — служебная часть: там живут title, meta и подключение стилей, пользователь их не видит.",
+  },
+  {
+    text: "<div> — семантический тег, который объясняет смысл содержимого.",
+    answer: false,
+    explain: "Нет, <div> — просто универсальный контейнер без смысла, в отличие от <section> или <article>.",
+  },
+  {
+    text: "<article> подходит для самостоятельного, законченного материала вроде новости или поста.",
+    answer: true,
+    explain: "Да, именно для этого он и придуман — такой блок имеет смысл сам по себе, без остальной страницы.",
+  },
+  {
+    text: "<aside> используют для самого важного содержимого страницы.",
+    answer: false,
+    explain: "Наоборот — <aside> для второстепенного содержимого: рекламы, похожих статей, боковых заметок.",
+  },
+  {
+    text: "<section> можно использовать для любого тематического блока со своим заголовком.",
+    answer: true,
+    explain: "Верно, section группирует связанное содержимое — например, «Отзывы» или «О компании».",
+  },
+  {
+    text: "<body> идёт раньше <head> в структуре HTML-документа.",
+    answer: false,
+    explain: "Нет, порядок обратный: сначала <head> со служебной информацией, потом <body> с видимым содержимым.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(10, "html-structure");
   const task = stepper.index;
@@ -551,11 +698,25 @@ export function HtmlStructureTrainer() {
         <Theory />
       </div>
       <SectionHeading
+        kicker="Теория"
+        title="Ещё несколько тегов"
+        description="article, section, aside, span и b — разберись, для чего нужен каждый, на примере статьи с рекламой и похожими статьями."
+      />
+      <div className="mb-10">
+        <MoreTagsTheory />
+      </div>
+      <SectionHeading
         kicker="Практика"
         title="Закрепим"
         description="10 уровней — кликай, собирай пары и пиши сам."
       />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

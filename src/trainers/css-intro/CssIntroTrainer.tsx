@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "css-intro")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "CSS принято хранить прямо внутри файла .html.", answer: false, explain: "Нет, CSS обычно хранят в отдельном файле .css, который подключают к HTML." },
+  { text: '<link rel="stylesheet" href="style.css"> подключает файл стилей к странице.', answer: true, explain: "Да, это и есть способ связать HTML-страницу с отдельным CSS-файлом." },
+  { text: "Тег link для подключения CSS ставят внутри <head>.", answer: true, explain: "Верно, именно там его обычно размещают." },
+  { text: "CSS-правило пишется без фигурных скобок: h1: color red;", answer: false, explain: "Нет, правильный синтаксис: h1 { color: red; } — обязательно с фигурными скобками." },
+  { text: "Одно CSS-правило из style.css применяется только к ПЕРВОМУ подходящему элементу на странице.", answer: false, explain: "Нет, правило применяется сразу ко ВСЕМ элементам, подходящим под селектор." },
+  { text: "Атрибут style можно написать прямо внутри тега, без отдельного файла CSS.", answer: true, explain: "Да, это способ задать стиль одному конкретному тегу напрямую." },
+  { text: "Если изменить цвет в style.css, HTML-код при этом тоже придётся менять.", answer: false, explain: "Нет, в этом и смысл разделения — меняется только CSS, а HTML остаётся прежним." },
+  { text: "Если два правила красят один и тот же элемент по-разному, при прочих равных побеждает ПЕРВОЕ правило в файле.", answer: false, explain: "Нет, побеждает последнее по порядку правило — оно перезаписывает более раннее." },
+  { text: "rel=\"stylesheet\" — обязательная часть тега link для подключения CSS.", answer: true, explain: "Да, именно это значение атрибута rel говорит браузеру, что подключается файл стилей." },
+  { text: "CSS отвечает за содержимое страницы, а HTML — за оформление.", answer: false, explain: "Наоборот: HTML отвечает за содержимое и структуру, а CSS — за оформление." },
+];
 
 const COLORS = ["#1e293b", "#ec4899", "#0891b2", "#16a34a"] as const;
 
@@ -449,6 +463,12 @@ export function CssIntroTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, проверяй вживую и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

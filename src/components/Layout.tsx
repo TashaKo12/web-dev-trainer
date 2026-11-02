@@ -8,10 +8,10 @@ export function Layout() {
     <div className="min-h-screen text-slate-800">
       <header className="sticky top-0 z-20 border-b border-white/60 bg-white/70 backdrop-blur-md">
         <div className="mx-auto flex max-w-5xl items-center justify-between px-5 py-4">
-          <Link to="/" className="flex items-center gap-2 font-extrabold text-slate-800">
+          <a href="https://tashako12.github.io/my-projects/" className="flex items-center gap-2 font-extrabold text-slate-800">
             <span className="text-2xl">🧩</span>
-            <span>Тренажёр веб-разработки</span>
-          </Link>
+            <span>Тренажеры</span>
+          </a>
           {!isHome && (
             <Link
               to="/"

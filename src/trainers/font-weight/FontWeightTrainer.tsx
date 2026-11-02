@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "font-weight")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "font-weight управляет насыщенностью (жирностью) текста.", answer: true, explain: "Да, это свойство делает текст тоньше или жирнее." },
+  { text: "Числовое значение bold равно 700.", answer: true, explain: "bold — это именованный аналог числа 700." },
+  { text: "normal соответствует числу 900.", answer: false, explain: "normal соответствует 400 — обычной, не жирной насыщенности. 900 — это максимально жирный текст." },
+  { text: "Чем МЕНЬШЕ число в font-weight, тем ЖИРНЕЕ текст.", answer: false, explain: "Наоборот — чем больше число, тем жирнее текст. Маленькие числа вроде 300 делают шрифт тоньше." },
+  { text: "900 — это максимальная жирность из стандартной шкалы значений font-weight.", answer: true, explain: "Да, шкала обычно идёт от 100 (самый тонкий) до 900 (самый жирный)." },
+  { text: "font-weight можно задать и числом, и именованным словом вроде bold или normal.", answer: true, explain: "Да, оба варианта работают одинаково — bold это то же самое, что 700." },
+  { text: "font-weight: 400 делает текст жирнее, чем font-weight: 800.", answer: false, explain: "Наоборот — 800 жирнее, чем 400. 400 — это обычная насыщенность текста." },
+  { text: "300 — одно из более тонких (светлых) значений жирности шрифта.", answer: true, explain: "Да, 300 находится ниже стандартных 400 и делает текст тоньше обычного." },
+  { text: "Если не указать font-weight вообще, текст всегда будет максимально жирным (900).", answer: false, explain: "По умолчанию браузер использует normal (400) — обычную насыщенность, а не максимальную жирность." },
+  { text: "У font-weight есть только два возможных значения: bold и normal.", answer: false, explain: "На самом деле можно использовать и числа от 100 до 900 — вариантов намного больше, чем просто bold и normal." },
+];
 
 const WEIGHTS = [300, 400, 500, 700, 900] as const;
 
@@ -294,6 +308,12 @@ export function FontWeightTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значение, выбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

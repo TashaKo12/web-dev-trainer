@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "semantic-tags")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "На странице может быть только один тег header.", answer: false, explain: "Нет, header может повторяться — например, свой header может быть у каждой article." },
+  { text: "main отмечает главное, уникальное содержимое страницы.", answer: true, explain: "Да, и такой тег на странице должен быть только один." },
+  { text: "nav нужен специально для блока ссылок меню.", answer: true, explain: "Верно, это его прямое назначение." },
+  { text: "aside всегда располагается строго снизу страницы.", answer: false, explain: "Нет, aside — это про смысл (второстепенная информация), а не про расположение на экране." },
+  { text: "footer обычно содержит копирайт и контакты.", answer: true, explain: "Да, это типичное содержимое подвала страницы." },
+  { text: "div и article — это абсолютно одно и то же.", answer: false, explain: "Нет, article помечает самостоятельный смысловой блок, а div ничего не сообщает о смысле." },
+  { text: "Семантические теги помогают поисковикам понимать структуру страницы.", answer: true, explain: "Именно так — в этом их главная польза, в отличие от div." },
+  { text: "Если убрать все семантические теги и заменить их на div, страница перестанет работать.", answer: false, explain: "Страница по-прежнему будет работать, просто потеряет смысловую структуру для поисковиков и читалок." },
+  { text: "section можно использовать для любого блока, даже если у него нет собственного смысла.", answer: false, explain: "section предназначен для смысловых разделов страницы, а не для любой группировки — для этого есть div." },
+  { text: "Семантические теги визуально выглядят иначе, чем div, без всякого CSS.", answer: false, explain: "По умолчанию они ведут себя как обычные блочные элементы, почти как div — разница именно в смысле, а не во внешнем виде." },
+];
 
 const ZONES = [
   { key: "header", label: "header", desc: "Шапка страницы — логотип, название, навигация.", cls: "bg-sky-600" },
@@ -208,6 +222,12 @@ export function SemanticTagsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и кликай по макету." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

@@ -5,6 +5,7 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "lists")!;
@@ -326,6 +327,59 @@ const TASK_META = [
   { badge: "проверь вживую", prompt: "", explain: "Да — списки можно свободно смешивать: ol внутри li обычного ul и наоборот, тип внешнего и вложенного списка не обязан совпадать." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "ul используют, когда порядок пунктов важен.",
+    answer: false,
+    explain: "Нет, наоборот — ul (unordered list) для списков, где порядок не важен. Для важного порядка есть ol.",
+  },
+  {
+    text: "Каждый пункт списка, и в ul, и в ol, оформляется тегом li.",
+    answer: true,
+    explain: "Да, li (list item) — универсальный тег пункта и для маркированных, и для нумерованных списков.",
+  },
+  {
+    text: "Список нельзя вложить внутрь пункта другого списка.",
+    answer: false,
+    explain: "Можно — вложенный список просто помещают прямо внутри тега li родительского пункта.",
+  },
+  {
+    text: "Тип вложенного списка обязательно должен совпадать с типом внешнего (ul внутри ul, ol внутри ol).",
+    answer: false,
+    explain: "Нет, можно свободно смешивать: например, ol с шагами может лежать внутри пункта ul-списка.",
+  },
+  {
+    text: "Нумерацию в ol браузер расставляет автоматически, вручную цифры писать не нужно.",
+    answer: true,
+    explain: "Верно, достаточно перечислить li по порядку — номера браузер проставит сам.",
+  },
+  {
+    text: "Список li без обёртки ul или ol сам по себе ничего не значит для браузера.",
+    answer: true,
+    explain: "Да, li обязательно должен находиться внутри ul или ol — сам по себе он не образует список.",
+  },
+  {
+    text: "Для инструкции по приготовлению блюда лучше подходит ul, а не ol.",
+    answer: false,
+    explain: "Нет, шаги инструкции идут в определённом порядке, поэтому правильнее использовать нумерованный ol.",
+  },
+  {
+    text: "В одном списке может быть всего один пункт li.",
+    answer: true,
+    explain: "Да, формально список из одного пункта вполне допустим — количество пунктов ничем не ограничено снизу.",
+  },
+  {
+    text: "Маркеры (точки) у ul всегда одинаковые на любом уровне вложенности.",
+    answer: false,
+    explain: "Нет, браузер по умолчанию может менять стиль маркера на разных уровнях вложенности (например, точка → кружок).",
+  },
+  {
+    text: "ol — это сокращение от слова ordered (упорядоченный).",
+    answer: true,
+    explain: "Да, ol — ordered list, то есть список с заданным порядком пунктов.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "lists");
   const task = stepper.index;
@@ -376,6 +430,12 @@ export function ListsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, кликай по списку и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

@@ -4,9 +4,23 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "shadows")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "border-radius: 50% превращает квадратный блок в идеальный круг.", answer: true, explain: "Да, 50% скругляет ровно на половину стороны — для квадрата это всегда круг." },
+  { text: "box-shadow рисует тень ВНУТРИ блока, а не снаружи.", answer: false, explain: "По умолчанию box-shadow рисует тень снаружи блока. Тень внутри делает отдельное ключевое слово inset." },
+  { text: "Первое число в box-shadow — это смещение тени по горизонтали (X).", answer: true, explain: "Да, порядок такой: смещение по X, смещение по Y, размытие, цвет." },
+  { text: "Отрицательное значение Y в box-shadow сдвигает тень вниз.", answer: false, explain: "Отрицательный Y сдвигает тень вверх. Вниз сдвигает положительное значение." },
+  { text: "Очень большое значение border-radius (например 9999px) превращает кнопку в «таблетку».", answer: true, explain: "Да, при таком большом значении углы скругляются максимально, сколько бы ни была высота кнопки." },
+  { text: "box-shadow умеет задавать и размытие тени, и её цвет.", answer: true, explain: "Да, у box-shadow четыре основных параметра: X, Y, размытие и цвет." },
+  { text: "Маленькое значение border-radius в пикселях (например 8px) всегда превращает блок в круг.", answer: false, explain: "Небольшое значение просто слегка скругляет углы — для круга нужно 50% (на квадрате) или очень большое число." },
+  { text: "Чтобы тень легла слева от карточки, нужно отрицательное смещение по X.", answer: true, explain: "Да, отрицательный X сдвигает тень влево, положительный — вправо." },
+  { text: "border-radius и box-shadow — это одно и то же свойство с разными именами.", answer: false, explain: "Это два разных свойства: border-radius скругляет углы, box-shadow добавляет тень вокруг блока." },
+  { text: "Если box-shadow вообще не указывать, у блока по умолчанию появится тень.", answer: false, explain: "По умолчанию тени нет совсем — её нужно явно задать свойством box-shadow." },
+];
 
 function Card({ radius, shadow, size = 140 }: { radius: string; shadow: string; size?: number }) {
   return (
@@ -320,6 +334,12 @@ export function ShadowsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай значение, потом пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

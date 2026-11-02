@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -246,6 +247,19 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "Какая запись CSS-правила с градиентом верная?", explain: "background-image: linear-gradient(to right, red, blue); — правильное название свойства, функции и порядок аргументов." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "linear-gradient() можно использовать как значение свойства background-image.", answer: true, explain: "Да, градиент — это особое значение именно для background-image." },
+  { text: "В linear-gradient направление всегда указывается в градусах, словами писать нельзя.", answer: false, explain: "Можно и словами (to right, to bottom...), и в градусах (135deg) — оба варианта работают." },
+  { text: "to right означает, что цвет переходит слева направо.", answer: true, explain: "Именно так — градиент идёт в ту сторону, куда указывает направление." },
+  { text: "В одном linear-gradient можно указать только ровно два цвета.", answer: false, explain: "Цветов может быть сколько угодно — браузер сам равномерно распределит переходы между ними." },
+  { text: "radial-gradient расходится от центра, а не идёт по прямой линии.", answer: true, explain: "radial-gradient — это круговой или эллиптический переход цветов от центра наружу." },
+  { text: "Направление и цвета в linear-gradient перечисляются через запятую.", answer: true, explain: "Да: linear-gradient(направление, цвет1, цвет2, ...) — все аргументы разделены запятыми." },
+  { text: "Если не указать направление, то linear-gradient вообще не сработает.", answer: false, explain: "Направление можно опустить — тогда градиент пойдёт сверху вниз по умолчанию." },
+  { text: "to bottom и to top дают одинаковый результат.", answer: false, explain: "to bottom идёт сверху вниз, а to top — снизу вверх, это противоположные направления." },
+  { text: "Свойство background-color и градиент можно использовать вместе — градиент перекроет цвет.", answer: true, explain: "background-image (градиент) рисуется поверх background-color, если оба заданы." },
+  { text: "linear-gradient работает только с HEX-цветами, например #f97316.", answer: false, explain: "Можно использовать любые форматы цвета: HEX, rgb(), названия цветов (red, blue) и другие." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "gradient");
   const task = stepper.index;
@@ -320,6 +334,12 @@ export function GradientTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, подбирай направление и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

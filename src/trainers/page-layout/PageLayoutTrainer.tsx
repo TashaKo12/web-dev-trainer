@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 
@@ -214,6 +215,19 @@ const TASK_META = [
   { badge: "выбери из списка", prompt: "Какое значение min-height растягивает body ровно на высоту ВСЕГО экрана?", explain: "100vh = 100% высоты окна просмотра (viewport) — именно столько нужно body, чтобы flex-колонке было куда растягиваться." },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "Чтобы footer прижался к низу экрана, достаточно одного display: flex на body.", answer: false, explain: "Нужны и flex-direction: column, и flex: 1 на main, и min-height: 100vh на body — одного display: flex мало." },
+  { text: "flex: 1 на main заставляет его растянуться и занять всё свободное место в колонке.", answer: true, explain: "Да, именно так main 'отталкивает' footer к самому низу." },
+  { text: "Без min-height: 100vh на body flex-колонке часто некуда растягиваться, если текста мало.", answer: true, explain: "Без этого body будет высотой ровно по контенту, и footer останется сразу под текстом." },
+  { text: "Блок с заданной шириной можно центрировать по горизонтали через margin: 0 auto.", answer: true, explain: "Да, это классический способ центрирования блока с фиксированной шириной." },
+  { text: "100vh означает 100 пикселей высоты.", answer: false, explain: "100vh — это 100% высоты окна просмотра (viewport), а не пиксели." },
+  { text: "Если забыть flex-direction: column, header, main и footer встанут в ряд по горизонтали.", answer: true, explain: "По умолчанию flex-direction: row, поэтому блоки выстроятся горизонтально, а не друг под другом." },
+  { text: "header — это первый элемент в классическом макете страницы, самый верхний блок.", answer: true, explain: "Да, header обычно идёт первым — это шапка страницы." },
+  { text: "main должен идти строго после footer в HTML-разметке.", answer: false, explain: "Обычно порядок такой: header, затем main, и footer в самом конце." },
+  { text: "Приём с footer внизу экрана работает одинаково и без min-height: 100vh на body.", answer: false, explain: "Без min-height: 100vh на body flex-колонке может быть нечему растягиваться — приём перестаёт работать как надо." },
+  { text: "margin: 0 auto центрирует блок, даже если у него не задана конкретная ширина.", answer: false, explain: "Для центрирования через margin: auto блоку обязательно нужна заданная ширина (например, width: 800px)." },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "page-layout");
   const task = stepper.index;
@@ -272,6 +286,12 @@ export function PageLayoutTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка, кликай по макету и проверяй вживую." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

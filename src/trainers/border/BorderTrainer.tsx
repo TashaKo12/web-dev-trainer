@@ -4,9 +4,23 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "border")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "border задаётся тремя значениями: толщина, стиль линии и цвет.", answer: true, explain: "Да, например border: 2px solid orange — именно в таком порядке обычно и пишут." },
+  { text: "dotted — это рамка из коротких штрихов.", answer: false, explain: "dotted — рамка из точек. Штрихи — это dashed." },
+  { text: "double рисует рамку из ДВУХ параллельных линий с просветом между ними.", answer: true, explain: "Да, double — особый стиль с двумя линиями, а не одной." },
+  { text: "border-style: none полностью убирает рамку.", answer: true, explain: "Да, none означает «рамки нет вообще» — это значение по умолчанию." },
+  { text: "solid — самая обычная, сплошная линия рамки.", answer: true, explain: "Да, solid — самый часто используемый и простой стиль рамки." },
+  { text: "border-bottom рисует рамку со всех четырёх сторон блока.", answer: false, explain: "border-bottom рисует линию ТОЛЬКО снизу блока — для всех сторон используют просто border." },
+  { text: "border-radius и border — это одно и то же свойство.", answer: false, explain: "Это разные свойства: border рисует саму линию рамки, а border-radius скругляет углы блока." },
+  { text: "Значения толщины, стиля и цвета в border можно писать в любом порядке.", answer: true, explain: "Да, порядок не важен — главное, чтобы все три значения были через пробел." },
+  { text: "border-bottom часто используют, чтобы подчеркнуть заголовок линией снизу.", answer: true, explain: "Да, это частый приём оформления — рамка только с одной стороны выглядит как подчёркивание." },
+  { text: "Если не указать border-style, рамка станет сплошной (solid) по умолчанию.", answer: false, explain: "По умолчанию border-style — none, то есть рамки не будет видно вообще, даже если задать толщину и цвет." },
+];
 
 const STYLES = ["solid", "dashed", "dotted", "double"] as const;
 
@@ -364,6 +378,12 @@ export function BorderTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, подбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

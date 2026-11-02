@@ -5,6 +5,7 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "images")!;
@@ -306,6 +307,59 @@ const TASK_META = [
   { badge: "напиши сам", prompt: "", explain: '<img src="dog.png" alt="Собака"> — та же конструкция, что и раньше, с другим файлом и текстом.' },
 ];
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "У тега img есть закрывающий тег </img>.",
+    answer: false,
+    explain: "Нет, img — самозакрывающийся тег, закрывающего тега у него нет.",
+  },
+  {
+    text: "Атрибут src указывает путь к файлу картинки.",
+    answer: true,
+    explain: "Да, src (source) — главный атрибут, без него браузеру нечего показывать.",
+  },
+  {
+    text: "Если картинка не загрузилась, вместо неё можно увидеть текст из атрибута alt.",
+    answer: true,
+    explain: "Верно, alt — запасной текст, который показывается, когда файл не найден.",
+  },
+  {
+    text: "Атрибуты width и height обязательно должны присутствовать у каждого img.",
+    answer: false,
+    explain: "Нет, они необязательны — без них браузер просто покажет картинку в её настоящем размере.",
+  },
+  {
+    text: "Если задать и width, и height так, что они не соответствуют реальным пропорциям картинки, изображение может исказиться.",
+    answer: true,
+    explain: "Да, картинка растянется или сожмётся не по пропорциям, если оба размера заданы неверно.",
+  },
+  {
+    text: "Если указать только одно из значений — width или height — браузер подстроит второе само, сохранив пропорции.",
+    answer: true,
+    explain: "Верно, это безопасный способ задать размер без риска исказить картинку.",
+  },
+  {
+    text: "alt нужен только людям с хорошим зрением.",
+    answer: false,
+    explain: "Нет, наоборот — alt особенно важен для программ экранного доступа, которыми пользуются незрячие люди.",
+  },
+  {
+    text: "src и alt пишутся через запятую в одних и тех же кавычках.",
+    answer: false,
+    explain: "Нет, это два разных атрибута, каждый со своими кавычками, пишутся через пробел: src=\"...\" alt=\"...\".",
+  },
+  {
+    text: "Картинку можно вставить на страницу тегом picture вместо img, но у неё нет похожего поведения с alt.",
+    answer: false,
+    explain: "Неверно — у picture тоже используют вложенный img с alt, принцип альтернативного текста остаётся тем же.",
+  },
+  {
+    text: "Без атрибута alt технически страница всё равно откроется и заработает.",
+    answer: true,
+    explain: "Да, технически alt необязателен, но правильная практика — указывать его всегда.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(9, "images");
   const task = stepper.index;
@@ -364,6 +418,12 @@ export function ImagesTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, сравнивай вживую и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

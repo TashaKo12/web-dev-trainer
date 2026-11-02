@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "tables")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "table — это тег для всей таблицы целиком.", answer: true, explain: "Да, это внешний контейнер для всех строк таблицы." },
+  { text: "tr создаёт одну ячейку таблицы.", answer: false, explain: "tr создаёт строку, а ячейки внутри неё — это td или th." },
+  { text: "th выделяется жирным и по центру по умолчанию, в отличие от td.", answer: true, explain: "Да, th — это ячейка-заголовок, браузер оформляет её иначе." },
+  { text: 'rowspan="2" растягивает ячейку на два столбца.', answer: false, explain: "rowspan растягивает ячейку по строкам (вертикально), а не по столбцам." },
+  { text: 'colspan="2" растягивает ячейку на два столбца по горизонтали.', answer: true, explain: "Верно, colspan объединяет соседние столбцы в одной строке." },
+  { text: "В ячейке td нельзя разместить картинку img.", answer: false, explain: "Можно — ячейка таблицы может содержать почти любой другой HTML, включая картинки." },
+  { text: "На странице может быть только одна таблица table.", answer: false, explain: "Таблиц может быть сколько угодно, как и любых других элементов." },
+  { text: "Без rowspan и colspan объединить ячейки вообще никак нельзя.", answer: false, explain: "Можно, просто без них приходится вручную расставлять пустые ячейки-заглушки, что сложнее." },
+  { text: "td расшифровывается как «table data» — ячейка данных.", answer: true, explain: "Да, именно так — обычная ячейка с данными, в отличие от th." },
+  { text: "Строки tr всегда должны лежать прямо внутри table, без ячеек между ними.", answer: true, explain: "Да, строки — прямые потомки таблицы, а ячейки td/th уже лежат внутри строк." },
+];
 
 function Theory() {
   const [merged, setMerged] = useState(true);
@@ -367,6 +381,12 @@ export function TablesTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, смотри на таблицу и кликай по ячейкам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

@@ -4,10 +4,24 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 import { FakePage, computeMatches } from "./FakePage";
 
 const meta = trainers.find((t) => t.id === "selectors")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "Селектор .card выбирает элемент по классу.", answer: true, explain: "Да, точка перед именем — это селектор по классу." },
+  { text: "Селектор #footer выбирает элемент по классу.", answer: false, explain: "Нет, решётка # — это селектор по id, а не по классу." },
+  { text: "CSS-классы нечувствительны к регистру: .Card и .card — одно и то же.", answer: false, explain: "Нет, классы чувствительны к регистру — .Card и .card считаются разными классами." },
+  { text: "Селектор nav a выбирает только ссылки прямо внутри тега nav (на любой глубине вложенности).", answer: true, explain: "Да, пробел между селекторами означает «вложен куда угодно внутрь»." },
+  { text: "[data-featured] выбирает элемент по значению атрибута, игнорируя сам факт его наличия.", answer: false, explain: "Нет, [data-featured] без значения выбирает любой элемент, у которого есть такой атрибут, независимо от значения." },
+  { text: "li:first-child выбирает элемент, только если он первый среди своих соседей.", answer: true, explain: "Верно, это и есть смысл псевдокласса :first-child." },
+  { text: "На странице может быть несколько элементов с одним и тем же id.", answer: false, explain: "Нет, id должен быть уникальным — на странице может быть только один элемент с конкретным id." },
+  { text: "На странице может быть несколько элементов с одним и тем же классом.", answer: true, explain: "Да, в отличие от id, один класс можно вешать на сколько угодно элементов." },
+  { text: "Селектор main h2 выберет заголовки h2, даже если они лежат ВНЕ тега main.", answer: false, explain: "Нет, он выберет только те h2, что вложены именно внутрь main." },
+  { text: "У одного элемента может быть сразу несколько классов одновременно.", answer: true, explain: "Да, классы можно перечислять через пробел в атрибуте class, и все они будут применяться." },
+];
 
 const EXAMPLES = ["nav a", ".card", "#site-footer", "li:first-child", "[data-featured]"];
 
@@ -237,6 +251,12 @@ export function SelectorsTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай селектор из списка, потом пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

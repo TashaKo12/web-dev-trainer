@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "background-color")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "background-color красит фон блока, а не текст внутри него.", answer: true, explain: "Именно так — за цвет самого текста отвечает свойство color, а не background-color." },
+  { text: "Значение background-color можно писать и именем цвета (coral), и HEX-кодом (#f97316).", answer: true, explain: "CSS принимает оба формата — какой удобнее, такой и пиши." },
+  { text: "background-color: transparent делает фон блока белым.", answer: false, explain: "transparent делает фон полностью прозрачным — сквозь него виден фон страницы под блоком, а не белый цвет." },
+  { text: "Если текст и фон карточки одного цвета, текст становится нечитаемым.", answer: true, explain: "Текст сливается с фоном — нужно, чтобы цвета заметно отличались." },
+  { text: "HEX-код белого цвета — это #111827.", answer: false, explain: "#111827 — тёмный, почти чёрный цвет. Белый — это #ffffff (или сокращённо #fff)." },
+  { text: "У background-color обязательно должно быть ровно одно значение из заранее заданного списка.", answer: false, explain: "Цвет можно подобрать как угодно — именем, HEX-кодом или rgb(), список заранее не ограничен." },
+  { text: "\"backgroundish\" — это настоящее CSS-значение цвета.", answer: false, explain: "Такого цвета не существует — браузер его просто проигнорирует. А вот coral, #0ea5e9 и rgb(100,100,100) — настоящие." },
+  { text: "background-color можно задать и в формате rgb(100, 100, 100).", answer: true, explain: "rgb() — ещё один способ задать цвет, через значения красного, зелёного и синего." },
+  { text: "Если не задать background-color вообще, блок всегда станет чёрным.", answer: false, explain: "По умолчанию фон блока прозрачный — виден цвет того, что находится под ним, а не чёрный." },
+  { text: "background-color меняет цвет текста внутри блока.", answer: false, explain: "Нет, это меняет только фон. Цвет самого текста задаёт отдельное свойство color." },
+];
 
 const SWATCHES = ["#f8fafc", "#fde68a", "#bbf7d0", "#bfdbfe", "#ddd6fe", "#111827"] as const;
 
@@ -285,6 +299,12 @@ export function BackgroundColorTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

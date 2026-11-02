@@ -4,6 +4,7 @@ import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 import { FileTree } from "./FileTree";
 import { ImagePreview } from "./ImagePreview";
@@ -263,6 +264,59 @@ function LevelPlayer({ level, onResult }: { level: Level; onResult: (correct: bo
   );
 }
 
+const TRUE_FALSE: TrueFalseStatement[] = [
+  {
+    text: "Путь в src всегда считается от корня компьютера, а не от открытого HTML-файла.",
+    answer: false,
+    explain: "Нет, путь считается от папки, где лежит ТЕКУЩИЙ открытый HTML-файл, а не от корня диска.",
+  },
+  {
+    text: "Если картинка лежит в той же папке, что и HTML-файл, достаточно написать просто её имя.",
+    answer: true,
+    explain: "Да, например cat.jpg — без всяких папок впереди, если файлы соседи.",
+  },
+  {
+    text: "../ означает «подняться на один уровень выше» по папкам.",
+    answer: true,
+    explain: "Верно, .. поднимает на уровень вверх, а слэш после неё переходит в родительскую папку.",
+  },
+  {
+    text: "Путь к картинке из интернета (например https://...) тоже нужно считать относительно HTML-файла.",
+    answer: false,
+    explain: "Нет, для внешней ссылки путь вставляют как есть, целиком — относительных вычислений тут не нужно.",
+  },
+  {
+    text: "Регистр букв в пути (большие/маленькие буквы) всегда не важен, даже на сайте в интернете.",
+    answer: false,
+    explain: "Нет, на Windows регистр часто прощается, а на сервере (например GitHub Pages) — нет, и картинка может пропасть.",
+  },
+  {
+    text: "Если HTML-файл лежит во вложенной папке, путь к файлам из корня проекта нужно начинать с ../",
+    answer: true,
+    explain: "Да, сначала нужно подняться из вложенной папки наружу, а потом уже спускаться к нужному файлу.",
+  },
+  {
+    text: "Папку и файл в пути разделяют обратным слэшем \\, как в Windows.",
+    answer: false,
+    explain: "Нет, в путях для веба всегда используют прямой слэш /, даже если на компьютере используется обратный.",
+  },
+  {
+    text: "Если картинка лежит в папке images, а внутри неё ещё в папке gallery, путь будет images/gallery/файл.",
+    answer: true,
+    explain: "Да, каждая вложенная папка добавляет ещё один уровень пути через /.",
+  },
+  {
+    text: "Один и тот же путь к картинке будет работать одинаково из любого HTML-файла на сайте.",
+    answer: false,
+    explain: "Нет, путь зависит от того, где лежит именно ТЕКУЩИЙ открытый файл — из разных файлов путь может отличаться.",
+  },
+  {
+    text: "Если файл с большой буквы (Logo.png), а в src написать с маленькой (logo.png), на некоторых сайтах картинка не появится.",
+    answer: true,
+    explain: "Верно, серверы часто различают регистр букв, поэтому важно писать путь точно так же, как называется файл.",
+  },
+];
+
 function Tasks() {
   const stepper = useTaskStepper(LEVELS.length, "image-paths");
 
@@ -314,6 +368,12 @@ export function ImagePathsTrainer() {
         description="Сначала выбираешь путь из списка, потом пишешь сам — и сразу видишь результат на картинке."
       />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }

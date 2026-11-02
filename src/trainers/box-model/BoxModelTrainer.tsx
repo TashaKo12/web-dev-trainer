@@ -5,9 +5,23 @@ import { CompletionBanner } from "../../components/CompletionBanner";
 import { LevelShell } from "../../components/LevelShell";
 import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
+import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 
 const meta = trainers.find((t) => t.id === "box-model")!;
+
+const TRUE_FALSE: TrueFalseStatement[] = [
+  { text: "padding — это пространство СНАРУЖИ блока, между ним и соседними элементами.", answer: false, explain: "Это описание margin. padding — внутренний отступ, между содержимым и рамкой." },
+  { text: "margin отделяет блок от соседних элементов на странице.", answer: true, explain: "Да, margin — внешний отступ, самый дальний слой от содержимого." },
+  { text: "Порядок слоёв от центра наружу: content → padding → border → margin.", answer: true, explain: "Именно так устроена box model — содержимое в самом центре, margin — снаружи всех." },
+  { text: "border всегда находится между padding и margin.", answer: true, explain: "Да, рамка окружает padding, а margin, в свою очередь, окружает рамку." },
+  { text: "color входит в box model наравне с margin, border и padding.", answer: false, explain: "color красит текст и не имеет отношения к размеру блока — box model состоит именно из margin, border и padding." },
+  { text: "Соседние вертикальные margin двух блоков всегда складываются (суммируются).", answer: false, explain: "Наоборот — они схлопываются в один промежуток, равный БОЛЬШЕМУ из двух значений, а не их сумме." },
+  { text: "Если у блока margin-bottom: 20px, а у следующего margin-top: 30px, итоговый промежуток между ними будет 30px.", answer: true, explain: "Это и есть схлопывание margin — побеждает большее значение, 30px, а не сумма 50px." },
+  { text: "padding может сделать итоговую ширину блока БОЛЬШЕ, чем ширина самого содержимого.", answer: true, explain: "Да, padding добавляется к ширине содержимого с обеих сторон, увеличивая итоговый размер блока." },
+  { text: "border не влияет на итоговую ширину блока вообще.", answer: false, explain: "Влияет — толщина рамки с обеих сторон добавляется к итоговой ширине блока, как и padding." },
+  { text: "Все четыре слоя box model — margin, border, padding и content — можно увидеть одновременно на диаграмме.", answer: true, explain: "Да, это и есть классическая диаграмма box model — вложенные друг в друга прямоугольники." },
+];
 
 function Theory() {
   const [margin, setMargin] = useState(16);
@@ -422,6 +436,12 @@ export function BoxModelTrainer() {
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, двигай ползунки и кликай по диаграмме." />
       <Tasks />
+      <SectionHeading
+        kicker="Проверь себя"
+        title="Верно или неверно?"
+        description="Пролистай 10 карточек — угадай, где правда, а где нет."
+      />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }
