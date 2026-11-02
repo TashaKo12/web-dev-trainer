@@ -17,7 +17,7 @@ export type TrainerId =
   | "paragraphs"
   | "lists"
   | "div-classes"
-  | "div-classes-id"
+  | "id-attribute"
   | "images"
   | "css-intro"
   | "text-color"

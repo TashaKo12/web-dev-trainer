@@ -7,6 +7,7 @@ import { HeadingsTrainer } from "./trainers/headings/HeadingsTrainer";
 import { ParagraphsTrainer } from "./trainers/paragraphs/ParagraphsTrainer";
 import { ListsTrainer } from "./trainers/lists/ListsTrainer";
 import { DivClassesTrainer } from "./trainers/div-classes/DivClassesTrainer";
+import { IdAttributeTrainer } from "./trainers/id-attribute/IdAttributeTrainer";
 import { ButtonsTrainer } from "./trainers/buttons/ButtonsTrainer";
 import { ImagesTrainer } from "./trainers/images/ImagesTrainer";
 import { ImagePathsTrainer } from "./trainers/image-paths/ImagePathsTrainer";
@@ -52,6 +53,7 @@ function App() {
           <Route path="paragraphs" element={<ParagraphsTrainer />} />
           <Route path="lists" element={<ListsTrainer />} />
           <Route path="div-classes" element={<DivClassesTrainer />} />
+          <Route path="id-attribute" element={<IdAttributeTrainer />} />
           <Route path="buttons" element={<ButtonsTrainer />} />
           <Route path="images" element={<ImagesTrainer />} />
           <Route path="image-paths" element={<ImagePathsTrainer />} />

@@ -77,6 +77,16 @@ export const trainers: TrainerMeta[] = [
     section: "html",
   },
   {
+    id: "id-attribute",
+    path: "/id-attribute",
+    emoji: "🆔",
+    title: "Атрибут id",
+    summary: "id — тоже имя для элемента, но, в отличие от class, уникальное: встречается на странице только один раз.",
+    taskCount: 9,
+    gradient: "from-yellow-500 to-amber-600",
+    section: "html",
+  },
+  {
     id: "buttons",
     path: "/buttons",
     emoji: "🔘",

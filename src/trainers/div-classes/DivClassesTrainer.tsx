@@ -204,112 +204,6 @@ const TRUE_FALSE: TrueFalseStatement[] = [
   },
 ];
 
-function IdTheory() {
-  const [idSet, setIdSet] = useState(false);
-
-  return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-      <p className="mb-5 text-slate-600">
-        <code className="rounded bg-slate-100 px-1">id</code> тоже даёт элементу «имя», но, в отличие от{" "}
-        <code className="rounded bg-slate-100 px-1">class</code>, оно должно быть УНИКАЛЬНЫМ — одно и то же имя id
-        нельзя использовать дважды на одной странице. Обычно id ставят на единственный, особенный элемент —
-        например, сам логотип сайта.
-      </p>
-
-      <label className="mb-3 flex items-center gap-2 text-sm font-bold text-amber-700">
-        <input type="checkbox" checked={idSet} onChange={(e) => setIdSet(e.target.checked)} />
-        поставить id="logo" на логотип
-      </label>
-
-      <div className="grid grid-cols-3 gap-2">
-        <div
-          className={`rounded-lg border-2 p-3 text-center font-mono text-[11px] transition ${
-            idSet ? "border-amber-400 bg-amber-50 font-bold text-amber-700" : "border-slate-200 text-slate-400"
-          }`}
-        >
-          {idSet ? 'id="logo"' : "div"}
-        </div>
-        <div className="rounded-lg border-2 border-slate-200 p-3 text-center font-mono text-[11px] text-slate-500">
-          class="item"
-        </div>
-        <div className="rounded-lg border-2 border-slate-200 p-3 text-center font-mono text-[11px] text-slate-500">
-          class="item"
-        </div>
-      </div>
-
-      <div className="mt-5 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
-        class здесь стоит на ДВУХ блоках сразу — это нормально. А вот id="logo" можно поставить только на ОДИН
-        блок. И class, и id можно повесить на один и тот же элемент одновременно:{" "}
-        <code className="rounded bg-white px-1">&lt;div id="logo" class="brand"&gt;</code> — id для уникальной
-        пометки, class для оформления.
-      </div>
-    </div>
-  );
-}
-
-const ID_TASK_META = [
-  { prompt: "Нужно пометить ЕДИНСТВЕННЫЙ, уникальный элемент на странице — например, сам логотип сайта. Какой атрибут для этого придумали?", explain: "id — уникальный идентификатор, который по правилам встречается на странице только один раз (в отличие от class)." },
-  { prompt: 'Напиши атрибут id со значением "logo" так, как он пишется внутри тега.', explain: 'id="logo" — имя атрибута, знак =, значение в кавычках, так же как и у class.' },
-  { prompt: "Сколько раз один и тот же id может встретиться на одной странице?", explain: "Ровно один раз — id должен быть уникальным, иначе браузер и JavaScript не смогут однозначно понять, какой элемент имелся в виду." },
-  { prompt: "Можно ли одному и тому же элементу дать одновременно и class, и id?", explain: 'Да — например: <div id="logo" class="brand">. id помечает элемент как уникальный, а class отвечает за оформление.' },
-  { prompt: "Чем id в первую очередь отличается от class?", explain: "id должен быть уникальным (только один раз на странице), а один и тот же class можно вешать на сколько угодно элементов." },
-];
-
-function IdTasks() {
-  const stepper = useTaskStepper(ID_TASK_META.length, "div-classes-id");
-  const task = stepper.index;
-  const meta = ID_TASK_META[task];
-
-  if (stepper.allAnswered) {
-    return <CompletionBanner score={stepper.score} total={ID_TASK_META.length} onRestart={() => stepper.restart()} />;
-  }
-
-  return (
-    <LevelShell
-      total={ID_TASK_META.length}
-      index={task}
-      statuses={stepper.statuses}
-      status={stepper.status}
-      isLast={stepper.isLast}
-      explain={meta.explain}
-      onJump={stepper.goTo}
-      onNext={stepper.goNext}
-      nextClassName="bg-gradient-to-r from-amber-400 to-orange-500"
-    >
-      {task !== 1 && <p className="mb-4 text-sm font-semibold text-slate-700">{meta.prompt}</p>}
-      {task === 0 && <McqLevel key={task} options={["id", "class", "alt", "name"]} correctIndex={0} onResult={(c) => stepper.markResult(c)} />}
-      {task === 1 && <TypeLevel key={task} expected='id="logo"' placeholder='id="..."' prompt={meta.prompt} onResult={(c) => stepper.markResult(c)} />}
-      {task === 2 && (
-        <McqLevel
-          key={task}
-          mono={false}
-          options={["Сколько угодно раз", "Ровно один раз", "Ровно два раза", "Зависит от браузера"]}
-          correctIndex={1}
-          onResult={(c) => stepper.markResult(c)}
-        />
-      )}
-      {task === 3 && (
-        <McqLevel
-          key={task}
-          mono={false}
-          options={["Да, оба сразу", "Нет, нужно выбрать что-то одно", "Только если id идёт первым", "Только у div"]}
-          correctIndex={0}
-          onResult={(c) => stepper.markResult(c)}
-        />
-      )}
-      {task === 4 && (
-        <McqLevel
-          key={task}
-          mono={false}
-          options={["id уникален, class можно повторять", "id красит текст, class — фон", "id работает только внутри head", "Ничем, это одно и то же"]}
-          correctIndex={0}
-          onResult={(c) => stepper.markResult(c)}
-        />
-      )}
-    </LevelShell>
-  );
-}
-
 function Tasks() {
   const stepper = useTaskStepper(9, "div-classes");
   const task = stepper.index;
@@ -391,18 +285,7 @@ export function DivClassesTrainer() {
         title="Верно или неверно?"
         description="Пролистай 10 карточек — угадай, где правда, а где нет."
       />
-      <div className="mb-10">
-        <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-      </div>
-      <SectionHeading
-        kicker="Дополнительно"
-        title="div и id"
-        description='Ещё один атрибут для пометки элемента — но, в отличие от class, id можно использовать только ОДИН раз на странице.'
-      />
-      <div className="mb-10">
-        <IdTheory />
-      </div>
-      <IdTasks />
+      <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
     </div>
   );
 }
