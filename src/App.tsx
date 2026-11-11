@@ -45,6 +45,7 @@ import { PythonPrintTrainer } from "./trainers/python-print/PythonPrintTrainer";
 import { PythonInputTrainer } from "./trainers/python-input/PythonInputTrainer";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
+import { Login } from "./pages/Login";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -106,6 +107,7 @@ function App() {
 
           <Route path="profile" element={<Profile />} />
           <Route path="admin" element={<Admin />} />
+          <Route path="login" element={<Login />} />
         </Route>
       </Routes>
     </HashRouter>

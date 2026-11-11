@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, Check, ChevronDown, Clock, Cloud, Copy, IdCard, KeyRound, Sparkles, Star, Target, X } from "lucide-react";
-import { cloudAvailable, createCloudCode, formatCode, formatOwner, getCloudCode, getOwner, normalizeCode, restoreFromCloud, useSyncState } from "../lib/cloud";
+import { CalendarClock, Check, ChevronDown, Clock, Cloud, Copy, IdCard, KeyRound, LogIn, Sparkles, Star, Target, X } from "lucide-react";
+import { cloudAvailable, formatCode, formatOwner, signOut, useAccount, useSyncState } from "../lib/cloud";
 import { type TrainerMeta } from "../trainers/registry";
 import { loadItem, useConsent, useTotalPoints } from "../lib/storage";
 import { buildActivity, formatDate, formatDuration, readReports, type Activity, type TopicReport } from "../lib/reports";
@@ -35,40 +35,33 @@ const BTN_SECOND =
   "rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40";
 
 function ParticipantCode() {
-  const [code, setCode] = useState(getCloudCode);
-  const [owner, setOwner] = useState(getOwner);
+  const account = useAccount();
   const sync = useSyncState();
-  const [step, setStep] = useState<"none" | "agree" | "replace">("none");
-  const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
-  const [name, setName] = useState("");
-  const [surname, setSurname] = useState("");
-  const [input, setInput] = useState("");
-  const [error, setError] = useState<string | null>(null);
+  const [leaving, setLeaving] = useState<"none" | "ask" | "busy" | "failed">("none");
 
-  async function act(fn: () => Promise<void>) {
-    setBusy(true);
-    setError(null);
-    try {
-      await fn();
-      setStep("none");
-    } catch (e) {
-      setError(e instanceof Error && /[а-я]/i.test(e.message) ? e.message : "Не получилось связаться с сервером. Попробуй ещё раз.");
-    } finally {
-      setBusy(false);
-    }
+  if (!account) {
+    return (
+      <div className={CARD}>
+        <div className="mb-4 flex items-center gap-3">
+          <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+            <IdCard className="h-5 w-5" strokeWidth={1.75} />
+          </div>
+          <h2 className="text-xl font-extrabold text-slate-800">Код участника</h2>
+        </div>
+        <p className="mb-4 text-sm text-slate-600">
+          Сейчас прогресс хранится только на этом компьютере. Войди или создай аккаунт — получишь постоянный код, и прогресс
+          будет с тобой на любом компьютере.
+        </p>
+        <Link to="/login" className={BTN_MAIN}>
+          <LogIn className="h-4 w-4" strokeWidth={2} />
+          Войти или создать аккаунт
+        </Link>
+      </div>
+    );
   }
 
-  async function copy() {
-    if (!code) return;
-    try {
-      await navigator.clipboard.writeText(formatCode(code));
-      setCopied(true);
-    } catch {
-      setCopied(false);
-    }
-  }
-
+  const { code, owner } = account;
   const status =
     sync.status === "saving"
       ? "Сохраняю…"
@@ -78,8 +71,14 @@ function ParticipantCode() {
           ? `Сохранено ${formatDate(sync.at)}`
           : "Прогресс сохраняется автоматически после каждого задания";
 
-  const field =
-    "rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-base text-slate-800 outline-none focus:border-indigo-300";
+  async function leave(force = false) {
+    setLeaving("busy");
+    try {
+      await signOut(force);
+    } catch {
+      setLeaving("failed");
+    }
+  }
 
   return (
     <div className={CARD}>
@@ -89,156 +88,74 @@ function ParticipantCode() {
         </div>
         <h2 className="text-xl font-extrabold text-slate-800">Код участника</h2>
       </div>
-
-      {code ? (
-        <>
-          {owner && (
-            <p className="mb-2 text-sm font-bold text-slate-700">
-              Участник: <span className="text-indigo-600">{formatOwner(owner)}</span>
-            </p>
-          )}
-          <p className="mb-4 text-sm text-slate-600">
-            Это твой постоянный код — он не меняется. Запиши его: на любом другом компьютере открой эту страницу, введи
-            код, и весь прогресс подтянется.
-          </p>
-          <div className="mb-3 flex flex-wrap items-center gap-3">
-            <span className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-2xl font-extrabold tracking-[0.2em] text-indigo-700">
-              {formatCode(code)}
-            </span>
-            <button type="button" onClick={copy} className={BTN_MAIN}>
-              {copied ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Copy className="h-4 w-4" strokeWidth={2} />}
-              {copied ? "Скопировано" : "Скопировать"}
-            </button>
-          </div>
-          <p className="flex items-center gap-1.5 text-xs text-slate-500">
-            <Cloud className="h-4 w-4" strokeWidth={2} />
-            {status}
-          </p>
-        </>
-      ) : (
-        <>
-          <p className="mb-4 text-sm text-slate-600">
-            Постоянный код из 8 знаков, например <span className="font-mono font-bold">K7QM-2XWD</span>. Прогресс хранится
-            на сервере под этим кодом, поэтому его можно открыть на любом компьютере — достаточно ввести код.
-          </p>
-          {step === "agree" ? (
-            <form
-              className="rounded-2xl bg-indigo-50 p-4 text-sm text-indigo-900"
-              onSubmit={(e) => {
-                e.preventDefault();
-                act(async () => {
-                  const c = await createCloudCode(name, surname);
-                  setOwner(getOwner());
-                  setCode(c);
-                });
-              }}
-            >
-              <p className="mb-3 font-bold">Как тебя зовут?</p>
-              <div className="mb-3 flex flex-wrap gap-3">
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-slate-500">Имя</span>
-                  <input
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    maxLength={30}
-                    autoComplete="off"
-                    placeholder="Таня"
-                    className={`${field} w-44`}
-                  />
-                </label>
-                <label className="flex flex-col gap-1">
-                  <span className="text-xs font-bold text-slate-500">Первые 3 буквы фамилии</span>
-                  <input
-                    value={surname}
-                    onChange={(e) => setSurname(e.target.value)}
-                    maxLength={3}
-                    autoComplete="off"
-                    placeholder="Кон"
-                    className={`${field} w-24`}
-                  />
-                </label>
-              </div>
-              <ul className="mb-3 list-disc space-y-1 pl-5">
-                <li>
-                  Имя и три буквы фамилии нужны, чтобы автор курса мог найти твой код, если ты его потеряешь. Полную фамилию,
-                  почту и другие личные данные не пиши.
-                </li>
-                <li>На сервер отправятся имя, три буквы фамилии, пройденные уровни, даты и очки.</li>
-                <li>Код постоянный: он закрепится за тобой и не изменится.</li>
-                <li>Прогресс будет сохраняться и в этом браузере.</li>
-              </ul>
-              <p className="mb-3">Согласен?</p>
-              <div className="flex gap-2">
-                <button type="submit" disabled={busy || !name.trim() || surname.trim().length !== 3} className={BTN_MAIN}>
-                  {busy ? "Создаю код…" : "Да, получить код"}
-                </button>
-                <button type="button" onClick={() => setStep("none")} className={BTN_SECOND}>
-                  Нет
-                </button>
-              </div>
-            </form>
-          ) : (
-            <button type="button" onClick={() => setStep("agree")} className={BTN_MAIN}>
-              Получить код участника
-            </button>
-          )}
-
-          <div className="mt-6 border-t border-slate-200 pt-5">
-            <p className="mb-2 font-bold text-slate-700">У меня уже есть код</p>
-            <div className="flex flex-wrap gap-2">
-              <input
-                value={input}
-                onChange={(e) => {
-                  setInput(e.target.value);
-                  setStep("none");
-                  setError(null);
-                }}
-                maxLength={12}
-                placeholder="XXXX-XXXX"
-                aria-label="Код участника"
-                className="w-44 rounded-xl border-2 border-slate-200 bg-white px-3 py-2 font-mono text-lg uppercase tracking-widest outline-none focus:border-indigo-300"
-              />
-              {step !== "replace" && (
-                <button
-                  type="button"
-                  disabled={normalizeCode(input).length !== 8}
-                  onClick={() => setStep("replace")}
-                  className="rounded-full border-2 border-indigo-200 px-5 py-2 text-sm font-bold text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
-                >
-                  Загрузить прогресс
-                </button>
-              )}
-            </div>
-            {step === "replace" && (
-              <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
-                <p className="mb-3">
-                  Прогресс по этому коду заменит то, что сейчас сохранено на этом компьютере, и будет сохраняться в этом
-                  браузере. Продолжить?
-                </p>
-                <div className="flex gap-2">
-                  <button
-                    type="button"
-                    disabled={busy}
-                    onClick={() =>
-                      act(async () => {
-                        await restoreFromCloud(input);
-                        window.location.reload();
-                      })
-                    }
-                    className={BTN_MAIN}
-                  >
-                    {busy ? "Загружаю…" : "Да, загрузить"}
-                  </button>
-                  <button type="button" onClick={() => setStep("none")} className={BTN_SECOND}>
-                    Отмена
-                  </button>
-                </div>
-              </div>
-            )}
-          </div>
-        </>
+      {owner && (
+        <p className="mb-2 text-sm font-bold text-slate-700">
+          Участник: <span className="text-indigo-600">{formatOwner(owner)}</span>
+        </p>
       )}
-      {error && <p className="mt-3 text-sm font-bold text-rose-600">{error}</p>}
+      <p className="mb-4 text-sm text-slate-600">
+        Это твой постоянный код — он не меняется. По нему ты входишь на любом компьютере: кнопка «Войти» вверху страницы.
+      </p>
+      <div className="mb-3 flex flex-wrap items-center gap-3">
+        <span className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-2xl font-extrabold tracking-[0.2em] text-indigo-700">
+          {formatCode(code)}
+        </span>
+        <button
+          type="button"
+          onClick={async () => {
+            try {
+              await navigator.clipboard.writeText(formatCode(code));
+              setCopied(true);
+            } catch {
+              setCopied(false);
+            }
+          }}
+          className={BTN_MAIN}
+        >
+          {copied ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Copy className="h-4 w-4" strokeWidth={2} />}
+          {copied ? "Скопировано" : "Скопировать"}
+        </button>
+      </div>
+      <p className="mb-5 flex items-center gap-1.5 text-xs text-slate-500">
+        <Cloud className="h-4 w-4" strokeWidth={2} />
+        {status}
+      </p>
+
+      {leaving === "none" ? (
+        <button type="button" onClick={() => setLeaving("ask")} className={BTN_SECOND}>
+          Выйти на этом компьютере
+        </button>
+      ) : leaving === "failed" ? (
+        <div className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">
+          <p className="mb-3">
+            Не получилось сохранить последний прогресс на сервер — проверь интернет. Если выйти сейчас, несохранённое на этом
+            компьютере пропадёт.
+          </p>
+          <div className="flex flex-wrap gap-2">
+            <button type="button" onClick={() => leave()} className={BTN_MAIN}>
+              Попробовать ещё раз
+            </button>
+            <button type="button" onClick={() => leave(true)} className={BTN_SECOND}>
+              Всё равно выйти
+            </button>
+          </div>
+        </div>
+      ) : (
+        <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+          <p className="mb-3">
+            Прогресс сохранится на сервере, а с этого компьютера всё сотрётся — удобно, если за ним занимается кто-то ещё.
+            Вернуться можно по коду <b>{formatCode(code)}</b>. Выйти?
+          </p>
+          <div className="flex gap-2">
+            <button type="button" onClick={() => leave()} disabled={leaving === "busy"} className={BTN_MAIN}>
+              {leaving === "busy" ? "Сохраняю…" : "Да, выйти"}
+            </button>
+            <button type="button" onClick={() => setLeaving("none")} className={BTN_SECOND}>
+              Отмена
+            </button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

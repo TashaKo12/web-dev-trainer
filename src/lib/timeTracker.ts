@@ -42,7 +42,7 @@ function add(key: string) {
   pending[key] = (pending[key] ?? 0) + TICK;
 }
 
-function flush() {
+export function flush() {
   if (!Object.keys(pending).length) return;
   const saved = loadJSON<Record<string, number>>(TIME_KEY) ?? {};
   for (const [k, v] of Object.entries(pending)) saved[k] = (saved[k] ?? 0) + v;

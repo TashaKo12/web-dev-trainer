@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Check, ChevronDown, Clock, LogOut, RefreshCw, Search, ShieldCheck, Star, Target, Users, X } from "lucide-react";
-import { cloudAvailable, rpc } from "../lib/cloud";
+import { CalendarClock, Check, ChevronDown, Clock, LogOut, RefreshCw, Search, Star, Target, Users, X } from "lucide-react";
+import { Navigate } from "react-router-dom";
+import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
 import { trainers } from "../trainers/registry";
 
@@ -8,12 +9,9 @@ import { trainers } from "../trainers/registry";
 
 const CARD =
   "rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
-const BTN_MAIN =
-  "inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
 const BTN_SECOND =
   "inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 disabled:opacity-40";
 
-const SESSION_KEY = "admin-code";
 const WEEK = 7 * 24 * 3600 * 1000;
 
 type Row = { code: string; name: string | null; surname3: string | null; created_at: string; updated_at: string; data: Record<string, string> };
@@ -61,53 +59,6 @@ function Stat({ icon: Icon, label, value }: { icon: typeof Star; label: string; 
         {label}
       </div>
       <p className="text-xl font-extrabold text-slate-800">{value}</p>
-    </div>
-  );
-}
-
-function Login({ onLogin }: { onLogin: (code: string) => Promise<void> }) {
-  const [input, setInput] = useState("");
-  const [busy, setBusy] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-
-  return (
-    <div className={`${CARD} mx-auto max-w-md`}>
-      <div className="mb-4 flex items-center gap-3">
-        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
-          <ShieldCheck className="h-5 w-5" strokeWidth={1.75} />
-        </div>
-        <h1 className="text-xl font-extrabold text-slate-800">Вход для автора</h1>
-      </div>
-      <p className="mb-4 text-sm text-slate-600">Страница доступна только по коду админа.</p>
-      <form
-        className="flex flex-wrap gap-2"
-        onSubmit={async (e) => {
-          e.preventDefault();
-          setBusy(true);
-          setError(null);
-          try {
-            await onLogin(normalize(input));
-          } catch {
-            setError("Код не подошёл.");
-          } finally {
-            setBusy(false);
-          }
-        }}
-      >
-        <input
-          value={input}
-          onChange={(e) => setInput(e.target.value)}
-          type="password"
-          autoComplete="off"
-          placeholder="XXXX-XXXX-XXXX-XXXX"
-          aria-label="Код админа"
-          className="min-w-0 flex-1 rounded-xl border-2 border-slate-200 bg-white px-3 py-2 font-mono text-base tracking-widest outline-none focus:border-indigo-300"
-        />
-        <button type="submit" disabled={busy || normalize(input).length !== 16} className={BTN_MAIN}>
-          {busy ? "Проверяю…" : "Войти"}
-        </button>
-      </form>
-      {error && <p className="mt-3 text-sm font-bold text-rose-600">{error}</p>}
     </div>
   );
 }
@@ -229,7 +180,7 @@ function Dashboard({ data, onRefresh, onLogout, busy }: { data: Overview; onRefr
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Панель автора</h1>
+          <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Кабинет педагога</h1>
           <p className="mt-2 text-slate-500 dark:text-slate-400">{data.admin} · прогресс всех участников</p>
         </div>
         <div className="flex gap-2">
@@ -323,13 +274,7 @@ function Dashboard({ data, onRefresh, onLogout, busy }: { data: Overview; onRefr
 }
 
 export function Admin() {
-  const [code, setCode] = useState<string | null>(() => {
-    try {
-      return sessionStorage.getItem(SESSION_KEY);
-    } catch {
-      return null;
-    }
-  });
+  const [code, setCode] = useState<string | null>(getAdminSession);
   const [data, setData] = useState<Overview | null>(null);
   const [busy, setBusy] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -342,22 +287,14 @@ export function Admin() {
       setData(res);
       setError(null);
       setCode(c);
-      try {
-        sessionStorage.setItem(SESSION_KEY, c);
-      } catch {
-        // keeps working for this page view
-      }
+      setAdminSession(c);
     } finally {
       setBusy(false);
     }
   }
 
   function logout() {
-    try {
-      sessionStorage.removeItem(SESSION_KEY);
-    } catch {
-      // nothing stored
-    }
+    setAdminSession(null);
     setCode(null);
     setData(null);
   }
@@ -367,7 +304,8 @@ export function Admin() {
   }, []);
 
   if (!cloudAvailable) return <p className="text-center text-slate-500">Сервер не подключён.</p>;
-  if (!data) return code ? <p className="text-center text-slate-500">Загружаю…</p> : <Login onLogin={load} />;
+  if (!code) return <Navigate to="/login?as=teacher" replace />;
+  if (!data) return <p className="text-center text-slate-500">Загружаю…</p>;
 
   return (
     <>

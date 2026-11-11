@@ -7,6 +7,7 @@ import { useConsent } from "../lib/storage";
 import { AnimatedBackground } from "./AnimatedBackground";
 import { ConsentBanner } from "./ConsentBanner";
 import { PointsBadge } from "./PointsBadge";
+import { AccountButton } from "./AccountButton";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Layout() {
@@ -43,6 +44,7 @@ export function Layout() {
               </Link>
             )}
             <PointsBadge />
+            <AccountButton />
             <ThemeToggle />
           </div>
         </div>

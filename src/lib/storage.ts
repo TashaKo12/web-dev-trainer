@@ -96,6 +96,26 @@ function clearSaved() {
   }
 }
 
+/** Signs this device out: forgets the participant and all progress saved here (the theme stays). */
+export function resetDevice() {
+  try {
+    const keys: string[] = [];
+    for (let i = 0; i < localStorage.length; i++) {
+      const k = localStorage.key(i);
+      if (k && k !== "theme" && (k.startsWith("wdt:") || LEGACY_KEYS.includes(k))) keys.push(k);
+    }
+    keys.forEach((k) => localStorage.removeItem(k));
+  } catch {
+    // nothing stored
+  }
+  memory.clear();
+}
+
+/** True when this device already has some progress (not just the theme). */
+export function hasLocalProgress() {
+  return Object.keys(exportData()).some((k) => k !== "theme");
+}
+
 export function getConsent() {
   return consent;
 }

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { CLOUD } from "./cloudConfig";
-import { TIME_KEY } from "./timeTracker";
-import { CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, saveItem, setConsent } from "./storage";
+import { flush as flushTime, TIME_KEY } from "./timeTracker";
+import { CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, resetDevice, saveItem, setConsent } from "./storage";
 
 // Progress stored on the server under a short participant code (e.g. K7QM-2XWD),
 // so the same progress opens on any computer. Turned on only by an explicit opt-in.
@@ -54,6 +54,58 @@ export function getCloudCode() {
   return loadItem(CLOUD_CODE_KEY);
 }
 
+
+// ── who is signed in on this device ──
+const accountListeners = new Set<() => void>();
+let accountVersion = 0;
+function accountChanged() {
+  accountVersion++;
+  accountListeners.forEach((l) => l());
+}
+
+export function useAccount() {
+  useSyncExternalStore(
+    (l) => {
+      accountListeners.add(l);
+      return () => {
+        accountListeners.delete(l);
+      };
+    },
+    () => accountVersion,
+  );
+  const code = getCloudCode();
+  return code ? { code, owner: getOwner() } : null;
+}
+
+/** Saves everything to the server, then forgets the participant on this device. Throws if saving failed, unless forced. */
+export async function signOut(force = false) {
+  flushTime();
+  await syncNow();
+  if (state.status === "error" && !force) throw new Error("sync");
+  resetDevice();
+  window.location.hash = "#/";
+  window.location.reload();
+}
+
+// ── teacher (admin) ──
+export const ADMIN_SESSION_KEY = "admin-code";
+
+export function getAdminSession() {
+  try {
+    return sessionStorage.getItem(ADMIN_SESSION_KEY);
+  } catch {
+    return null;
+  }
+}
+
+export function setAdminSession(code: string | null) {
+  try {
+    if (code) sessionStorage.setItem(ADMIN_SESSION_KEY, code);
+    else sessionStorage.removeItem(ADMIN_SESSION_KEY);
+  } catch {
+    // works for this page view only
+  }
+}
 
 export async function syncNow() {
   const code = getCloudCode();
@@ -108,6 +160,7 @@ export async function createCloudCode(name: string, surname3: string) {
   saveItem(CLOUD_OWNER_KEY, JSON.stringify(owner));
   saveItem(CLOUD_CODE_KEY, code);
   setState({ status: "saved", at: new Date().toISOString() });
+  accountChanged();
   return code;
 }
 
@@ -126,6 +179,7 @@ export async function restoreFromCloud(input: string) {
   importData(found.data);
   if (found.name && found.surname3) saveItem(CLOUD_OWNER_KEY, JSON.stringify({ name: found.name, surname3: found.surname3 }));
   saveItem(CLOUD_CODE_KEY, code);
+  accountChanged();
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined;
