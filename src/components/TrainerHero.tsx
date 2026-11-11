@@ -5,6 +5,14 @@ const SECTION_TAB: Record<string, { file: string; label: string; cls: string }> 
   html: { file: "index.html", label: "HTML", cls: "border-sky-200 bg-sky-50 text-sky-700" },
   css: { file: "style.css", label: "CSS", cls: "border-violet-200 bg-violet-50 text-violet-700" },
   js: { file: "script.js", label: "JS", cls: "border-amber-200 bg-amber-50 text-amber-700" },
+  python: { file: "main.py", label: "Python", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+};
+
+const FILE_ROLE: Record<string, string> = {
+  HTML: "разметкой",
+  CSS: "стилями",
+  JS: "кодом",
+  Python: "программой на Python",
 };
 
 export function TrainerHero({
@@ -18,7 +26,7 @@ export function TrainerHero({
   title: string;
   summary: string;
   gradient: string;
-  section?: "html" | "css" | "js";
+  section?: "html" | "css" | "js" | "python";
 }) {
   const tab = section ? SECTION_TAB[section] : undefined;
 
@@ -33,7 +41,7 @@ export function TrainerHero({
         <div className={`mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-mono text-xs font-bold dark:brightness-125 ${tab.cls}`}>
           <FileCode className="h-3.5 w-3.5" strokeWidth={2} />
           {tab.file}
-          <span className="opacity-60">— это файл с {tab.label === "CSS" ? "стилями" : tab.label === "JS" ? "кодом" : "разметкой"}</span>
+          <span className="opacity-60">— это файл с {FILE_ROLE[tab.label]}</span>
         </div>
       )}
       <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl dark:text-slate-100">

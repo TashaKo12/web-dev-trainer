@@ -35,7 +35,8 @@ export type TrainerId =
   | "reset-box-sizing"
   | "grid"
   | "opacity"
-  | "transitions";
+  | "transitions"
+  | "python-print";
 
 export type TrainerProgress = {
   score: number;

@@ -4,8 +4,13 @@ import { AnimatedBackground } from "./AnimatedBackground";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Layout() {
-  const location = useLocation();
-  const isHome = location.pathname === "/" || location.pathname === "";
+  const { pathname } = useLocation();
+  const back =
+    pathname === "/" || pathname === "" || pathname === "/python"
+      ? null
+      : pathname.startsWith("/python/")
+        ? { to: "/python", label: "← Темы Python" }
+        : { to: "/", label: "← Все тренажёры" };
 
   return (
     <div className="min-h-screen text-slate-800 dark:text-slate-100">
@@ -17,12 +22,12 @@ export function Layout() {
             <span>Тренажеры</span>
           </a>
           <div className="flex items-center gap-3">
-            {!isHome && (
+            {back && (
               <Link
-                to="/"
+                to={back.to}
                 className="rounded-full border-2 border-slate-200 bg-white px-4 py-1.5 text-sm font-bold text-slate-600 hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-800 dark:text-slate-300 dark:hover:border-indigo-400"
               >
-                ← Все тренажёры
+                {back.label}
               </Link>
             )}
             <ThemeToggle />
@@ -33,7 +38,7 @@ export function Layout() {
         <Outlet />
       </main>
       <footer className="mx-auto max-w-5xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
-        <p>Сделано для тех, кто делает первые шаги в вёрстке и JavaScript</p>
+        <p>Сделано для тех, кто делает первые шаги в программировании</p>
         <p className="mt-1 text-xs text-slate-400/80 dark:text-slate-600">Автор проекта — Татьяна Кондратюк</p>
       </footer>
     </div>

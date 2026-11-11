@@ -40,6 +40,8 @@ import { PseudoClassesTrainer } from "./trainers/pseudo-classes/PseudoClassesTra
 import { OpacityTrainer } from "./trainers/opacity/OpacityTrainer";
 import { TransitionsTrainer } from "./trainers/transitions/TransitionsTrainer";
 import { DomAccessTrainer } from "./trainers/dom-access/DomAccessTrainer";
+import { PythonHome } from "./pages/PythonHome";
+import { PythonPrintTrainer } from "./trainers/python-print/PythonPrintTrainer";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -93,6 +95,10 @@ function App() {
 
           {/* JS */}
           <Route path="dom-access" element={<DomAccessTrainer />} />
+
+          {/* Python */}
+          <Route path="python" element={<PythonHome />} />
+          <Route path="python/print" element={<PythonPrintTrainer />} />
         </Route>
       </Routes>
     </HashRouter>

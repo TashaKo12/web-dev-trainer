@@ -37,6 +37,7 @@ import {
   Droplet,
   RefreshCw,
   Braces,
+  SquareTerminal,
 } from "lucide-react";
 import type { TrainerId } from "../lib/progress";
 
@@ -48,7 +49,7 @@ export type TrainerMeta = {
   summary: string;
   taskCount: number;
   gradient: string;
-  section: "html" | "css" | "js";
+  section: "html" | "css" | "js" | "python";
 };
 
 export const trainers: TrainerMeta[] = [
@@ -442,5 +443,17 @@ export const trainers: TrainerMeta[] = [
     taskCount: 9,
     gradient: "from-violet-500 to-indigo-600",
     section: "js",
+  },
+
+  // ───────── Python ─────────
+  {
+    id: "python-print",
+    path: "/python/print",
+    icon: SquareTerminal,
+    title: "Вывод на экран: print",
+    summary: "Научи робота говорить: print показывает текст и числа в терминале.",
+    taskCount: 12,
+    gradient: "from-sky-500 to-emerald-500",
+    section: "python",
   },
 ];
