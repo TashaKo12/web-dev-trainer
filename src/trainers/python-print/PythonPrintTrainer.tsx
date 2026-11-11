@@ -1,5 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
-import { Bot, Check, ChevronRight, Lock, Sparkles, Trophy } from "lucide-react";
+import { useState, type ReactNode } from "react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -9,18 +8,17 @@ import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFal
 import { CodeEditor, PrintInput, RunButton, TerminalView } from "../../python/CodeTerminal";
 import { runPython, sameOutput, type RunResult } from "../../python/interpreter";
 import { trainers } from "../registry";
-import { loadItem, POINTS, reportPoints, saveItem } from "../../lib/storage";
+import { MissionBoard, MissionFeedback, MissionGoal, RobotSays } from "../../python/MissionBoard";
 
 const meta = trainers.find((t) => t.id === "python-print")!;
 
-const XP_PER_MISSION = POINTS.mission;
-const STORAGE_KEY = "python-print-missions";
 
 function Code({ children }: { children: ReactNode }) {
   return <code className="rounded bg-slate-100 px-1 font-mono text-[0.92em] text-slate-800">{children}</code>;
 }
 
-type Mission = { title: string; body: ReactNode; goal: string; start: string };
+/** `technique` returns a hint when the output is right but the mission's idea wasn't used. */
+type Mission = { title: string; body: ReactNode; goal: string; start: string; technique?: (arg: string) => string | null };
 
 const MISSIONS: Mission[] = [
   {
@@ -75,6 +73,10 @@ const MISSIONS: Mission[] = [
     ),
     goal: "15",
     start: '"10 + 5"',
+    technique: (arg) =>
+      /["']/.test(arg) || !/[+\-*/]/.test(arg)
+        ? "Ответ верный, но пусть Python посчитает сам: напиши пример со знаком и без кавычек."
+        : null,
   },
   {
     title: "Несколько значений сразу",
@@ -91,6 +93,8 @@ const MISSIONS: Mission[] = [
     ),
     goal: "Мне 10 лет",
     start: '"Мне", 10',
+    technique: (arg) =>
+      /,\s*10\s*,/.test(arg) ? null : "Ответ совпал, но в этой миссии нужно передать 10 отдельным значением — через запятую и без кавычек.",
   },
   {
     title: "Свой разделитель: sep",
@@ -107,6 +111,12 @@ const MISSIONS: Mission[] = [
     ),
     goal: "А-Б-В",
     start: '"А", "Б", "В"',
+    technique: (arg) => {
+      const values = arg.split(/,\s*sep\s*=/)[0];
+      if (!/sep\s*=/.test(arg)) return "Ответ совпал, но в этой миссии нужно использовать sep= — пусть дефисы поставит Python.";
+      if ((values.match(/,/g) ?? []).length < 2) return "Передай А, Б и В тремя отдельными значениями через запятую, а дефис задай через sep.";
+      return null;
+    },
   },
   {
     title: "Перенос строки: \\n",
@@ -123,32 +133,28 @@ const MISSIONS: Mission[] = [
     ),
     goal: "Первая\nВторая",
     start: '"Первая строка"',
+    technique: (arg) => (arg.includes("\\n") ? null : "Используй \\n внутри текста, чтобы перенести строку."),
   },
 ];
-
-const RANKS = ["Новичок", "Ученик робота", "Знаток print", "Мастер терминала"];
-
-function rankFor(done: number) {
-  return RANKS[Math.min(RANKS.length - 1, Math.floor((done / MISSIONS.length) * (RANKS.length - 1) + 0.0001))];
-}
-
-function readDone() {
-  const n = Number(loadItem(STORAGE_KEY));
-  return Number.isFinite(n) ? Math.min(Math.max(n, 0), MISSIONS.length) : 0;
-}
 
 function MissionPlay({ mission, isDone, onComplete }: { mission: Mission; isDone: boolean; onComplete: () => void }) {
   const [arg, setArg] = useState(mission.start);
   const [result, setResult] = useState<RunResult | null>(null);
   const [solved, setSolved] = useState(false);
+  const [hint, setHint] = useState<string | null>(null);
 
   function run() {
     const r = runPython(`print(${arg})`);
     setResult(r);
-    if (!r.error && sameOutput(r.output, mission.goal)) {
-      setSolved(true);
-      onComplete();
+    setHint(null);
+    if (r.error || !sameOutput(r.output, mission.goal)) return;
+    const techniqueHint = mission.technique?.(arg) ?? null;
+    if (techniqueHint) {
+      setHint(techniqueHint);
+      return;
     }
+    setSolved(true);
+    onComplete();
   }
 
   const speech = result ? (result.error ? "…ой, я не понял команду" : result.output.replace(/\n$/, "") || " ") : null;
@@ -156,136 +162,17 @@ function MissionPlay({ mission, isDone, onComplete }: { mission: Mission; isDone
   return (
     <div className="space-y-4">
       <div className="space-y-2 text-slate-600">{mission.body}</div>
-
-      <div className="rounded-2xl bg-sky-50 p-4 text-sm text-sky-800">
+      <MissionGoal>
         <p className="mb-2 font-bold">Цель миссии — чтобы робот сказал:</p>
         <pre className="whitespace-pre-wrap rounded-xl bg-slate-950 px-3 py-2 font-mono text-emerald-200">{mission.goal}</pre>
-      </div>
-
-      <div className="flex items-start gap-3">
-        <div className="flex h-12 w-12 shrink-0 items-center justify-center rounded-2xl bg-gradient-to-br from-sky-500 to-emerald-500 text-white shadow">
-          <Bot className="h-7 w-7" strokeWidth={1.75} />
-        </div>
-        <div className="min-w-0 flex-1 rounded-2xl rounded-tl-sm border border-slate-200 bg-white px-4 py-3 text-sm text-slate-700">
-          {speech === null ? <span className="text-slate-400">Пиксель ждёт команду…</span> : <span className="whitespace-pre-wrap">{speech}</span>}
-        </div>
-      </div>
-
+      </MissionGoal>
+      <RobotSays text={speech} />
       <PrintInput value={arg} onChange={setArg} onRun={run} />
       <div className="flex flex-wrap items-center gap-3">
         <RunButton onClick={run} />
-        {(solved || isDone) && (
-          <span className="flex items-center gap-1.5 text-sm font-bold text-emerald-600">
-            <Check className="h-4 w-4" strokeWidth={2.5} />
-            Миссия выполнена{solved ? ` · +${XP_PER_MISSION} XP` : ""}
-          </span>
-        )}
+        <MissionFeedback solved={solved} isDone={isDone} hint={hint} />
       </div>
       <TerminalView result={result} />
-    </div>
-  );
-}
-
-function Missions() {
-  const [done, setDone] = useState(readDone);
-  const [active, setActive] = useState(() => Math.min(readDone(), MISSIONS.length - 1));
-
-  const xp = done * XP_PER_MISSION;
-  const maxXp = MISSIONS.length * XP_PER_MISSION;
-
-  useEffect(() => {
-    saveItem(STORAGE_KEY, String(done));
-    reportPoints("missions:python-print", done * POINTS.mission);
-  }, [done]);
-
-  function complete(index: number) {
-    if (index === done) setDone(done + 1);
-  }
-
-  return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-      <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
-        <div className="flex items-center gap-3">
-          <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
-            <Sparkles className="h-6 w-6" strokeWidth={1.75} />
-          </div>
-          <div>
-            <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Звание</p>
-            <p className="font-extrabold text-slate-800">{rankFor(done)}</p>
-          </div>
-        </div>
-        <div className="min-w-[12rem] flex-1 sm:max-w-xs">
-          <div className="mb-1 flex justify-between text-xs font-bold text-slate-500">
-            <span>Опыт</span>
-            <span>
-              {xp} / {maxXp} XP
-            </span>
-          </div>
-          <div className="h-2 overflow-hidden rounded-full bg-slate-100">
-            <div className="h-full rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 transition-all duration-500" style={{ width: `${(xp / maxXp) * 100}%` }} />
-          </div>
-        </div>
-      </div>
-
-      <div className="space-y-3">
-        {MISSIONS.map((m, i) => {
-          const isDone = i < done;
-          const isLocked = i > done;
-          const isOpen = i === active && !isLocked;
-          return (
-            <div
-              key={m.title}
-              className={`rounded-2xl border-2 transition ${
-                isOpen ? "border-sky-300 bg-white" : isDone ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"
-              }`}
-            >
-              <button
-                type="button"
-                disabled={isLocked}
-                onClick={() => setActive(i)}
-                className="flex w-full items-center gap-3 px-4 py-3 text-left disabled:cursor-not-allowed"
-              >
-                <span
-                  className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full text-sm font-bold ${
-                    isDone ? "bg-emerald-500 text-white" : isLocked ? "bg-slate-200 text-slate-400" : "bg-sky-500 text-white"
-                  }`}
-                >
-                  {isDone ? <Check className="h-4 w-4" strokeWidth={2.5} /> : isLocked ? <Lock className="h-3.5 w-3.5" strokeWidth={2.25} /> : i + 1}
-                </span>
-                <span className="flex-1">
-                  <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">
-                    Миссия {i + 1} из {MISSIONS.length}
-                  </span>
-                  <span className={`font-extrabold ${isLocked ? "text-slate-400" : "text-slate-800"}`}>{m.title}</span>
-                </span>
-                {!isOpen && !isLocked && <ChevronRight className="h-5 w-5 text-slate-400" strokeWidth={2} />}
-              </button>
-              {isOpen && (
-                <div className="border-t border-slate-200 px-4 pb-5 pt-4">
-                  <MissionPlay key={i} mission={m} isDone={isDone} onComplete={() => complete(i)} />
-                  {isDone && i < MISSIONS.length - 1 && (
-                    <button
-                      type="button"
-                      onClick={() => setActive(i + 1)}
-                      className="mt-4 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 px-5 py-2 text-sm font-bold text-white shadow"
-                    >
-                      Следующая миссия
-                      <ChevronRight className="h-4 w-4" strokeWidth={2.5} />
-                    </button>
-                  )}
-                </div>
-              )}
-            </div>
-          );
-        })}
-      </div>
-
-      {done === MISSIONS.length && (
-        <div className="mt-6 flex items-center gap-3 rounded-2xl bg-emerald-50 p-4 text-emerald-800">
-          <Trophy className="h-6 w-6 shrink-0" strokeWidth={1.75} />
-          <p className="text-sm font-bold">Все миссии пройдены — Пиксель научился говорить! Теперь закрепим всё на практике ниже.</p>
-        </div>
-      )}
     </div>
   );
 }
@@ -324,7 +211,7 @@ const LEVELS: PyLevel[] = [
     mode: "paren",
     start: "",
     expected: "56",
-    rule: (code) => code.includes("*"),
+    rule: (code) => code.includes("*") && !/["']/.test(code),
     explain: "print(7 * 8) — Python вычисляет выражение и печатает результат: 56.",
   },
   {
@@ -375,6 +262,7 @@ const LEVELS: PyLevel[] = [
     mode: "code",
     start: 'print("Начало")\n\nprint("Конец")',
     expected: "Начало\n\nКонец",
+    rule: (code) => (code.match(/print\s*\(/g) ?? []).length >= 3,
     explain: "print() без ничего внутри печатает пустую строку.",
   },
   {
@@ -383,7 +271,7 @@ const LEVELS: PyLevel[] = [
     mode: "paren",
     start: "1, 2, 3",
     expected: "1-2-3",
-    rule: (code) => /sep\s*=/.test(code),
+    rule: (code) => /\(\s*1\s*,\s*2\s*,\s*3\s*,\s*sep\s*=/.test(code),
     explain: 'print(1, 2, 3, sep="-") — sep задаёт знак между значениями вместо пробела.',
   },
   {
@@ -392,6 +280,7 @@ const LEVELS: PyLevel[] = [
     mode: "code",
     start: 'print("Мне " + 12 + " лет")',
     expected: "Мне 12 лет",
+    rule: (code) => /\b12\b/.test(code.replace(/"[^"]*"|'[^']*'/g, "")),
     explain: 'print("Мне", 12, "лет") — текст и число нельзя склеить через +, а через запятую можно.',
   },
   {
@@ -504,7 +393,15 @@ export function PythonPrintTrainer() {
         description="Шесть миссий: в каждой — короткое объяснение, а потом ты пишешь код внутри скобок print и смотришь, что появится в терминале."
       />
       <div className="mb-10">
-        <Missions />
+        <MissionBoard
+          missions={MISSIONS.map((m) => ({
+            title: m.title,
+            render: ({ isDone, onComplete }) => <MissionPlay mission={m} isDone={isDone} onComplete={onComplete} />,
+          }))}
+          storageKey={meta.missions!.storageKey}
+          pointsSource="missions:python-print"
+          finishText="Все миссии пройдены — Пиксель научился говорить! Теперь закрепим всё на практике ниже."
+        />
       </div>
       <SectionHeading
         kicker="Практика"

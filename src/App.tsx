@@ -42,6 +42,8 @@ import { TransitionsTrainer } from "./trainers/transitions/TransitionsTrainer";
 import { DomAccessTrainer } from "./trainers/dom-access/DomAccessTrainer";
 import { PythonHome } from "./pages/PythonHome";
 import { PythonPrintTrainer } from "./trainers/python-print/PythonPrintTrainer";
+import { PythonInputTrainer } from "./trainers/python-input/PythonInputTrainer";
+import { Profile } from "./pages/Profile";
 
 function App() {
   const [loading, setLoading] = useState(true);
@@ -99,6 +101,9 @@ function App() {
           {/* Python */}
           <Route path="python" element={<PythonHome />} />
           <Route path="python/print" element={<PythonPrintTrainer />} />
+          <Route path="python/input" element={<PythonInputTrainer />} />
+
+          <Route path="profile" element={<Profile />} />
         </Route>
       </Routes>
     </HashRouter>

@@ -50,6 +50,8 @@ export type TrainerMeta = {
   taskCount: number;
   gradient: string;
   section: "html" | "css" | "js" | "python";
+  /** Game missions shown before practice (Python topics). */
+  missions?: { storageKey: string; count: number };
 };
 
 export const trainers: TrainerMeta[] = [
@@ -455,5 +457,17 @@ export const trainers: TrainerMeta[] = [
     taskCount: 12,
     gradient: "from-sky-500 to-emerald-500",
     section: "python",
+    missions: { storageKey: "python-print-missions", count: 6 },
+  },
+  {
+    id: "python-input",
+    path: "/python/input",
+    icon: Keyboard,
+    title: "Ввод данных: input",
+    summary: "Научи робота слушать: программа задаёт вопрос и ждёт ответа с клавиатуры.",
+    taskCount: 10,
+    gradient: "from-violet-500 to-sky-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-input", count: 5 },
   },
 ];

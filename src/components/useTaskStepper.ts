@@ -4,20 +4,25 @@ import { loadJSON, POINTS, reportPoints, saveJSON } from "../lib/storage";
 
 export type TaskStatus = "idle" | "correct" | "wrong";
 
-type SavedSession = { index: number; statuses: TaskStatus[] };
+/** What is kept for each topic's practice: current level, answers and when each level was answered. */
+export type SavedSession = { index: number; statuses: TaskStatus[]; dates: (string | null)[] };
 
-function loadSession(key: string, total: number): SavedSession | null {
-  const saved = loadJSON<SavedSession>(key);
+export function sessionKey(trainerId: TrainerId) {
+  return `wdt:session:${trainerId}`;
+}
+
+export function loadSession(trainerId: TrainerId, total: number): SavedSession | null {
+  const saved = loadJSON<Partial<SavedSession>>(sessionKey(trainerId));
   if (!saved || !Array.isArray(saved.statuses) || saved.statuses.length !== total) return null;
-  return { index: Math.min(Math.max(saved.index | 0, 0), total - 1), statuses: saved.statuses };
+  const dates = Array.isArray(saved.dates) && saved.dates.length === total ? saved.dates : Array(total).fill(null);
+  return { index: Math.min(Math.max((saved.index ?? 0) | 0, 0), total - 1), statuses: saved.statuses, dates };
 }
 
 export function useTaskStepper(total: number, trainerId: TrainerId) {
-  const sessionKey = `wdt:session:${trainerId}`;
-  const [index, setIndex] = useState(() => loadSession(sessionKey, total)?.index ?? 0);
-  const [statuses, setStatuses] = useState<TaskStatus[]>(
-    () => loadSession(sessionKey, total)?.statuses ?? Array(total).fill("idle"),
+  const [session, setSession] = useState<SavedSession>(
+    () => loadSession(trainerId, total) ?? { index: 0, statuses: Array(total).fill("idle"), dates: Array(total).fill(null) },
   );
+  const { index, statuses } = session;
 
   const score = useMemo(
     () => statuses.filter((s) => s === "correct").length,
@@ -26,8 +31,8 @@ export function useTaskStepper(total: number, trainerId: TrainerId) {
   const allAnswered = statuses.every((s) => s !== "idle");
 
   useEffect(() => {
-    saveJSON(sessionKey, { index, statuses });
-  }, [sessionKey, index, statuses]);
+    saveJSON(sessionKey(trainerId), session);
+  }, [trainerId, session]);
 
   useEffect(() => {
     reportPoints(`practice:${trainerId}`, score * POINTS.practice);
@@ -38,24 +43,25 @@ export function useTaskStepper(total: number, trainerId: TrainerId) {
   }, [allAnswered, score, total, trainerId]);
 
   function markResult(correct: boolean) {
-    setStatuses((prev) => {
-      const next = [...prev];
-      next[index] = correct ? "correct" : "wrong";
-      return next;
+    setSession((s) => {
+      const statusesNext = [...s.statuses];
+      const datesNext = [...s.dates];
+      statusesNext[s.index] = correct ? "correct" : "wrong";
+      datesNext[s.index] = new Date().toISOString();
+      return { ...s, statuses: statusesNext, dates: datesNext };
     });
   }
 
-  function goNext() {
-    setIndex((i) => Math.min(i + 1, total - 1));
+  function goTo(i: number) {
+    setSession((s) => ({ ...s, index: Math.max(0, Math.min(i, total - 1)) }));
   }
 
-  function goTo(i: number) {
-    setIndex(Math.max(0, Math.min(i, total - 1)));
+  function goNext() {
+    setSession((s) => ({ ...s, index: Math.min(s.index + 1, total - 1) }));
   }
 
   function restart() {
-    setIndex(0);
-    setStatuses(Array(total).fill("idle"));
+    setSession({ index: 0, statuses: Array(total).fill("idle"), dates: Array(total).fill(null) });
   }
 
   return {

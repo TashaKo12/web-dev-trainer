@@ -1,16 +1,68 @@
-import type { KeyboardEvent } from "react";
-import { Lightbulb, Play } from "lucide-react";
-import type { RunResult } from "./interpreter";
+import { useState, type KeyboardEvent } from "react";
+import { CornerDownLeft, Lightbulb, Play } from "lucide-react";
+import { runPython, type RunResult } from "./interpreter";
 
 const SYNTAX_ERRORS = new Set(["SyntaxError", "IndentationError"]);
 
-export function TerminalView({ result }: { result: RunResult | null }) {
-  const lines: { text: string; tone: "out" | "err" | "muted" }[] = [];
+/** Runs a program and lets the user answer its input() questions one at a time. */
+export function useProgramRunner() {
+  const [result, setResult] = useState<RunResult | null>(null);
+  const [answers, setAnswers] = useState<string[]>([]);
+  const [code, setCode] = useState("");
+
+  function run(source: string) {
+    const r = runPython(source, []);
+    setCode(source);
+    setAnswers([]);
+    setResult(r);
+    return { result: r, answers: [] as string[] };
+  }
+
+  function answer(text: string) {
+    const next = [...answers, text];
+    const r = runPython(code, next);
+    setAnswers(next);
+    setResult(r);
+    return { result: r, answers: next };
+  }
+
+  return { result, answers, run, answer };
+}
+
+function AnswerInput({ onAnswer }: { onAnswer: (text: string) => void }) {
+  const [value, setValue] = useState("");
+  return (
+    <span className="inline-flex items-center gap-1 align-baseline">
+      <input
+        autoFocus
+        value={value}
+        onChange={(e) => setValue(e.target.value)}
+        onKeyDown={(e) => {
+          if (e.key === "Enter") onAnswer(value);
+        }}
+        aria-label="Ответ программе"
+        spellCheck={false}
+        autoComplete="off"
+        style={{ width: `${Math.max(value.length, 6) + 1}ch` }}
+        className="border-b border-dashed border-sky-400 bg-transparent font-mono text-sky-300 caret-sky-300 outline-none"
+      />
+      <button
+        type="button"
+        onClick={() => onAnswer(value)}
+        aria-label="Отправить ответ"
+        className="rounded border border-slate-700 p-0.5 text-slate-400 hover:text-sky-300"
+      >
+        <CornerDownLeft className="h-3.5 w-3.5" strokeWidth={2} />
+      </button>
+    </span>
+  );
+}
+
+export function TerminalView({ result, onAnswer }: { result: RunResult | null; onAnswer?: (text: string) => void }) {
+  const lines: { text: string; tone: "err" | "muted" }[] = [];
 
   if (result) {
-    if (result.output) {
-      for (const line of result.output.replace(/\n$/, "").split("\n")) lines.push({ text: line, tone: "out" });
-    } else if (!result.error) {
+    if (!result.events.length && !result.error && !result.waiting) {
       lines.push({ text: "(программа ничего не напечатала)", tone: "muted" });
     }
     if (result.error) {
@@ -34,12 +86,34 @@ export function TerminalView({ result }: { result: RunResult | null }) {
         <div className="min-h-[5.5rem] px-4 py-3 font-mono text-sm leading-relaxed">
           <div className="text-slate-500">$ python main.py</div>
           {!result && <div className="text-slate-500">Нажми «Запустить», чтобы увидеть результат</div>}
+          {result && (result.events.length > 0 || result.waiting) && (
+            <div className="whitespace-pre-wrap break-words">
+              {result.events.map((ev, i) =>
+                ev.k === "answer" ? (
+                  <span key={i} className="text-sky-300">
+                    {ev.text + "\n"}
+                  </span>
+                ) : (
+                  <span key={i} className="text-emerald-200">
+                    {ev.text}
+                  </span>
+                ),
+              )}
+              {result.waiting &&
+                (onAnswer ? (
+                  <AnswerInput key={result.events.length} onAnswer={onAnswer} />
+                ) : (
+                  <span className="italic text-slate-500">(программа ждёт ответа)</span>
+                ))}
+            </div>
+          )}
+          {result?.waiting && onAnswer && (
+            <div className="mt-2 text-xs text-slate-500">Программа ждёт ответа — напиши его и нажми Enter</div>
+          )}
           {lines.map((l, i) => (
             <div
               key={i}
-              className={`whitespace-pre-wrap break-words ${
-                l.tone === "err" ? "text-rose-300" : l.tone === "muted" ? "italic text-slate-500" : "text-emerald-200"
-              }`}
+              className={`whitespace-pre-wrap break-words ${l.tone === "err" ? "text-rose-300" : "italic text-slate-500"}`}
             >
               {l.text || " "}
             </div>

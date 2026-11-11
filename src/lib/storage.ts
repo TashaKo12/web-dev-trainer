@@ -86,6 +86,35 @@ export function setConsent(value: Consent) {
   emit();
 }
 
+const isOurKey = (k: string) => (k.startsWith("wdt:") || LEGACY_KEYS.includes(k)) && k !== CONSENT_KEY;
+
+/** Everything this site remembers (saved on the device and kept in memory), for the restore code. */
+export function exportData(): Record<string, string> {
+  const data: Record<string, string> = {};
+  if (consent !== "denied") {
+    try {
+      for (let i = 0; i < localStorage.length; i++) {
+        const k = localStorage.key(i);
+        if (k && isOurKey(k)) data[k] = localStorage.getItem(k) ?? "";
+      }
+    } catch {
+      // storage unavailable — memory below is still exported
+    }
+  }
+  memory.forEach((v, k) => {
+    if (isOurKey(k)) data[k] = v;
+  });
+  return data;
+}
+
+/** Restores data from a restore code. Requires consent, otherwise it would vanish on reload. */
+export function importData(data: Record<string, string>) {
+  if (consent !== "granted") setConsent("granted");
+  for (const [k, v] of Object.entries(data)) {
+    if (isOurKey(k) && typeof v === "string") saveItem(k, v);
+  }
+}
+
 let points: Record<string, number> = loadJSON<Record<string, number>>(POINTS_KEY) ?? {};
 let total = Object.values(points).reduce((a, b) => a + b, 0);
 

@@ -18,10 +18,21 @@ export type PyErrorInfo = {
   hint: string;
 };
 
+export type TermEvent = { k: "out" | "prompt" | "answer"; text: string };
+
 export type RunResult = {
+  /** Everything the program wrote to the screen: print output and input() prompts. */
   output: string;
+  /** Only what print() produced — used to check answers, independent of prompt wording. */
+  printed: string;
+  events: TermEvent[];
+  /** The program stopped at input() and is waiting for the next answer. */
+  waiting: boolean;
+  prompts: string[];
   error?: PyErrorInfo;
 };
+
+class WaitForInput {}
 
 class PyError extends Error {
   pyType: string;
@@ -60,7 +71,7 @@ const MAX_INT_DIGITS = 4300;
 const NAME_START = /[A-Za-z_Ѐ-ӿ]/;
 const NAME_CHAR = /[A-Za-z0-9_Ѐ-ӿ]/;
 const ODD_QUOTES = new Set(["“", "”", "‘", "’", "«", "»", "„"]);
-const BUILTINS = new Set(["print", "str", "int", "float", "len"]);
+const BUILTINS = new Set(["print", "input", "str", "int", "float", "len"]);
 
 function tokenize(line: string, lineNo: number): Tok[] {
   const toks: Tok[] = [];
@@ -493,13 +504,24 @@ function compare(op: string, a: PyValue, b: PyValue, line: number): PyValue {
 
 class Machine {
   output = "";
+  printed = "";
+  events: TermEvent[] = [];
+  prompts: string[] = [];
   private env = new Map<string, PyValue>();
+  private inputs: string[];
+  private nextInput = 0;
 
-  private write(text: string, line: number) {
+  constructor(inputs: string[]) {
+    this.inputs = inputs;
+  }
+
+  private write(kind: "out" | "prompt", text: string, line: number) {
     if (this.output.length + text.length > MAX_OUTPUT) {
       throw new PyError("OutputLimit", "слишком много текста в терминале", line);
     }
     this.output += text;
+    if (kind === "out") this.printed += text;
+    if (text) this.events.push({ k: kind, text });
   }
 
   run(stmt: Stmt, line: number) {
@@ -552,8 +574,20 @@ class Machine {
         if (name === "sep") sep = text;
         else end = text;
       }
-      this.write(args.map((a) => toStr(a, line)).join(sep) + end, line);
+      this.write("out", args.map((a) => toStr(a, line)).join(sep) + end, line);
       return { t: "none" };
+    }
+
+    if (fn.name === "input") {
+      if (e.kw.length) throw new PyError("TypeError", "input() takes no keyword arguments", line);
+      if (args.length > 1) throw new PyError("TypeError", `input expected at most 1 argument, got ${args.length}`, line);
+      const prompt = args[0] ? toStr(args[0], line) : "";
+      this.prompts.push(prompt);
+      this.write("prompt", prompt, line);
+      if (this.nextInput >= this.inputs.length) throw new WaitForInput();
+      const answer = this.inputs[this.nextInput++];
+      this.events.push({ k: "answer", text: answer });
+      return { t: "str", v: answer };
     }
 
     if (e.kw.length) {
@@ -616,7 +650,10 @@ function hintFor(type: string, message: string, source: string): string {
   }
   if (type === "TypeError") {
     if (message.startsWith("can only concatenate str")) {
-      return "Текст и число нельзя склеить через +. Поставь запятую: print(\"Мне\", 12) — или преврати число в текст: str(12).";
+      return "Текст и число нельзя склеить через +. В print можно поставить запятую: print(\"Мне\", 12). А если число пришло из input(), там на самом деле текст — оберни его: int(input(...)).";
+    }
+    if (message.includes("(not \"str\")") || (message.startsWith("unsupported operand") && message.includes("'int' and 'str'"))) {
+      return "Здесь встретились число и текст. Помни: input() всегда возвращает текст — чтобы получить число, пиши int(input(...)).";
     }
     if (message.startsWith("unsupported operand") && message.includes("'str'")) return "Нельзя делать математику с текстом. Убери кавычки у чисел.";
     if (message.includes("can't multiply sequence")) return "Текст можно умножить только на целое число.";
@@ -625,15 +662,21 @@ function hintFor(type: string, message: string, source: string): string {
     return "Значения не подходят друг к другу по типу.";
   }
   if (type === "ZeroDivisionError") return "На ноль делить нельзя — даже Python так не умеет.";
-  if (type === "ValueError") return "Эту строку нельзя превратить в число.";
+  if (type === "ValueError") return "Программа ждала число, а получила текст, который нельзя превратить в число. Введи цифры.";
   if (type === "OverflowError" || type === "MemoryError") return "Получилось слишком большое значение для тренажёра.";
   if (type === "OutputLimit") return "Программа печатает слишком много — сократи вывод.";
   return "";
 }
 
-export function runPython(code: string): RunResult {
+/**
+ * Runs the program from the start, feeding `inputs` to input() in order.
+ * If the program asks for more answers than given, it stops with `waiting: true`;
+ * the caller collects the answer and runs again with one more input.
+ */
+export function runPython(code: string, inputs: string[] = []): RunResult {
   const lines = code.replace(/\r\n?/g, "\n").split("\n");
   const program: { stmt: Stmt; line: number }[] = [];
+  const empty = { output: "", printed: "", events: [], waiting: false, prompts: [] };
 
   const toError = (err: unknown): PyErrorInfo => {
     if (!(err instanceof PyError)) throw err;
@@ -649,16 +692,24 @@ export function runPython(code: string): RunResult {
       program.push({ stmt: new Parser(tokenize(text, lineNo), lineNo).parseStatement(), line: lineNo });
     });
   } catch (err) {
-    return { output: "", error: toError(err) };
+    return { ...empty, error: toError(err) };
   }
 
-  const machine = new Machine();
+  const machine = new Machine(inputs);
+  const snapshot = () => ({
+    output: machine.output,
+    printed: machine.printed,
+    events: machine.events,
+    prompts: machine.prompts,
+    waiting: false,
+  });
   try {
     for (const { stmt, line } of program) machine.run(stmt, line);
   } catch (err) {
-    return { output: machine.output, error: toError(err) };
+    if (err instanceof WaitForInput) return { ...snapshot(), waiting: true };
+    return { ...snapshot(), error: toError(err) };
   }
-  return { output: machine.output };
+  return snapshot();
 }
 
 export function sameOutput(actual: string, expected: string) {

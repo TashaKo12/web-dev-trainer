@@ -1,10 +1,9 @@
 import { Link } from "react-router-dom";
-import { Box, CircleCheck, FileCode, GitBranch, Keyboard, Repeat, type LucideIcon } from "lucide-react";
+import { Box, CircleCheck, FileCode, GitBranch, Repeat, type LucideIcon } from "lucide-react";
 import { trainers } from "../trainers/registry";
 import { getAllProgress } from "../lib/progress";
 
 const UPCOMING: { title: string; summary: string; icon: LucideIcon }[] = [
-  { title: "Ввод данных: input", summary: "Программа задаёт вопрос и ждёт ответа с клавиатуры.", icon: Keyboard },
   { title: "Переменные", summary: "Коробочки с именами, в которых программа хранит значения.", icon: Box },
   { title: "Условия: if", summary: "Программа выбирает, что делать, в зависимости от ответа.", icon: GitBranch },
   { title: "Циклы: for и while", summary: "Повторяем действия, не переписывая код много раз.", icon: Repeat },
