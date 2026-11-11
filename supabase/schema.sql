@@ -102,3 +102,72 @@ grant execute on function public.save_progress(text, jsonb) to anon;
 grant execute on function public.load_progress(text) to anon;
 
 notify pgrst, 'reload schema';
+
+-- ───────── Админ ─────────
+-- Ровно один админ (строка с id = true). Код из 16 знаков выдаётся один раз и больше не меняется:
+-- повторный запуск скрипта его не трогает. Посмотреть код всегда можно в Table Editor → admins.
+
+create table if not exists public.admins (
+  id boolean primary key default true check (id),
+  name text not null,
+  code text not null unique check (code ~ '^[A-Z2-9]{16}$'),
+  created_at timestamptz not null default now()
+);
+
+alter table public.admins enable row level security;
+revoke all on public.admins from anon, authenticated;
+
+do $$
+declare
+  alphabet constant text := 'ABCDEFGHJKLMNPQRSTUVWXYZ23456789';
+  b1 bytea := uuid_send(gen_random_uuid());
+  b2 bytea := uuid_send(gen_random_uuid());
+  v_code text := '';
+  i int;
+begin
+  if exists (select 1 from public.admins) then
+    return;
+  end if;
+  foreach i in array array[0, 1, 2, 3, 4, 5, 10, 11] loop
+    v_code := v_code || substr(alphabet, 1 + get_byte(b1, i) % 32, 1) || substr(alphabet, 1 + get_byte(b2, i) % 32, 1);
+  end loop;
+  insert into public.admins (name, code) values ('Кондратюк Татьяна', v_code);
+end;
+$$;
+
+-- Сводка для страницы админа: все участники с прогрессом. Без верного кода админа — ошибка.
+create or replace function public.admin_overview(p_code text)
+returns jsonb
+language plpgsql
+security definer
+set search_path = public
+as $$
+declare
+  v_admin text;
+begin
+  select name into v_admin from admins where code = p_code;
+  if v_admin is null then
+    perform pg_sleep(1); -- замедляет подбор кода
+    raise exception 'not admin';
+  end if;
+  return jsonb_build_object(
+    'admin', v_admin,
+    'participants', coalesce((
+      select jsonb_agg(jsonb_build_object(
+        'code', code, 'name', name, 'surname3', surname3,
+        'created_at', created_at, 'updated_at', updated_at, 'data', data
+      ) order by updated_at desc)
+      from progress
+    ), '[]'::jsonb)
+  );
+end;
+$$;
+
+revoke all on function public.admin_overview(text) from public;
+grant execute on function public.admin_overview(text) to anon;
+
+notify pgrst, 'reload schema';
+
+-- Код админа (показывается в результате ниже):
+select name as "Админ", substr(code, 1, 4) || '-' || substr(code, 5, 4) || '-' || substr(code, 9, 4) || '-' || substr(code, 13, 4) as "Код админа"
+from public.admins;

@@ -1,12 +1,11 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, Check, ChevronDown, Cloud, Copy, IdCard, KeyRound, Sparkles, Star, Target, X } from "lucide-react";
+import { CalendarClock, Check, ChevronDown, Clock, Cloud, Copy, IdCard, KeyRound, Sparkles, Star, Target, X } from "lucide-react";
 import { cloudAvailable, createCloudCode, formatCode, formatOwner, getCloudCode, getOwner, normalizeCode, restoreFromCloud, useSyncState } from "../lib/cloud";
-import { trainers, type TrainerMeta } from "../trainers/registry";
-import { loadItem, loadJSON, useConsent, useTotalPoints } from "../lib/storage";
+import { type TrainerMeta } from "../trainers/registry";
+import { loadItem, useConsent, useTotalPoints } from "../lib/storage";
+import { buildActivity, formatDate, formatDuration, readReports, type Activity, type TopicReport } from "../lib/reports";
 import { applyRestoreCode, makeRestoreCode } from "../lib/backup";
-import { sessionKey, type SavedSession, type TaskStatus } from "../components/useTaskStepper";
-import { missionDatesKey } from "../python/MissionBoard";
 
 const CARD =
   "rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
@@ -17,44 +16,6 @@ const SECTION_TITLES: Record<TrainerMeta["section"], string> = {
   js: "JavaScript",
   python: "Python",
 };
-
-type TopicReport = {
-  meta: TrainerMeta;
-  statuses: TaskStatus[];
-  dates: (string | null)[];
-  solved: number;
-  missionsDone: number;
-  missionDates: (string | null)[];
-  lastAt: string | null;
-};
-
-type Activity = { at: string; meta: TrainerMeta; label: string; ok: boolean };
-
-function formatDate(iso: string, withTime = true) {
-  const d = new Date(iso);
-  const date = d.toLocaleDateString("ru-RU", { day: "numeric", month: "long", year: "numeric" });
-  return withTime ? `${date}, ${d.toLocaleTimeString("ru-RU", { hour: "2-digit", minute: "2-digit" })}` : date;
-}
-
-function readReports(): TopicReport[] {
-  return trainers.map((meta) => {
-    const session = loadJSON<Partial<SavedSession>>(sessionKey(meta.id));
-    const statuses: TaskStatus[] = Array.isArray(session?.statuses) ? session.statuses : Array(meta.taskCount).fill("idle");
-    const dates = Array.isArray(session?.dates) ? session.dates : [];
-    const missionsDone = meta.missions ? Math.min(Number(loadItem(meta.missions.storageKey)) || 0, meta.missions.count) : 0;
-    const missionDates = meta.missions ? (loadJSON<(string | null)[]>(missionDatesKey(`missions:${meta.id}`)) ?? []) : [];
-    const allDates = [...dates, ...missionDates].filter((d): d is string => !!d).sort();
-    return {
-      meta,
-      statuses,
-      dates,
-      solved: statuses.filter((s) => s === "correct").length,
-      missionsDone,
-      missionDates,
-      lastAt: allDates[allDates.length - 1] ?? null,
-    };
-  });
-}
 
 function StatCard({ icon: Icon, label, value }: { icon: typeof Star; label: string; value: string }) {
   return (
@@ -414,7 +375,7 @@ function RestoreCode() {
 
 function TopicRow({ report }: { report: TopicReport }) {
   const [open, setOpen] = useState(false);
-  const { meta, statuses, dates, solved, missionsDone, missionDates, lastAt } = report;
+  const { meta, statuses, dates, solved, missionsDone, missionDates, lastAt, levelTimes, time } = report;
   const Icon = meta.icon;
   const total = statuses.length;
 
@@ -434,7 +395,12 @@ function TopicRow({ report }: { report: TopicReport }) {
               {solved}/{total}
             </span>
           </div>
-          {lastAt && <p className="mt-1 text-xs text-slate-400">Последнее занятие: {formatDate(lastAt)}</p>}
+          {lastAt && (
+            <p className="mt-1 text-xs text-slate-400">
+              Последнее занятие: {formatDate(lastAt)}
+              {time > 0 && ` · всего ${formatDuration(time)}`}
+            </p>
+          )}
         </div>
         <ChevronDown className={`h-5 w-5 shrink-0 text-slate-400 transition ${open ? "rotate-180" : ""}`} strokeWidth={2} />
       </button>
@@ -458,7 +424,8 @@ function TopicRow({ report }: { report: TopicReport }) {
                 {s === "correct" ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : s === "wrong" ? <X className="h-3.5 w-3.5" strokeWidth={2.5} /> : i + 1}
               </span>
               <span className="text-slate-700">Уровень {i + 1}</span>
-              <span className="ml-auto text-xs text-slate-400">{dates[i] ? formatDate(dates[i]!) : "не пройден"}</span>
+              <span className="ml-auto text-xs text-slate-400">{dates[i] ? formatDate(dates[i]!) : "не пройден"}
+                {levelTimes[i] > 0 && ` · ${formatDuration(levelTimes[i])}`}</span>
             </div>
           ))}
           <Link to={meta.path} className="mt-2 inline-block font-bold text-indigo-600">
@@ -473,23 +440,16 @@ function TopicRow({ report }: { report: TopicReport }) {
 export function Profile() {
   const total = useTotalPoints();
   const consent = useConsent();
-  const reports = useMemo(readReports, [total]);
+  const reports = useMemo(() => readReports(loadItem), [total]);
   const [showAll, setShowAll] = useState(false);
 
-  const started = reports.filter((r) => r.lastAt || r.missionsDone > 0);
+  const started = reports.filter((r) => r.lastAt || r.missionsDone > 0 || r.time > 0);
   const solvedLevels = reports.reduce((a, r) => a + r.solved, 0);
   const allLevels = reports.reduce((a, r) => a + r.statuses.length, 0);
   const missionsDone = reports.reduce((a, r) => a + r.missionsDone, 0);
 
-  const activity: Activity[] = reports
-    .flatMap((r) => [
-      ...r.dates.flatMap((d, i) =>
-        d ? [{ at: d, meta: r.meta, label: `Уровень ${i + 1}`, ok: r.statuses[i] === "correct" }] : [],
-      ),
-      ...r.missionDates.flatMap((d, i) => (d ? [{ at: d, meta: r.meta, label: `Миссия ${i + 1}`, ok: true }] : [])),
-    ])
-    .sort((a, b) => b.at.localeCompare(a.at))
-    .slice(0, 10);
+  const activity: Activity[] = buildActivity(reports);
+  const timeTotal = reports.reduce((a, r) => a + r.time, 0);
 
   const lastAt = activity[0]?.at ?? null;
   const visible = showAll ? reports : started;
@@ -513,10 +473,11 @@ export function Profile() {
       </div>
 
       <div className={CARD}>
-        <div className="grid gap-3 sm:grid-cols-4">
+        <div className="grid gap-3 sm:grid-cols-3 lg:grid-cols-5">
           <StatCard icon={Star} label="Очки" value={String(total)} />
           <StatCard icon={Target} label="Уровней решено" value={`${solvedLevels} из ${allLevels}`} />
           <StatCard icon={Sparkles} label="Миссий" value={String(missionsDone)} />
+          <StatCard icon={Clock} label="Время занятий" value={formatDuration(timeTotal)} />
           <StatCard icon={CalendarClock} label="Последнее занятие" value={lastAt ? formatDate(lastAt, false) : "—"} />
         </div>
       </div>

@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { saveProgress, type TrainerId } from "../lib/progress";
 import { loadJSON, POINTS, reportPoints, saveJSON } from "../lib/storage";
+import { setTimeLevel } from "../lib/timeTracker";
 
 export type TaskStatus = "idle" | "correct" | "wrong";
 
@@ -33,6 +34,11 @@ export function useTaskStepper(total: number, trainerId: TrainerId) {
   useEffect(() => {
     saveJSON(sessionKey(trainerId), session);
   }, [trainerId, session]);
+
+  useEffect(() => {
+    setTimeLevel(trainerId, index);
+    return () => setTimeLevel(trainerId, null);
+  }, [trainerId, index]);
 
   useEffect(() => {
     reportPoints(`practice:${trainerId}`, score * POINTS.practice);

@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { trainers } from "../trainers/registry";
+import { setTimeTopic } from "../lib/timeTracker";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Blocks } from "lucide-react";
 import { useConsent } from "../lib/storage";
@@ -11,6 +13,9 @@ export function Layout() {
   const { pathname } = useLocation();
   const consent = useConsent();
   const [askAgain, setAskAgain] = useState(false);
+  useEffect(() => {
+    setTimeTopic(trainers.find((t) => t.path === pathname)?.id ?? null);
+  }, [pathname]);
   const back =
     pathname === "/" || pathname === "" || pathname === "/python"
       ? null

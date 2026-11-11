@@ -1,5 +1,6 @@
 import { useSyncExternalStore } from "react";
 import { CLOUD } from "./cloudConfig";
+import { TIME_KEY } from "./timeTracker";
 import { CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, saveItem, setConsent } from "./storage";
 
 // Progress stored on the server under a short participant code (e.g. K7QM-2XWD),
@@ -30,7 +31,7 @@ export function useSyncState() {
   );
 }
 
-async function rpc<T>(fn: string, body: Record<string, unknown>): Promise<T | null> {
+export async function rpc<T>(fn: string, body: Record<string, unknown>): Promise<T | null> {
   const res = await fetch(`${CLOUD.url.replace(/\/$/, "")}/rest/v1/rpc/${fn}`, {
     method: "POST",
     headers: { apikey: CLOUD.key, "Content-Type": "application/json" },
@@ -128,12 +129,21 @@ export async function restoreFromCloud(input: string) {
 }
 
 let timer: ReturnType<typeof setTimeout> | undefined;
+let timerDue = 0;
 
 export function startAutoSync() {
   if (!cloudAvailable) return;
   onSave((key) => {
     if (key === CLOUD_CODE_KEY || !getCloudCode()) return;
+    // answers go up within seconds; time-on-task counters only once a minute
+    const delay = key === TIME_KEY ? 60_000 : 2000;
+    const due = Date.now() + delay;
+    if (timer !== undefined && timerDue <= due) return;
     clearTimeout(timer);
-    timer = setTimeout(syncNow, 2000);
+    timerDue = due;
+    timer = setTimeout(() => {
+      timer = undefined;
+      syncNow();
+    }, delay);
   });
 }
