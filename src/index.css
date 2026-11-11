@@ -223,6 +223,10 @@ html.dark main .text-indigo-800 {
   color: #a5b4fc;
 }
 
+html.dark main .text-indigo-900 {
+  color: #dbe1ff;
+}
+
 html.dark main .border-indigo-200,
 html.dark main .border-indigo-300,
 html.dark main .border-indigo-400 {
