@@ -67,6 +67,7 @@ export function removeItem(key: string) {
 
 /** The participant's short cloud code lives on this device only; it is not part of the progress itself. */
 export const CLOUD_CODE_KEY = "wdt:cloud-code";
+export const CLOUD_OWNER_KEY = "wdt:cloud-owner";
 
 export function loadJSON<T>(key: string): T | null {
   const raw = loadItem(key);
@@ -114,7 +115,7 @@ export function setConsent(value: Consent) {
   emit();
 }
 
-const isOurKey = (k: string) => (k.startsWith("wdt:") || LEGACY_KEYS.includes(k)) && k !== CONSENT_KEY && k !== CLOUD_CODE_KEY;
+const isOurKey = (k: string) => (k.startsWith("wdt:") || LEGACY_KEYS.includes(k)) && k !== CONSENT_KEY && k !== CLOUD_CODE_KEY && k !== CLOUD_OWNER_KEY;
 
 /** Everything this site remembers (saved on the device and kept in memory), for the restore code. */
 export function exportData(): Record<string, string> {

@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarClock, Check, ChevronDown, Cloud, Copy, IdCard, KeyRound, Sparkles, Star, Target, X } from "lucide-react";
-import { cloudAvailable, createCloudCode, deleteFromCloud, formatCode, getCloudCode, normalizeCode, restoreFromCloud, useSyncState } from "../lib/cloud";
+import { cloudAvailable, createCloudCode, formatCode, formatOwner, getCloudCode, getOwner, normalizeCode, restoreFromCloud, useSyncState } from "../lib/cloud";
 import { trainers, type TrainerMeta } from "../trainers/registry";
 import { loadItem, loadJSON, useConsent, useTotalPoints } from "../lib/storage";
 import { applyRestoreCode, makeRestoreCode } from "../lib/backup";
@@ -75,10 +75,13 @@ const BTN_SECOND =
 
 function ParticipantCode() {
   const [code, setCode] = useState(getCloudCode);
+  const [owner, setOwner] = useState(getOwner);
   const sync = useSyncState();
-  const [step, setStep] = useState<"none" | "agree" | "delete" | "replace">("none");
+  const [step, setStep] = useState<"none" | "agree" | "replace">("none");
   const [busy, setBusy] = useState(false);
   const [copied, setCopied] = useState(false);
+  const [name, setName] = useState("");
+  const [surname, setSurname] = useState("");
   const [input, setInput] = useState("");
   const [error, setError] = useState<string | null>(null);
 
@@ -87,11 +90,11 @@ function ParticipantCode() {
     setError(null);
     try {
       await fn();
+      setStep("none");
     } catch (e) {
       setError(e instanceof Error && /[а-я]/i.test(e.message) ? e.message : "Не получилось связаться с сервером. Попробуй ещё раз.");
     } finally {
       setBusy(false);
-      setStep("none");
     }
   }
 
@@ -114,6 +117,9 @@ function ParticipantCode() {
           ? `Сохранено ${formatDate(sync.at)}`
           : "Прогресс сохраняется автоматически после каждого задания";
 
+  const field =
+    "rounded-xl border-2 border-slate-200 bg-white px-3 py-2 text-base text-slate-800 outline-none focus:border-indigo-300";
+
   return (
     <div className={CARD}>
       <div className="mb-4 flex items-center gap-3">
@@ -125,8 +131,14 @@ function ParticipantCode() {
 
       {code ? (
         <>
+          {owner && (
+            <p className="mb-2 text-sm font-bold text-slate-700">
+              Участник: <span className="text-indigo-600">{formatOwner(owner)}</span>
+            </p>
+          )}
           <p className="mb-4 text-sm text-slate-600">
-            Запиши этот код. На любом другом компьютере открой эту страницу, введи код — и весь прогресс подтянется.
+            Это твой постоянный код — он не меняется. Запиши его: на любом другом компьютере открой эту страницу, введи
+            код, и весь прогресс подтянется.
           </p>
           <div className="mb-3 flex flex-wrap items-center gap-3">
             <span className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-2xl font-extrabold tracking-[0.2em] text-indigo-700">
@@ -137,74 +149,73 @@ function ParticipantCode() {
               {copied ? "Скопировано" : "Скопировать"}
             </button>
           </div>
-          <p className="mb-4 flex items-center gap-1.5 text-xs text-slate-500">
+          <p className="flex items-center gap-1.5 text-xs text-slate-500">
             <Cloud className="h-4 w-4" strokeWidth={2} />
             {status}
           </p>
-          {step === "delete" ? (
-            <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
-              <p className="mb-3">
-                Прогресс удалится с сервера, и код перестанет работать. На этом компьютере всё останется. Удалить?
-              </p>
-              <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() =>
-                    act(async () => {
-                      await deleteFromCloud();
-                      setCode(null);
-                    })
-                  }
-                  className={BTN_MAIN}
-                >
-                  Да, удалить
-                </button>
-                <button type="button" onClick={() => setStep("none")} className={BTN_SECOND}>
-                  Отмена
-                </button>
-              </div>
-            </div>
-          ) : (
-            <button type="button" onClick={() => setStep("delete")} className={BTN_SECOND}>
-              Удалить прогресс с сервера
-            </button>
-          )}
         </>
       ) : (
         <>
           <p className="mb-4 text-sm text-slate-600">
-            Короткий код из 8 знаков, например <span className="font-mono font-bold">K7QM-2XWD</span>. Прогресс хранится на
-            сервере под этим кодом, поэтому его можно открыть на любом компьютере — достаточно ввести код.
+            Постоянный код из 8 знаков, например <span className="font-mono font-bold">K7QM-2XWD</span>. Прогресс хранится
+            на сервере под этим кодом, поэтому его можно открыть на любом компьютере — достаточно ввести код.
           </p>
           {step === "agree" ? (
-            <div className="rounded-2xl bg-indigo-50 p-4 text-sm text-indigo-900">
-              <p className="mb-2 font-bold">Перед тем как получить код</p>
+            <form
+              className="rounded-2xl bg-indigo-50 p-4 text-sm text-indigo-900"
+              onSubmit={(e) => {
+                e.preventDefault();
+                act(async () => {
+                  const c = await createCloudCode(name, surname);
+                  setOwner(getOwner());
+                  setCode(c);
+                });
+              }}
+            >
+              <p className="mb-3 font-bold">Как тебя зовут?</p>
+              <div className="mb-3 flex flex-wrap gap-3">
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-bold text-slate-500">Имя</span>
+                  <input
+                    value={name}
+                    onChange={(e) => setName(e.target.value)}
+                    maxLength={30}
+                    autoComplete="off"
+                    placeholder="Таня"
+                    className={`${field} w-44`}
+                  />
+                </label>
+                <label className="flex flex-col gap-1">
+                  <span className="text-xs font-bold text-slate-500">Первые 3 буквы фамилии</span>
+                  <input
+                    value={surname}
+                    onChange={(e) => setSurname(e.target.value)}
+                    maxLength={3}
+                    autoComplete="off"
+                    placeholder="Кон"
+                    className={`${field} w-24`}
+                  />
+                </label>
+              </div>
               <ul className="mb-3 list-disc space-y-1 pl-5">
-                <li>На сервер отправятся только уровни, даты прохождения и очки.</li>
-                <li>Имя, почта и другие личные данные не нужны и никуда не отправляются.</li>
+                <li>
+                  Имя и три буквы фамилии нужны, чтобы автор курса мог найти твой код, если ты его потеряешь. Полную фамилию,
+                  почту и другие личные данные не пиши.
+                </li>
+                <li>На сервер отправятся имя, три буквы фамилии, пройденные уровни, даты и очки.</li>
+                <li>Код постоянный: он закрепится за тобой и не изменится.</li>
                 <li>Прогресс будет сохраняться и в этом браузере.</li>
-                <li>Всё можно удалить с сервера одной кнопкой на этой странице.</li>
               </ul>
               <p className="mb-3">Согласен?</p>
               <div className="flex gap-2">
-                <button
-                  type="button"
-                  disabled={busy}
-                  onClick={() =>
-                    act(async () => {
-                      setCode(await createCloudCode());
-                    })
-                  }
-                  className={BTN_MAIN}
-                >
+                <button type="submit" disabled={busy || !name.trim() || surname.trim().length !== 3} className={BTN_MAIN}>
                   {busy ? "Создаю код…" : "Да, получить код"}
                 </button>
                 <button type="button" onClick={() => setStep("none")} className={BTN_SECOND}>
                   Нет
                 </button>
               </div>
-            </div>
+            </form>
           ) : (
             <button type="button" onClick={() => setStep("agree")} className={BTN_MAIN}>
               Получить код участника

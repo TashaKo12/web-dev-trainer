@@ -1,7 +1,7 @@
 // Supabase project used to store progress by participant code.
-// The publishable (anon) key is meant to be public: the database only allows
-// the three functions from supabase/schema.sql, never direct table access.
+// The publishable key is meant to be public: the database only allows
+// the functions from supabase/schema.sql, never direct table access.
 export const CLOUD = {
-  url: "",
-  key: "",
+  url: "https://vimitatkpzpzrdejozee.supabase.co",
+  key: "sb_publishable_0Qv_ZpktDhLFxAi1HBuy7g_BqkzyApR",
 };
