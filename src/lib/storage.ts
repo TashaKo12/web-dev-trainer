@@ -39,10 +39,34 @@ export function loadItem(key: string): string | null {
   return consent === "denied" ? null : storageGet(key);
 }
 
+const saveListeners = new Set<(key: string) => void>();
+
+/** Called after a value actually changed — used to sync progress to the cloud. */
+export function onSave(listener: (key: string) => void) {
+  saveListeners.add(listener);
+  return () => {
+    saveListeners.delete(listener);
+  };
+}
+
 export function saveItem(key: string, value: string) {
+  const changed = loadItem(key) !== value;
   memory.set(key, value);
   if (consent === "granted") storageSet(key, value);
+  if (changed) saveListeners.forEach((l) => l(key));
 }
+
+export function removeItem(key: string) {
+  memory.delete(key);
+  try {
+    localStorage.removeItem(key);
+  } catch {
+    // nothing to remove
+  }
+}
+
+/** The participant's short cloud code lives on this device only; it is not part of the progress itself. */
+export const CLOUD_CODE_KEY = "wdt:cloud-code";
 
 export function loadJSON<T>(key: string): T | null {
   const raw = loadItem(key);
@@ -71,6 +95,10 @@ function clearSaved() {
   }
 }
 
+export function getConsent() {
+  return consent;
+}
+
 export function setConsent(value: Consent) {
   if (value === "granted" && consent !== "granted") {
     // keep anything that was already saved on this device, then add this session on top
@@ -86,7 +114,7 @@ export function setConsent(value: Consent) {
   emit();
 }
 
-const isOurKey = (k: string) => (k.startsWith("wdt:") || LEGACY_KEYS.includes(k)) && k !== CONSENT_KEY;
+const isOurKey = (k: string) => (k.startsWith("wdt:") || LEGACY_KEYS.includes(k)) && k !== CONSENT_KEY && k !== CLOUD_CODE_KEY;
 
 /** Everything this site remembers (saved on the device and kept in memory), for the restore code. */
 export function exportData(): Record<string, string> {

@@ -1,6 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, Check, ChevronDown, Copy, KeyRound, Sparkles, Star, Target, X } from "lucide-react";
+import { CalendarClock, Check, ChevronDown, Cloud, Copy, IdCard, KeyRound, Sparkles, Star, Target, X } from "lucide-react";
+import { cloudAvailable, createCloudCode, deleteFromCloud, formatCode, getCloudCode, normalizeCode, restoreFromCloud, useSyncState } from "../lib/cloud";
 import { trainers, type TrainerMeta } from "../trainers/registry";
 import { loadItem, loadJSON, useConsent, useTotalPoints } from "../lib/storage";
 import { applyRestoreCode, makeRestoreCode } from "../lib/backup";
@@ -67,6 +68,209 @@ function StatCard({ icon: Icon, label, value }: { icon: typeof Star; label: stri
   );
 }
 
+const BTN_MAIN =
+  "inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
+const BTN_SECOND =
+  "rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40";
+
+function ParticipantCode() {
+  const [code, setCode] = useState(getCloudCode);
+  const sync = useSyncState();
+  const [step, setStep] = useState<"none" | "agree" | "delete" | "replace">("none");
+  const [busy, setBusy] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const [input, setInput] = useState("");
+  const [error, setError] = useState<string | null>(null);
+
+  async function act(fn: () => Promise<void>) {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+    } catch (e) {
+      setError(e instanceof Error && /[а-я]/i.test(e.message) ? e.message : "Не получилось связаться с сервером. Попробуй ещё раз.");
+    } finally {
+      setBusy(false);
+      setStep("none");
+    }
+  }
+
+  async function copy() {
+    if (!code) return;
+    try {
+      await navigator.clipboard.writeText(formatCode(code));
+      setCopied(true);
+    } catch {
+      setCopied(false);
+    }
+  }
+
+  const status =
+    sync.status === "saving"
+      ? "Сохраняю…"
+      : sync.status === "error"
+        ? "Не получилось сохранить — попробую при следующем задании"
+        : sync.at
+          ? `Сохранено ${formatDate(sync.at)}`
+          : "Прогресс сохраняется автоматически после каждого задания";
+
+  return (
+    <div className={CARD}>
+      <div className="mb-4 flex items-center gap-3">
+        <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
+          <IdCard className="h-5 w-5" strokeWidth={1.75} />
+        </div>
+        <h2 className="text-xl font-extrabold text-slate-800">Код участника</h2>
+      </div>
+
+      {code ? (
+        <>
+          <p className="mb-4 text-sm text-slate-600">
+            Запиши этот код. На любом другом компьютере открой эту страницу, введи код — и весь прогресс подтянется.
+          </p>
+          <div className="mb-3 flex flex-wrap items-center gap-3">
+            <span className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-2xl font-extrabold tracking-[0.2em] text-indigo-700">
+              {formatCode(code)}
+            </span>
+            <button type="button" onClick={copy} className={BTN_MAIN}>
+              {copied ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Copy className="h-4 w-4" strokeWidth={2} />}
+              {copied ? "Скопировано" : "Скопировать"}
+            </button>
+          </div>
+          <p className="mb-4 flex items-center gap-1.5 text-xs text-slate-500">
+            <Cloud className="h-4 w-4" strokeWidth={2} />
+            {status}
+          </p>
+          {step === "delete" ? (
+            <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+              <p className="mb-3">
+                Прогресс удалится с сервера, и код перестанет работать. На этом компьютере всё останется. Удалить?
+              </p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() =>
+                    act(async () => {
+                      await deleteFromCloud();
+                      setCode(null);
+                    })
+                  }
+                  className={BTN_MAIN}
+                >
+                  Да, удалить
+                </button>
+                <button type="button" onClick={() => setStep("none")} className={BTN_SECOND}>
+                  Отмена
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setStep("delete")} className={BTN_SECOND}>
+              Удалить прогресс с сервера
+            </button>
+          )}
+        </>
+      ) : (
+        <>
+          <p className="mb-4 text-sm text-slate-600">
+            Короткий код из 8 знаков, например <span className="font-mono font-bold">K7QM-2XWD</span>. Прогресс хранится на
+            сервере под этим кодом, поэтому его можно открыть на любом компьютере — достаточно ввести код.
+          </p>
+          {step === "agree" ? (
+            <div className="rounded-2xl bg-indigo-50 p-4 text-sm text-indigo-900">
+              <p className="mb-2 font-bold">Перед тем как получить код</p>
+              <ul className="mb-3 list-disc space-y-1 pl-5">
+                <li>На сервер отправятся только уровни, даты прохождения и очки.</li>
+                <li>Имя, почта и другие личные данные не нужны и никуда не отправляются.</li>
+                <li>Прогресс будет сохраняться и в этом браузере.</li>
+                <li>Всё можно удалить с сервера одной кнопкой на этой странице.</li>
+              </ul>
+              <p className="mb-3">Согласен?</p>
+              <div className="flex gap-2">
+                <button
+                  type="button"
+                  disabled={busy}
+                  onClick={() =>
+                    act(async () => {
+                      setCode(await createCloudCode());
+                    })
+                  }
+                  className={BTN_MAIN}
+                >
+                  {busy ? "Создаю код…" : "Да, получить код"}
+                </button>
+                <button type="button" onClick={() => setStep("none")} className={BTN_SECOND}>
+                  Нет
+                </button>
+              </div>
+            </div>
+          ) : (
+            <button type="button" onClick={() => setStep("agree")} className={BTN_MAIN}>
+              Получить код участника
+            </button>
+          )}
+
+          <div className="mt-6 border-t border-slate-200 pt-5">
+            <p className="mb-2 font-bold text-slate-700">У меня уже есть код</p>
+            <div className="flex flex-wrap gap-2">
+              <input
+                value={input}
+                onChange={(e) => {
+                  setInput(e.target.value);
+                  setStep("none");
+                  setError(null);
+                }}
+                maxLength={12}
+                placeholder="XXXX-XXXX"
+                aria-label="Код участника"
+                className="w-44 rounded-xl border-2 border-slate-200 bg-white px-3 py-2 font-mono text-lg uppercase tracking-widest outline-none focus:border-indigo-300"
+              />
+              {step !== "replace" && (
+                <button
+                  type="button"
+                  disabled={normalizeCode(input).length !== 8}
+                  onClick={() => setStep("replace")}
+                  className="rounded-full border-2 border-indigo-200 px-5 py-2 text-sm font-bold text-indigo-600 disabled:cursor-not-allowed disabled:opacity-40"
+                >
+                  Загрузить прогресс
+                </button>
+              )}
+            </div>
+            {step === "replace" && (
+              <div className="mt-3 rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
+                <p className="mb-3">
+                  Прогресс по этому коду заменит то, что сейчас сохранено на этом компьютере, и будет сохраняться в этом
+                  браузере. Продолжить?
+                </p>
+                <div className="flex gap-2">
+                  <button
+                    type="button"
+                    disabled={busy}
+                    onClick={() =>
+                      act(async () => {
+                        await restoreFromCloud(input);
+                        window.location.reload();
+                      })
+                    }
+                    className={BTN_MAIN}
+                  >
+                    {busy ? "Загружаю…" : "Да, загрузить"}
+                  </button>
+                  <button type="button" onClick={() => setStep("none")} className={BTN_SECOND}>
+                    Отмена
+                  </button>
+                </div>
+              </div>
+            )}
+          </div>
+        </>
+      )}
+      {error && <p className="mt-3 text-sm font-bold text-rose-600">{error}</p>}
+    </div>
+  );
+}
+
 function RestoreCode() {
   const consent = useConsent();
   const [code, setCode] = useState<string | null>(null);
@@ -107,7 +311,7 @@ function RestoreCode() {
         <div className="flex h-10 w-10 items-center justify-center rounded-xl bg-indigo-100 text-indigo-600">
           <KeyRound className="h-5 w-5" strokeWidth={1.75} />
         </div>
-        <h2 className="text-xl font-extrabold text-slate-800">Код восстановления</h2>
+        <h2 className="text-xl font-extrabold text-slate-800">{cloudAvailable ? "Запасной код без интернета" : "Код восстановления"}</h2>
       </div>
       <p className="mb-4 text-sm text-slate-600">
         Это твой личный код: в нём записан весь прогресс. Скопируй его и вставь на другом компьютере — уровни, даты и
@@ -358,6 +562,7 @@ export function Profile() {
         )}
       </div>
 
+      {cloudAvailable && <ParticipantCode />}
       <RestoreCode />
     </div>
   );
