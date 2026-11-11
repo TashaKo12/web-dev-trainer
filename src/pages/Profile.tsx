@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarClock, Check, ChevronDown, Clock, Cloud, Copy, IdCard, KeyRound, LogIn, Sparkles, Star, Target, X } from "lucide-react";
 import { cloudAvailable, formatCode, formatOwner, signOut, useAccount, useSyncState } from "../lib/cloud";
+import { HUB_URL } from "../lib/cloudConfig";
 import { type TrainerMeta } from "../trainers/registry";
 import { loadItem, useConsent, useTotalPoints } from "../lib/storage";
 import { buildActivity, formatDate, formatDuration, readReports, type Activity, type TopicReport } from "../lib/reports";
@@ -53,10 +54,10 @@ function ParticipantCode() {
           Сейчас прогресс хранится только на этом компьютере. Войди или создай аккаунт — получишь постоянный код, и прогресс
           будет с тобой на любом компьютере.
         </p>
-        <Link to="/login" className={BTN_MAIN}>
+        <a href={`${HUB_URL}#login`} className={BTN_MAIN}>
           <LogIn className="h-4 w-4" strokeWidth={2} />
           Войти или создать аккаунт
-        </Link>
+        </a>
       </div>
     );
   }
@@ -94,7 +95,7 @@ function ParticipantCode() {
         </p>
       )}
       <p className="mb-4 text-sm text-slate-600">
-        Это твой постоянный код — он не меняется. По нему ты входишь на любом компьютере: кнопка «Войти» вверху страницы.
+        Это твой постоянный код — он не меняется. По нему ты входишь на любом компьютере: кнопка «Войти» на странице курсов.
       </p>
       <div className="mb-3 flex flex-wrap items-center gap-3">
         <span className="rounded-2xl border-2 border-indigo-200 bg-indigo-50 px-5 py-2 font-mono text-2xl font-extrabold tracking-[0.2em] text-indigo-700">

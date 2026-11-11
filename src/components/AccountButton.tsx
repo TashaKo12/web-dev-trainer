@@ -1,6 +1,7 @@
 import { Link } from "react-router-dom";
 import { LogIn, UserRound } from "lucide-react";
 import { cloudAvailable, useAccount } from "../lib/cloud";
+import { HUB_URL } from "../lib/cloudConfig";
 
 const PILL =
   "inline-flex items-center gap-1.5 whitespace-nowrap rounded-full border-2 px-3 py-1.5 text-sm font-bold sm:px-4";
@@ -24,12 +25,12 @@ export function AccountButton() {
   }
 
   return (
-    <Link
-      to="/login"
+    <a
+      href={`${HUB_URL}#login`}
       className={`${PILL} border-transparent bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow hover:opacity-90`}
     >
       <LogIn className="h-4 w-4" strokeWidth={2} />
       <span className="hidden sm:inline">Войти</span>
-    </Link>
+    </a>
   );
 }

@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { CalendarClock, Check, ChevronDown, Clock, LogOut, RefreshCw, Search, Star, Target, Users, X } from "lucide-react";
-import { Navigate } from "react-router-dom";
 import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
+import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
 import { trainers } from "../trainers/registry";
 
@@ -304,7 +304,10 @@ export function Admin() {
   }, []);
 
   if (!cloudAvailable) return <p className="text-center text-slate-500">Сервер не подключён.</p>;
-  if (!code) return <Navigate to="/login?as=teacher" replace />;
+  if (!code) {
+    window.location.replace(`${HUB_URL}#teacher`);
+    return null;
+  }
   if (!data) return <p className="text-center text-slate-500">Загружаю…</p>;
 
   return (

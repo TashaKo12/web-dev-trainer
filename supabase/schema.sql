@@ -168,6 +168,74 @@ grant execute on function public.admin_overview(text) to anon;
 
 notify pgrst, 'reload schema';
 
+-- ───────── Рейтинг учеников ─────────
+-- Публичный список: только имя, три буквы фамилии, очки и решённые уровни. Коды не показываются.
+-- Если передать свой код, своя строка помечается флагом me.
+
+create or replace function public.progress_points(p jsonb)
+returns int
+language plpgsql
+immutable
+as $$
+declare
+  v numeric := 0;
+begin
+  select coalesce(sum(value::numeric), 0) into v from jsonb_each_text((p ->> 'wdt:points')::jsonb);
+  return v::int;
+exception when others then
+  return 0;
+end;
+$$;
+
+create or replace function public.progress_solved(p jsonb)
+returns int
+language plpgsql
+immutable
+as $$
+declare
+  v int := 0;
+begin
+  select count(*) into v
+  from jsonb_each_text(p) s
+  cross join lateral jsonb_array_elements_text((s.value::jsonb) -> 'statuses') st
+  where s.key like 'wdt:session:%' and st = 'correct';
+  return v;
+exception when others then
+  return 0;
+end;
+$$;
+
+revoke all on function public.progress_points(jsonb) from public, anon, authenticated;
+revoke all on function public.progress_solved(jsonb) from public, anon, authenticated;
+
+drop function if exists public.leaderboard(text);
+create function public.leaderboard(p_code text default null)
+returns jsonb
+language sql
+stable
+security definer
+set search_path = public
+as $$
+  select coalesce(jsonb_agg(jsonb_build_object(
+    'name', r.name, 'surname3', r.surname3, 'points', r.points, 'solved', r.solved, 'me', r.me
+  ) order by r.points desc, r.solved desc, r.created_at), '[]'::jsonb)
+  from (
+    select name, surname3, created_at,
+           progress_points(data) as points,
+           progress_solved(data) as solved,
+           (p_code is not null and code = p_code) as me
+    from progress
+    where name is not null
+    order by points desc, solved desc, created_at
+    limit 50
+  ) r;
+$$;
+
+revoke all on function public.leaderboard(text) from public;
+grant execute on function public.leaderboard(text) to anon;
+
+notify pgrst, 'reload schema';
+
 -- Код админа (показывается в результате ниже):
 select name as "Админ", substr(code, 1, 4) || '-' || substr(code, 5, 4) || '-' || substr(code, 9, 4) || '-' || substr(code, 13, 4) as "Код админа"
 from public.admins;

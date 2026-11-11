@@ -1,6 +1,5 @@
 import { Link } from "react-router-dom";
-import { FileCode, CircleCheck, GraduationCap, LogIn } from "lucide-react";
-import { cloudAvailable, formatCode, useAccount } from "../lib/cloud";
+import { FileCode, CircleCheck } from "lucide-react";
 import { trainers, type TrainerMeta } from "../trainers/registry";
 import { getAllProgress } from "../lib/progress";
 
@@ -28,39 +27,6 @@ const SECTIONS: { key: TrainerMeta["section"]; file: string; title: string; desc
   },
 ];
 
-function AccountPanel() {
-  const account = useAccount();
-  if (!cloudAvailable) return null;
-  if (account) {
-    return (
-      <p className="mt-5 text-sm text-slate-500 dark:text-slate-400">
-        {account.owner ? `Привет, ${account.owner.name}! ` : ""}Твой код участника{" "}
-        <Link to="/profile" className="font-mono font-bold tracking-widest text-indigo-600 dark:text-indigo-300">
-          {formatCode(account.code)}
-        </Link>
-      </p>
-    );
-  }
-  return (
-    <div className="mt-6 flex flex-wrap items-center justify-center gap-3">
-      <Link
-        to="/login"
-        className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-2.5 text-sm font-bold text-white shadow hover:opacity-90"
-      >
-        <LogIn className="h-4 w-4" strokeWidth={2} />
-        Войти или создать аккаунт
-      </Link>
-      <Link
-        to="/login?as=teacher"
-        className="inline-flex items-center gap-2 rounded-full border-2 border-slate-200 bg-white/80 px-5 py-2 text-sm font-bold text-slate-600 hover:border-indigo-200 hover:text-indigo-600 dark:border-slate-700 dark:bg-slate-900/60 dark:text-slate-300"
-      >
-        <GraduationCap className="h-4 w-4" strokeWidth={2} />
-        Вход педагога
-      </Link>
-    </div>
-  );
-}
-
 export function Home() {
   const progress = getAllProgress();
 
@@ -74,7 +40,6 @@ export function Home() {
           Сначала короткая интерактивная теория с живыми примерами, потом —
           задания на закрепление.
         </p>
-        <AccountPanel />
       </div>
 
       {SECTIONS.map((section) => {
