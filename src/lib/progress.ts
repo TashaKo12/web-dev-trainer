@@ -1,3 +1,5 @@
+import { loadJSON, saveJSON } from "./storage";
+
 export type TrainerId =
   | "html-structure"
   | "box-model"
@@ -49,12 +51,7 @@ const STORAGE_KEY = "web-dev-trainer:progress";
 type ProgressMap = Partial<Record<TrainerId, TrainerProgress>>;
 
 function readAll(): ProgressMap {
-  try {
-    const raw = localStorage.getItem(STORAGE_KEY);
-    return raw ? (JSON.parse(raw) as ProgressMap) : {};
-  } catch {
-    return {};
-  }
+  return loadJSON<ProgressMap>(STORAGE_KEY) ?? {};
 }
 
 export function getProgress(id: TrainerId): TrainerProgress | undefined {
@@ -68,9 +65,5 @@ export function getAllProgress(): ProgressMap {
 export function saveProgress(id: TrainerId, score: number, total: number) {
   const all = readAll();
   all[id] = { score, total, completedAt: new Date().toISOString() };
-  try {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(all));
-  } catch {
-    /* localStorage can be unavailable (private mode) — progress just won't persist */
-  }
+  saveJSON(STORAGE_KEY, all);
 }

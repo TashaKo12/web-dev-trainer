@@ -1,4 +1,4 @@
-import { useState, type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Bot, Check, ChevronRight, Lock, Sparkles, Trophy } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -9,10 +9,11 @@ import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFal
 import { CodeEditor, PrintInput, RunButton, TerminalView } from "../../python/CodeTerminal";
 import { runPython, sameOutput, type RunResult } from "../../python/interpreter";
 import { trainers } from "../registry";
+import { loadItem, POINTS, reportPoints, saveItem } from "../../lib/storage";
 
 const meta = trainers.find((t) => t.id === "python-print")!;
 
-const XP_PER_MISSION = 10;
+const XP_PER_MISSION = POINTS.mission;
 const STORAGE_KEY = "python-print-missions";
 
 function Code({ children }: { children: ReactNode }) {
@@ -132,20 +133,8 @@ function rankFor(done: number) {
 }
 
 function readDone() {
-  try {
-    const n = Number(localStorage.getItem(STORAGE_KEY));
-    return Number.isFinite(n) ? Math.min(Math.max(n, 0), MISSIONS.length) : 0;
-  } catch {
-    return 0;
-  }
-}
-
-function saveDone(n: number) {
-  try {
-    localStorage.setItem(STORAGE_KEY, String(n));
-  } catch {
-    // progress just won't persist
-  }
+  const n = Number(loadItem(STORAGE_KEY));
+  return Number.isFinite(n) ? Math.min(Math.max(n, 0), MISSIONS.length) : 0;
 }
 
 function MissionPlay({ mission, isDone, onComplete }: { mission: Mission; isDone: boolean; onComplete: () => void }) {
@@ -204,11 +193,13 @@ function Missions() {
   const xp = done * XP_PER_MISSION;
   const maxXp = MISSIONS.length * XP_PER_MISSION;
 
+  useEffect(() => {
+    saveItem(STORAGE_KEY, String(done));
+    reportPoints("missions:python-print", done * POINTS.mission);
+  }, [done]);
+
   function complete(index: number) {
-    if (index !== done) return;
-    const next = done + 1;
-    setDone(next);
-    saveDone(next);
+    if (index === done) setDone(done + 1);
   }
 
   return (

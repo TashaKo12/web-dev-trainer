@@ -1,12 +1,22 @@
 import { useEffect, useMemo, useState } from "react";
 import { saveProgress, type TrainerId } from "../lib/progress";
+import { loadJSON, POINTS, reportPoints, saveJSON } from "../lib/storage";
 
 export type TaskStatus = "idle" | "correct" | "wrong";
 
+type SavedSession = { index: number; statuses: TaskStatus[] };
+
+function loadSession(key: string, total: number): SavedSession | null {
+  const saved = loadJSON<SavedSession>(key);
+  if (!saved || !Array.isArray(saved.statuses) || saved.statuses.length !== total) return null;
+  return { index: Math.min(Math.max(saved.index | 0, 0), total - 1), statuses: saved.statuses };
+}
+
 export function useTaskStepper(total: number, trainerId: TrainerId) {
-  const [index, setIndex] = useState(0);
-  const [statuses, setStatuses] = useState<TaskStatus[]>(() =>
-    Array(total).fill("idle"),
+  const sessionKey = `wdt:session:${trainerId}`;
+  const [index, setIndex] = useState(() => loadSession(sessionKey, total)?.index ?? 0);
+  const [statuses, setStatuses] = useState<TaskStatus[]>(
+    () => loadSession(sessionKey, total)?.statuses ?? Array(total).fill("idle"),
   );
 
   const score = useMemo(
@@ -14,6 +24,14 @@ export function useTaskStepper(total: number, trainerId: TrainerId) {
     [statuses],
   );
   const allAnswered = statuses.every((s) => s !== "idle");
+
+  useEffect(() => {
+    saveJSON(sessionKey, { index, statuses });
+  }, [sessionKey, index, statuses]);
+
+  useEffect(() => {
+    reportPoints(`practice:${trainerId}`, score * POINTS.practice);
+  }, [trainerId, score]);
 
   useEffect(() => {
     if (allAnswered) saveProgress(trainerId, score, total);

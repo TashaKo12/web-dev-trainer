@@ -1,4 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
+import { useLocation } from "react-router-dom";
+import { loadJSON, POINTS, reportPoints, saveJSON } from "../lib/storage";
 import { Trophy, Sparkles, Target, Check, X } from "lucide-react";
 
 export type TrueFalseStatement = {
@@ -14,14 +16,29 @@ export function TrueFalseDeck({
   statements: TrueFalseStatement[];
   accent?: string;
 }) {
-  const [index, setIndex] = useState(0);
-  const [picks, setPicks] = useState<(boolean | null)[]>(() => statements.map(() => null));
+  const { pathname } = useLocation();
+  const sessionKey = `wdt:cards:${pathname}`;
+  const saved = useState(() => {
+    const s = loadJSON<{ index: number; picks: (boolean | null)[] }>(sessionKey);
+    return s && Array.isArray(s.picks) && s.picks.length === statements.length ? s : null;
+  })[0];
+
+  const [index, setIndex] = useState(() => Math.min(Math.max(saved?.index ?? 0, 0), statements.length - 1));
+  const [picks, setPicks] = useState<(boolean | null)[]>(() => saved?.picks ?? statements.map(() => null));
   const [showResult, setShowResult] = useState(false);
 
   const total = statements.length;
   const current = statements[index];
   const picked = picks[index];
   const score = picks.filter((p, i) => p === statements[i].answer).length;
+
+  useEffect(() => {
+    saveJSON(sessionKey, { index, picks });
+  }, [sessionKey, index, picks]);
+
+  useEffect(() => {
+    reportPoints(`cards:${pathname}`, score * POINTS.card);
+  }, [pathname, score]);
 
   function pick(value: boolean) {
     if (picked !== null) return;
