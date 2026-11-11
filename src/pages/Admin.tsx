@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Check, ChevronDown, Clock, LogOut, RefreshCw, Search, Star, Target, Users, X } from "lucide-react";
+import { CalendarClock, Check, ChevronDown, Clock, Crown, RefreshCw, Search, Star, Target, Users, X } from "lucide-react";
 import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
@@ -148,7 +148,7 @@ function ParticipantDetail({ p }: { p: Participant }) {
   );
 }
 
-function Dashboard({ data, onRefresh, onLogout, busy }: { data: Overview; onRefresh: () => void; onLogout: () => void; busy: boolean }) {
+function Dashboard({ data, onRefresh, busy }: { data: Overview; onRefresh: () => void; busy: boolean }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const people = useMemo(() => data.participants.map(toParticipant), [data]);
@@ -181,16 +181,15 @@ function Dashboard({ data, onRefresh, onLogout, busy }: { data: Overview; onRefr
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
           <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Кабинет педагога</h1>
-          <p className="mt-2 text-slate-500 dark:text-slate-400">{data.admin} · прогресс всех участников</p>
+          <p className="mt-2 flex flex-wrap items-center gap-1.5 text-slate-500 dark:text-slate-400">
+            <Crown className="h-4 w-4 text-amber-400" strokeWidth={2} aria-label="Админ" />
+            <span className="font-bold text-slate-700 dark:text-slate-200">{data.admin}</span> · прогресс всех участников
+          </p>
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={onRefresh} disabled={busy} className={BTN_SECOND}>
             <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} strokeWidth={2} />
             Обновить
-          </button>
-          <button type="button" onClick={onLogout} className={BTN_SECOND}>
-            <LogOut className="h-4 w-4" strokeWidth={2} />
-            Выйти
           </button>
         </div>
       </div>
@@ -287,20 +286,21 @@ export function Admin() {
       setData(res);
       setError(null);
       setCode(c);
-      setAdminSession(c);
+      setAdminSession(c, res.admin);
     } finally {
       setBusy(false);
     }
   }
 
-  function logout() {
-    setAdminSession(null);
-    setCode(null);
-    setData(null);
-  }
-
   useEffect(() => {
-    if (code && !data) load(code).catch(() => logout());
+    if (code && !data)
+      load(code).catch((e) => {
+        // only a code the server rejects is forgotten; a network hiccup keeps the teacher signed in
+        if (e instanceof Error && / 400$/.test(e.message)) {
+          setAdminSession(null);
+          setCode(null);
+        } else setError("Не получилось загрузить данные. Проверь интернет и обнови страницу.");
+      });
   }, []);
 
   if (!cloudAvailable) return <p className="text-center text-slate-500">Сервер не подключён.</p>;
@@ -308,14 +308,13 @@ export function Admin() {
     window.location.replace(`${HUB_URL}#teacher`);
     return null;
   }
-  if (!data) return <p className="text-center text-slate-500">Загружаю…</p>;
+  if (!data) return <p className="text-center text-slate-500">{error ?? "Загружаю…"}</p>;
 
   return (
     <>
       <Dashboard
         data={data}
         busy={busy}
-        onLogout={logout}
         onRefresh={() => load(data && code ? code : "").catch(() => setError("Не получилось обновить. Проверь интернет."))}
       />
       {error && <p className="mt-4 text-center text-sm font-bold text-rose-600">{error}</p>}

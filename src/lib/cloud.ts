@@ -88,22 +88,39 @@ export async function signOut(force = false) {
 }
 
 // ── teacher (admin) ──
+// Kept in localStorage (not under "wdt:", so it never goes into a student's progress) and shared with
+// the course page on the same site: the teacher signs in once and stays signed in on every page and tab.
 export const ADMIN_SESSION_KEY = "admin-code";
+export const ADMIN_NAME_KEY = "admin-name";
 
 export function getAdminSession() {
   try {
-    return sessionStorage.getItem(ADMIN_SESSION_KEY);
+    return localStorage.getItem(ADMIN_SESSION_KEY) ?? sessionStorage.getItem(ADMIN_SESSION_KEY);
   } catch {
     return null;
   }
 }
 
-export function setAdminSession(code: string | null) {
+export function getAdminName() {
   try {
-    if (code) sessionStorage.setItem(ADMIN_SESSION_KEY, code);
-    else sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    return localStorage.getItem(ADMIN_NAME_KEY);
   } catch {
-    // works for this page view only
+    return null;
+  }
+}
+
+export function setAdminSession(code: string | null, name?: string) {
+  try {
+    sessionStorage.removeItem(ADMIN_SESSION_KEY);
+    if (code) {
+      localStorage.setItem(ADMIN_SESSION_KEY, code);
+      if (name) localStorage.setItem(ADMIN_NAME_KEY, name);
+    } else {
+      localStorage.removeItem(ADMIN_SESSION_KEY);
+      localStorage.removeItem(ADMIN_NAME_KEY);
+    }
+  } catch {
+    // storage blocked: works for this page view only
   }
 }
 
