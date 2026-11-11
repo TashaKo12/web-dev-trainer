@@ -8,15 +8,20 @@ import { AnimatedBackground } from "./AnimatedBackground";
 import { ConsentBanner } from "./ConsentBanner";
 import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
+import { SignInGate } from "./SignInGate";
+import { formatCode, getAdminSession, useAccount } from "../lib/cloud";
 import { ThemeToggle } from "./ThemeToggle";
 
 export function Layout() {
   const { pathname } = useLocation();
   const consent = useConsent();
   const [askAgain, setAskAgain] = useState(false);
+  const account = useAccount();
+  // trainers open only for signed-in students (or the teacher); the teacher dashboard checks its own code
+  const locked = !account && !getAdminSession() && pathname !== "/admin";
   useEffect(() => {
-    setTimeTopic(trainers.find((t) => t.path === pathname)?.id ?? null);
-  }, [pathname]);
+    setTimeTopic(locked ? null : (trainers.find((t) => t.path === pathname)?.id ?? null));
+  }, [pathname, locked]);
   const back =
     pathname === "/" || pathname === "" || pathname === "/python"
       ? null
@@ -50,12 +55,17 @@ export function Layout() {
         </div>
       </header>
       <main className="animate-fade-in mx-auto max-w-5xl px-5 py-8 sm:py-12">
-        <Outlet />
+        {locked ? <SignInGate /> : <Outlet />}
       </main>
       <footer className="mx-auto max-w-5xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
         <p>Сделано для тех, кто делает первые шаги в программировании</p>
         <p className="mt-1 text-xs text-slate-400/80 dark:text-slate-600">Автор проекта — Татьяна Кондратюк</p>
-        {consent && (
+        {account ? (
+          <p className="mt-3 text-xs">
+            Прогресс сохраняется в аккаунте {account.owner ? `${account.owner.name} ${account.owner.surname3}. ` : ""}
+            <span className="font-mono font-bold tracking-widest">{formatCode(account.code)}</span>
+          </p>
+        ) : consent && (
           <p className="mt-3 text-xs">
             Сохранение прогресса в браузере: {consent === "granted" ? "включено" : "выключено"} ·{" "}
             <button type="button" onClick={() => setAskAgain(true)} className="font-bold underline underline-offset-2 hover:text-indigo-500">
@@ -64,7 +74,7 @@ export function Layout() {
           </p>
         )}
       </footer>
-      {(consent === null || askAgain) && <ConsentBanner onClose={() => setAskAgain(false)} />}
+      {!locked && (consent === null || askAgain) && <ConsentBanner onClose={() => setAskAgain(false)} />}
     </div>
   );
 }
