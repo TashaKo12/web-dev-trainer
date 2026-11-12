@@ -1,12 +1,11 @@
 import { Link } from "react-router-dom";
-import { Box, CircleCheck, FileCode, GitBranch, Repeat, type LucideIcon } from "lucide-react";
+import { Braces, CircleCheck, FileCode, List, type LucideIcon } from "lucide-react";
 import { trainers } from "../trainers/registry";
 import { getAllProgress } from "../lib/progress";
 
 const UPCOMING: { title: string; summary: string; icon: LucideIcon }[] = [
-  { title: "Переменные", summary: "Коробочки с именами, в которых программа хранит значения.", icon: Box },
-  { title: "Условия: if", summary: "Программа выбирает, что делать, в зависимости от ответа.", icon: GitBranch },
-  { title: "Циклы: for и while", summary: "Повторяем действия, не переписывая код много раз.", icon: Repeat },
+  { title: "Списки", summary: "Храним много значений в одной переменной и перебираем их циклом.", icon: List },
+  { title: "Функции", summary: "Даём кусочку программы имя и вызываем его, когда нужно.", icon: Braces },
 ];
 
 const CARD =

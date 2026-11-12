@@ -39,7 +39,11 @@ export type TrainerId =
   | "opacity"
   | "transitions"
   | "python-print"
-  | "python-input";
+  | "python-input"
+  | "python-variables"
+  | "python-if"
+  | "python-for"
+  | "python-while";
 
 export type TrainerProgress = {
   score: number;

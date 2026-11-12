@@ -3,8 +3,8 @@ import { SquareTerminal } from "lucide-react";
 
 // Theory for the Python topics: everything the missions and practice ask is explained here first.
 
-type Example = { code: string; out: string; note?: string; error?: boolean };
-type Part = { title: string; text: ReactNode; examples: Example[] };
+export type Example = { code: string; out: string; note?: string; error?: boolean };
+export type Part = { title: string; text: ReactNode; examples: Example[] };
 
 const C = ({ children }: { children: ReactNode }) => (
   <code className="rounded bg-slate-100 px-1.5 py-0.5 font-mono text-[0.9em] text-emerald-700">{children}</code>
@@ -23,7 +23,7 @@ function ExampleCard({ e }: { e: Example }) {
   );
 }
 
-function Theory({ parts }: { parts: Part[] }) {
+export function PyTheory({ parts }: { parts: Part[] }) {
   return (
     <div className="space-y-5">
       {parts.map((p, i) => (
@@ -190,9 +190,9 @@ const INPUT: Part[] = [
 ];
 
 export function PrintTheory() {
-  return <Theory parts={PRINT} />;
+  return <PyTheory parts={PRINT} />;
 }
 
 export function InputTheory() {
-  return <Theory parts={INPUT} />;
+  return <PyTheory parts={INPUT} />;
 }

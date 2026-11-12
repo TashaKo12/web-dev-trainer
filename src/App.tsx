@@ -43,6 +43,7 @@ import { DomAccessTrainer } from "./trainers/dom-access/DomAccessTrainer";
 import { PythonHome } from "./pages/PythonHome";
 import { PythonPrintTrainer } from "./trainers/python-print/PythonPrintTrainer";
 import { PythonInputTrainer } from "./trainers/python-input/PythonInputTrainer";
+import { PythonForTrainer, PythonIfTrainer, PythonVariablesTrainer, PythonWhileTrainer } from "./trainers/python-topics/PythonTopicPages";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 
@@ -103,6 +104,10 @@ function App() {
           <Route path="python" element={<PythonHome />} />
           <Route path="python/print" element={<PythonPrintTrainer />} />
           <Route path="python/input" element={<PythonInputTrainer />} />
+          <Route path="python/variables" element={<PythonVariablesTrainer />} />
+          <Route path="python/if" element={<PythonIfTrainer />} />
+          <Route path="python/for" element={<PythonForTrainer />} />
+          <Route path="python/while" element={<PythonWhileTrainer />} />
 
           <Route path="profile" element={<Profile />} />
           <Route path="admin" element={<Admin />} />

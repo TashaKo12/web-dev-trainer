@@ -1,5 +1,6 @@
 import type { LucideIcon } from "lucide-react";
-import { HTML_MISSIONS } from "../missions/html";
+import {
+  HTML_MISSIONS } from "../missions/html";
 import {
   Tag,
   LayoutTemplate,
@@ -39,6 +40,8 @@ import {
   RefreshCw,
   Braces,
   SquareTerminal,
+  GitBranch,
+  Repeat,
 } from "lucide-react";
 import type { TrainerId } from "../lib/progress";
 
@@ -470,6 +473,50 @@ export const trainers: TrainerMeta[] = [
     gradient: "from-violet-500 to-sky-500",
     section: "python",
     missions: { storageKey: "wdt:missions:python-input", count: 5 },
+  },
+  {
+    id: "python-variables",
+    path: "/python/variables",
+    icon: Box,
+    title: "Переменные",
+    summary: "Коробки с именами: программа запоминает значения, меняет их и считает с ними.",
+    taskCount: 10,
+    gradient: "from-amber-500 to-orange-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-variables", count: 5 },
+  },
+  {
+    id: "python-if",
+    path: "/python/if",
+    icon: GitBranch,
+    title: "Условия: if",
+    summary: "Программа выбирает, что делать: if, else, elif, сравнения, and и or.",
+    taskCount: 10,
+    gradient: "from-sky-500 to-indigo-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-if", count: 5 },
+  },
+  {
+    id: "python-for",
+    path: "/python/for",
+    icon: Repeat,
+    title: "Цикл for",
+    summary: "Повторяем действия нужное число раз: range, переменная цикла, перебор букв и сумма.",
+    taskCount: 10,
+    gradient: "from-emerald-500 to-teal-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-for", count: 5 },
+  },
+  {
+    id: "python-while",
+    path: "/python/while",
+    icon: RefreshCw,
+    title: "Цикл while",
+    summary: "Повторяем, пока условие верно: счётчик, бесконечный цикл, break и continue.",
+    taskCount: 10,
+    gradient: "from-pink-500 to-rose-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-while", count: 5 },
   },
 ];
 
