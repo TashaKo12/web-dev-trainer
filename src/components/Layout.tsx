@@ -8,6 +8,7 @@ import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
 import { SignInGate } from "./SignInGate";
 import { PixelBuddy } from "./PixelBuddy";
+import { PixelTricks } from "./PixelTricks";
 import { GameToast } from "./GameToast";
 import { formatCode, getAdminSession, useAccount } from "../lib/cloud";
 import { ThemeToggle } from "./ThemeToggle";
@@ -46,7 +47,8 @@ export function Layout() {
                 ←<span className="hidden sm:inline"> {back.label}</span>
               </Link>
             )}
-            <PointsBadge />
+            {/* points are shown only to a signed-in student or the teacher */}
+            {(account || getAdminSession()) && <PointsBadge />}
             <AccountButton />
             <ThemeToggle />
           </div>
@@ -56,6 +58,8 @@ export function Layout() {
         {locked ? <SignInGate /> : <Outlet />}
       </main>
       <footer className="mx-auto max-w-5xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
+        {/* task pages already have Pixel running alongside; elsewhere he shows tricks here */}
+        {!trainers.some((t) => t.path === pathname) && <PixelTricks />}
         <p>Сделано для тех, кто делает первые шаги в программировании</p>
         <p className="mt-1 text-xs text-slate-400/80 dark:text-slate-600">Автор проекта — Татьяна Кондратюк</p>
         {account ? (

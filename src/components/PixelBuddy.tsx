@@ -127,86 +127,93 @@ export function PixelBuddy() {
         onClick={() => react("surprised", "shake", pick(["Ой! Щекотно!", "Эй, я работаю!", "Хи-хи!"]), 1800)}
         aria-label="Робот Пиксель"
       >
-        <svg viewBox="0 0 120 152" aria-hidden="true">
-          <defs>
-            <linearGradient id="pbBody" x1="0" y1="0" x2="1" y2="1">
-              <stop offset="0" stopColor="#818cf8" />
-              <stop offset="1" stopColor="#7c3aed" />
-            </linearGradient>
-          </defs>
-          <ellipse className="pb-shadow" cx="60" cy="148" rx="30" ry="4" />
-          <g className="pb-whole">
-            <g className="pb-leg pb-leg-l">
-              <rect className="pb-metal" x="42" y="120" width="11" height="20" rx="5" />
-              <rect className="pb-fill" x="37" y="136" width="20" height="8" rx="4" />
-            </g>
-            <g className="pb-leg pb-leg-r">
-              <rect className="pb-metal" x="67" y="120" width="11" height="20" rx="5" />
-              <rect className="pb-fill" x="63" y="136" width="20" height="8" rx="4" />
-            </g>
-            <g className="pb-arm pb-arm-l">
-              <rect className="pb-metal" x="16" y="84" width="10" height="30" rx="5" />
-              <circle className="pb-fill" cx="21" cy="116" r="7" />
-            </g>
-            <g className="pb-arm pb-arm-r">
-              <rect className="pb-metal" x="94" y="84" width="10" height="30" rx="5" />
-              <circle className="pb-fill" cx="99" cy="116" r="7" />
-            </g>
-            <rect className="pb-fill" x="28" y="78" width="64" height="46" rx="14" />
-            <circle className="pb-light" cx="48" cy="98" r="3.5" />
-            <circle className="pb-light pb-light-2" cx="60" cy="98" r="3.5" />
-            <circle className="pb-light pb-light-3" cx="72" cy="98" r="3.5" />
-            <rect className="pb-metal" x="52" y="72" width="16" height="8" rx="3" />
-            <line x1="60" y1="18" x2="60" y2="7" stroke="#c7d2fe" strokeWidth="3" strokeLinecap="round" />
-            <circle className="pb-antenna" cx="60" cy="6" r="5" />
-            <rect className="pb-fill" x="22" y="16" width="76" height="58" rx="18" />
-            <rect className="pb-metal" x="16" y="36" width="7" height="16" rx="3.5" />
-            <rect className="pb-metal" x="97" y="36" width="7" height="16" rx="3.5" />
-            <rect className="pb-screen" x="31" y="25" width="58" height="40" rx="12" />
-
-            <g className="pb-eyes">
-              <g data-for="neutral sad">
-                <circle className="pb-face-fill" cx="48" cy="43" r="4.5" />
-                <circle className="pb-face-fill" cx="72" cy="43" r="4.5" />
-              </g>
-              <path data-for="happy" className="pb-face" d="M42 45 q6 -8 12 0 M66 45 q6 -8 12 0" />
-              <g data-for="surprised">
-                <circle className="pb-face" cx="48" cy="42" r="6" />
-                <circle className="pb-face" cx="72" cy="42" r="6" />
-              </g>
-              <g data-for="thinking">
-                <circle className="pb-face-fill" cx="51" cy="40" r="4.5" />
-                <circle className="pb-face-fill" cx="75" cy="40" r="4.5" />
-              </g>
-              <g data-for="wink">
-                <path className="pb-face" d="M42 44 h12" />
-                <circle className="pb-face-fill" cx="72" cy="43" r="4.5" />
-              </g>
-              <g data-for="silly">
-                <circle className="pb-face" cx="47" cy="42" r="6.5" />
-                <circle className="pb-face-fill" cx="49" cy="44" r="2.5" />
-                <circle className="pb-face-fill" cx="73" cy="43" r="3" />
-              </g>
-              <path
-                data-for="love"
-                className="pb-heart"
-                d="M48 49 l-6 -6 a3.5 3.5 0 0 1 6 -4 a3.5 3.5 0 0 1 6 4 z M72 49 l-6 -6 a3.5 3.5 0 0 1 6 -4 a3.5 3.5 0 0 1 6 4 z"
-              />
-            </g>
-            <path data-for="sad" className="pb-face" d="M41 36 l10 -3 M79 36 l-10 -3" />
-            <path data-for="thinking" className="pb-face" d="M66 32 l12 -2" />
-            <path data-for="happy wink love" className="pb-face" d="M48 54 q12 9 24 0" />
-            <path data-for="neutral" className="pb-face" d="M50 56 h20" />
-            <ellipse data-for="surprised" className="pb-face" cx="60" cy="57" rx="4" ry="4.5" />
-            <path data-for="sad" className="pb-face" d="M49 59 q11 -7 22 0" />
-            <path data-for="thinking" className="pb-face" d="M52 57 q4 -3 8 0 t8 0" />
-            <g data-for="silly">
-              <path className="pb-face" d="M47 53 q13 8 26 0" />
-              <path className="pb-tongue" d="M60 56 q8 1 7 7 q-4 5 -9 0 z" />
-            </g>
-          </g>
-        </svg>
+        <PixelFigure />
       </button>
     </div>
+  );
+}
+
+/** The robot drawing itself; the face follows the data-mood of the element around it. */
+export function PixelFigure() {
+  return (
+    <svg viewBox="0 0 120 152" aria-hidden="true">
+      <defs>
+        <linearGradient id="pbBody" x1="0" y1="0" x2="1" y2="1">
+          <stop offset="0" stopColor="#818cf8" />
+          <stop offset="1" stopColor="#7c3aed" />
+        </linearGradient>
+      </defs>
+      <ellipse className="pb-shadow" cx="60" cy="148" rx="30" ry="4" />
+      <g className="pb-whole">
+        <g className="pb-leg pb-leg-l">
+          <rect className="pb-metal" x="42" y="120" width="11" height="20" rx="5" />
+          <rect className="pb-fill" x="37" y="136" width="20" height="8" rx="4" />
+        </g>
+        <g className="pb-leg pb-leg-r">
+          <rect className="pb-metal" x="67" y="120" width="11" height="20" rx="5" />
+          <rect className="pb-fill" x="63" y="136" width="20" height="8" rx="4" />
+        </g>
+        <g className="pb-arm pb-arm-l">
+          <rect className="pb-metal" x="16" y="84" width="10" height="30" rx="5" />
+          <circle className="pb-fill" cx="21" cy="116" r="7" />
+        </g>
+        <g className="pb-arm pb-arm-r">
+          <rect className="pb-metal" x="94" y="84" width="10" height="30" rx="5" />
+          <circle className="pb-fill" cx="99" cy="116" r="7" />
+        </g>
+        <rect className="pb-fill" x="28" y="78" width="64" height="46" rx="14" />
+        <circle className="pb-light" cx="48" cy="98" r="3.5" />
+        <circle className="pb-light pb-light-2" cx="60" cy="98" r="3.5" />
+        <circle className="pb-light pb-light-3" cx="72" cy="98" r="3.5" />
+        <rect className="pb-metal" x="52" y="72" width="16" height="8" rx="3" />
+        <line x1="60" y1="18" x2="60" y2="7" stroke="#c7d2fe" strokeWidth="3" strokeLinecap="round" />
+        <circle className="pb-antenna" cx="60" cy="6" r="5" />
+        <rect className="pb-fill" x="22" y="16" width="76" height="58" rx="18" />
+        <rect className="pb-metal" x="16" y="36" width="7" height="16" rx="3.5" />
+        <rect className="pb-metal" x="97" y="36" width="7" height="16" rx="3.5" />
+        <rect className="pb-screen" x="31" y="25" width="58" height="40" rx="12" />
+
+        <g className="pb-eyes">
+          <g data-for="neutral sad">
+            <circle className="pb-face-fill" cx="48" cy="43" r="4.5" />
+            <circle className="pb-face-fill" cx="72" cy="43" r="4.5" />
+          </g>
+          <path data-for="happy" className="pb-face" d="M42 45 q6 -8 12 0 M66 45 q6 -8 12 0" />
+          <g data-for="surprised">
+            <circle className="pb-face" cx="48" cy="42" r="6" />
+            <circle className="pb-face" cx="72" cy="42" r="6" />
+          </g>
+          <g data-for="thinking">
+            <circle className="pb-face-fill" cx="51" cy="40" r="4.5" />
+            <circle className="pb-face-fill" cx="75" cy="40" r="4.5" />
+          </g>
+          <g data-for="wink">
+            <path className="pb-face" d="M42 44 h12" />
+            <circle className="pb-face-fill" cx="72" cy="43" r="4.5" />
+          </g>
+          <g data-for="silly">
+            <circle className="pb-face" cx="47" cy="42" r="6.5" />
+            <circle className="pb-face-fill" cx="49" cy="44" r="2.5" />
+            <circle className="pb-face-fill" cx="73" cy="43" r="3" />
+          </g>
+          <path
+            data-for="love"
+            className="pb-heart"
+            d="M48 49 l-6 -6 a3.5 3.5 0 0 1 6 -4 a3.5 3.5 0 0 1 6 4 z M72 49 l-6 -6 a3.5 3.5 0 0 1 6 -4 a3.5 3.5 0 0 1 6 4 z"
+          />
+        </g>
+        <path data-for="sad" className="pb-face" d="M41 36 l10 -3 M79 36 l-10 -3" />
+        <path data-for="thinking" className="pb-face" d="M66 32 l12 -2" />
+        <path data-for="happy wink love" className="pb-face" d="M48 54 q12 9 24 0" />
+        <path data-for="neutral" className="pb-face" d="M50 56 h20" />
+        <ellipse data-for="surprised" className="pb-face" cx="60" cy="57" rx="4" ry="4.5" />
+        <path data-for="sad" className="pb-face" d="M49 59 q11 -7 22 0" />
+        <path data-for="thinking" className="pb-face" d="M52 57 q4 -3 8 0 t8 0" />
+        <g data-for="silly">
+          <path className="pb-face" d="M47 53 q13 8 26 0" />
+          <path className="pb-tongue" d="M60 56 q8 1 7 7 q-4 5 -9 0 z" />
+        </g>
+      </g>
+    </svg>
   );
 }

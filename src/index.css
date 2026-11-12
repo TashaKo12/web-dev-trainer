@@ -540,3 +540,69 @@ html.dark .pixel-bot .pb-metal { fill: #818cf8; }
   8%, 88% { opacity: 1; transform: none; }
   100% { opacity: 0; transform: translateY(-10px); }
 }
+
+/* ── Pixel's trick show at the bottom of the page ── */
+.pixel-tricks { display: flex; flex-direction: column; align-items: center; margin: 8px auto 18px; }
+.pixel-tricks-say {
+  margin: 0 0 4px;
+  padding: 6px 14px;
+  border-radius: 999px;
+  background: rgb(99 102 241 / 0.12);
+  color: #4f46e5;
+  font-size: 13px;
+  font-weight: 800;
+  animation: pb-pop 0.3s ease both;
+}
+html.dark .pixel-tricks-say { color: #c7d2fe; background: rgb(129 140 248 / 0.16); }
+.pixel-tricks-stage { position: relative; width: 220px; height: 130px; display: flex; justify-content: center; align-items: flex-end; }
+.pt-bot { width: 78px; cursor: default; }
+.pt-bot svg { overflow: visible; }
+.pt-ground { position: absolute; left: 10px; right: 10px; bottom: 2px; border-top: 2px dashed rgb(129 140 248 / 0.35); }
+
+.trick-flip { animation: pt-flip 1.4s cubic-bezier(0.3, 0.7, 0.4, 1) 1.2s both; transform-origin: 50% 60%; }
+.trick-handstand { animation: pt-handstand 3.2s ease-in-out both; transform-origin: 50% 50%; }
+.trick-moonwalk { animation: pt-moonwalk 3.2s ease-in-out both; }
+.trick-moonwalk .pb-leg-l { animation: pb-step 0.5s ease-in-out infinite; }
+.trick-moonwalk .pb-leg-r { animation: pb-step 0.5s ease-in-out infinite reverse; }
+.trick-dance .pb-whole { animation: pb-dance 0.45s ease-in-out infinite; }
+.trick-dance .pb-arm-l { animation: pb-cheer 0.45s ease-in-out infinite alternate; }
+.trick-dance .pb-arm-r { animation: pb-cheer-r 0.45s ease-in-out infinite alternate; }
+.trick-spin { animation: pt-spin 1.2s ease-in-out 2 both; }
+.trick-juggle .pb-arm-l { animation: pb-cheer 0.4s ease-in-out infinite alternate; }
+.trick-juggle .pb-arm-r { animation: pb-cheer-r 0.4s ease-in-out infinite alternate 0.2s; }
+
+.pt-balls { position: absolute; inset: 0 0 auto 0; height: 60px; }
+.pt-ball {
+  position: absolute;
+  left: 50%;
+  top: 40px;
+  padding: 1px 5px;
+  border-radius: 6px;
+  font: 700 10px "Fira Code", monospace;
+  color: #fff;
+  animation: pt-juggle 1.2s ease-in-out infinite;
+}
+.pt-ball-1 { background: #f472b6; }
+.pt-ball-2 { background: #38bdf8; animation-delay: -0.4s; }
+.pt-ball-3 { background: #fbbf24; color: #1e293b; animation-delay: -0.8s; }
+
+@keyframes pt-flip {
+  0% { transform: none; }
+  20% { transform: translateY(4px) scaleY(0.9); }
+  60% { transform: translateY(-46px) rotate(-200deg); }
+  85% { transform: translateY(0) rotate(-360deg); }
+  100% { transform: rotate(-360deg); }
+}
+@keyframes pt-handstand { 0%, 100% { transform: none; } 25%, 75% { transform: translateY(-34px) rotate(180deg); } }
+@keyframes pt-moonwalk { 0%, 100% { transform: translateX(0); } 50% { transform: translateX(-60px); } }
+@keyframes pt-spin { to { transform: rotate(360deg); } }
+@keyframes pt-juggle {
+  0% { transform: translate(-48px, 30px); }
+  25% { transform: translate(-24px, -36px); }
+  50% { transform: translate(24px, 30px); }
+  75% { transform: translate(0, -20px); }
+  100% { transform: translate(-48px, 30px); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .pixel-tricks *, .pt-bot { animation: none !important; }
+}

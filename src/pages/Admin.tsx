@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Check, ChevronDown, Clock, Crown, Pencil, RefreshCw, Trash2, Search, Star, Target, Users, X } from "lucide-react";
+import { CalendarClock, Check, ChevronDown, Clock, Copy, Crown, Eye, EyeOff, KeyRound, Pencil, RefreshCw, Trash2, Search, Star, Target, Users, X } from "lucide-react";
 import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
@@ -247,6 +247,43 @@ function ParticipantDetail({ p, actions }: { p: Participant; actions: Actions })
   );
 }
 
+/** The teacher's own sign-in key, hidden by default, with a copy button. */
+function TeacherKey() {
+  const code = getAdminSession() ?? "";
+  const [shown, setShown] = useState(false);
+  const [copied, setCopied] = useState(false);
+  const pretty = fmtCode(code);
+  if (!code) return null;
+  return (
+    <div className="flex flex-wrap items-center gap-2 rounded-2xl border border-amber-200/60 bg-amber-50/60 px-4 py-2.5 text-sm dark:border-amber-400/20 dark:bg-amber-500/10">
+      <KeyRound className="h-4 w-4 text-amber-500" strokeWidth={2} />
+      <span className="font-bold text-slate-600 dark:text-slate-300">Ключ для входа:</span>
+      <span className="font-mono font-bold tracking-widest text-slate-800 dark:text-slate-100">
+        {shown ? pretty : pretty.replace(/[A-Z0-9]/g, "•")}
+      </span>
+      <button type="button" onClick={() => setShown((v) => !v)} className="rounded-full p-1.5 text-slate-500 hover:bg-white/70 hover:text-indigo-600" aria-label={shown ? "Скрыть ключ" : "Показать ключ"}>
+        {shown ? <EyeOff className="h-4 w-4" strokeWidth={2} /> : <Eye className="h-4 w-4" strokeWidth={2} />}
+      </button>
+      <button
+        type="button"
+        onClick={async () => {
+          try {
+            await navigator.clipboard.writeText(pretty);
+            setCopied(true);
+            setTimeout(() => setCopied(false), 1800);
+          } catch {
+            setCopied(false);
+          }
+        }}
+        className="inline-flex items-center gap-1 rounded-full bg-white/80 px-3 py-1 text-xs font-bold text-slate-600 shadow-sm hover:text-indigo-600 dark:bg-slate-800 dark:text-slate-200"
+      >
+        {copied ? <Check className="h-3.5 w-3.5" strokeWidth={2.5} /> : <Copy className="h-3.5 w-3.5" strokeWidth={2} />}
+        {copied ? "Скопировано" : "Скопировать"}
+      </button>
+    </div>
+  );
+}
+
 function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefresh: () => void; busy: boolean; actions: Actions }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
@@ -284,6 +321,9 @@ function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefre
             <Crown className="h-4 w-4 text-amber-400" strokeWidth={2} aria-label="Админ" />
             <span className="font-bold text-slate-700 dark:text-slate-200">{data.admin}</span> · прогресс всех участников
           </p>
+          <div className="mt-3">
+            <TeacherKey />
+          </div>
         </div>
         <div className="flex gap-2">
           <button type="button" onClick={onRefresh} disabled={busy} className={BTN_SECOND}>

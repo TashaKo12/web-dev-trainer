@@ -105,7 +105,6 @@ export function LoadingScreen({ onDone }: { onDone: () => void }) {
             )}
           </g>
         ))}
-        <circle cx="600" cy="420" r="4" fill="#a5b4fc" className="loading-pulse-dot" style={{ transformOrigin: "600px 420px" }} />
       </svg>
 
       <div className="relative flex h-full flex-col items-center justify-center">
