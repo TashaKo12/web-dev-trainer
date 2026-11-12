@@ -1,5 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Check, ChevronDown, Clock, Crown, RefreshCw, Search, Star, Target, Users, X } from "lucide-react";
+import { CalendarClock, Check, ChevronDown, Clock, Crown, Pencil, RefreshCw, Trash2, Search, Star, Target, Users, X } from "lucide-react";
 import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
@@ -9,6 +9,8 @@ import { trainers } from "../trainers/registry";
 
 const CARD =
   "rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
+const BTN_MAIN =
+  "inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
 const BTN_SECOND =
   "inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 disabled:opacity-40";
 
@@ -75,7 +77,102 @@ function StatusDot({ s, i }: { s: string; i: number }) {
   );
 }
 
-function ParticipantDetail({ p }: { p: Participant }) {
+type Actions = {
+  rename: (code: string, name: string, surname3: string) => Promise<void>;
+  remove: (code: string) => Promise<void>;
+};
+
+const FIELD =
+  "rounded-xl border-2 border-slate-200 bg-white px-3 py-1.5 text-sm text-slate-800 outline-none focus:border-indigo-300";
+
+function Manage({ p, actions }: { p: Participant; actions: Actions }) {
+  const [mode, setMode] = useState<"none" | "rename" | "delete">("none");
+  const [name, setName] = useState(p.row.name ?? "");
+  const [surname, setSurname] = useState(p.row.surname3 ?? "");
+  const [busy, setBusy] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+
+  async function run(fn: () => Promise<void>) {
+    setBusy(true);
+    setError(null);
+    try {
+      await fn();
+      setMode("none");
+    } catch (e) {
+      setError(e instanceof Error && /[а-я]/i.test(e.message) ? e.message : "Не получилось. Проверь интернет и попробуй ещё раз.");
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  if (mode === "rename") {
+    return (
+      <form
+        className="rounded-2xl bg-slate-50 p-3"
+        onSubmit={(e) => {
+          e.preventDefault();
+          if (!/^[A-Za-zА-Яа-яЁё][A-Za-zА-Яа-яЁё -]{0,29}$/.test(name.trim())) return setError("Имя — только буквы, например: Таня.");
+          if (!/^[A-Za-zА-Яа-яЁё]{3}$/.test(surname.trim())) return setError("Нужны ровно три первые буквы фамилии.");
+          run(() => actions.rename(p.row.code, name.trim(), surname.trim()));
+        }}
+      >
+        <div className="flex flex-wrap items-end gap-2">
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-bold text-slate-500">Имя</span>
+            <input value={name} onChange={(e) => setName(e.target.value)} maxLength={30} className={`${FIELD} w-40`} />
+          </label>
+          <label className="flex flex-col gap-1">
+            <span className="text-xs font-bold text-slate-500">3 буквы фамилии</span>
+            <input value={surname} onChange={(e) => setSurname(e.target.value)} maxLength={3} className={`${FIELD} w-24`} />
+          </label>
+          <button type="submit" disabled={busy} className={BTN_MAIN}>
+            {busy ? "Сохраняю…" : "Сохранить"}
+          </button>
+          <button type="button" onClick={() => setMode("none")} className={BTN_SECOND}>
+            Отмена
+          </button>
+        </div>
+        {error && <p className="mt-2 text-sm font-bold text-rose-600">{error}</p>}
+      </form>
+    );
+  }
+
+  if (mode === "delete") {
+    return (
+      <div className="rounded-2xl bg-rose-50 p-3 text-sm text-rose-700">
+        <p className="mb-2">
+          Аккаунт <b>{p.label}</b> ({fmtCode(p.row.code)}) и весь его прогресс будут удалены с сервера навсегда, код перестанет
+          работать. Удалить?
+        </p>
+        <div className="flex flex-wrap gap-2">
+          <button type="button" disabled={busy} onClick={() => run(() => actions.remove(p.row.code))} className="inline-flex items-center gap-1.5 rounded-full bg-rose-600 px-4 py-2 text-sm font-bold text-white shadow disabled:opacity-50">
+            <Trash2 className="h-4 w-4" strokeWidth={2} />
+            {busy ? "Удаляю…" : "Да, удалить навсегда"}
+          </button>
+          <button type="button" onClick={() => setMode("none")} className={BTN_SECOND}>
+            Отмена
+          </button>
+        </div>
+        {error && <p className="mt-2 font-bold">{error}</p>}
+      </div>
+    );
+  }
+
+  return (
+    <div className="flex flex-wrap gap-2">
+      <button type="button" onClick={() => setMode("rename")} className={BTN_SECOND}>
+        <Pencil className="h-4 w-4" strokeWidth={2} />
+        Изменить имя
+      </button>
+      <button type="button" onClick={() => setMode("delete")} className={`${BTN_SECOND} hover:border-rose-300 hover:text-rose-600`}>
+        <Trash2 className="h-4 w-4" strokeWidth={2} />
+        Удалить аккаунт
+      </button>
+    </div>
+  );
+}
+
+function ParticipantDetail({ p, actions }: { p: Participant; actions: Actions }) {
   const started = p.reports.filter((r) => r.lastAt || r.time > 0 || r.missionsDone > 0);
   const activity = buildActivity(p.reports, 15);
 
@@ -86,6 +183,8 @@ function ParticipantDetail({ p }: { p: Participant }) {
         <span>Зарегистрирован: {formatDate(p.row.created_at)}</span>
         <span>Последнее сохранение: {formatDate(p.row.updated_at)}</span>
       </div>
+
+      <Manage key={`${p.row.name}-${p.row.surname3}`} p={p} actions={actions} />
 
       <div>
         <p className="mb-2 font-extrabold text-slate-800">Последние задания</p>
@@ -148,7 +247,7 @@ function ParticipantDetail({ p }: { p: Participant }) {
   );
 }
 
-function Dashboard({ data, onRefresh, busy }: { data: Overview; onRefresh: () => void; busy: boolean }) {
+function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefresh: () => void; busy: boolean; actions: Actions }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
   const people = useMemo(() => data.participants.map(toParticipant), [data]);
@@ -262,7 +361,7 @@ function Dashboard({ data, onRefresh, busy }: { data: Overview; onRefresh: () =>
                   <span className="ml-auto text-xs text-slate-400">{formatDate(p.lastAt)}</span>
                   <ChevronDown className={`h-5 w-5 text-slate-400 transition ${open === p.row.code ? "rotate-180" : ""}`} strokeWidth={2} />
                 </button>
-                {open === p.row.code && <ParticipantDetail p={p} />}
+                {open === p.row.code && <ParticipantDetail p={p} actions={actions} />}
               </div>
             ))}
           </div>
@@ -315,6 +414,17 @@ export function Admin() {
       <Dashboard
         data={data}
         busy={busy}
+        actions={{
+          rename: async (target, name, surname3) => {
+            const ok = await rpc<boolean>("admin_rename_participant", { p_admin: code, p_code: target, p_name: name, p_surname3: surname3 });
+            if (!ok) throw new Error("Такого аккаунта уже нет.");
+            await load(code);
+          },
+          remove: async (target) => {
+            await rpc<boolean>("admin_delete_participant", { p_admin: code, p_code: target });
+            await load(code);
+          },
+        }}
         onRefresh={() => load(data && code ? code : "").catch(() => setError("Не получилось обновить. Проверь интернет."))}
       />
       {error && <p className="mt-4 text-center text-sm font-bold text-rose-600">{error}</p>}

@@ -1,7 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { CLOUD } from "./cloudConfig";
 import { flush as flushTime, TIME_KEY } from "./timeTracker";
-import { CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, resetDevice, saveItem, setConsent } from "./storage";
+import { CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, removeItem, resetDevice, saveItem, setConsent } from "./storage";
 
 // Progress stored on the server under a short participant code (e.g. K7QM-2XWD),
 // so the same progress opens on any computer. Turned on only by an explicit opt-in.
@@ -130,6 +130,12 @@ export async function syncNow() {
   setState({ status: "saving", at: state.at });
   try {
     const ok = await rpc<boolean>("save_progress", { p_code: code, p_data: exportData() });
+    if (ok === false) {
+      // the teacher deleted this account: forget it here, the trainers will ask to sign in again
+      removeItem(CLOUD_CODE_KEY);
+      removeItem(CLOUD_OWNER_KEY);
+      accountChanged();
+    }
     setState(ok ? { status: "saved", at: new Date().toISOString() } : { status: "error", at: state.at });
   } catch {
     setState({ status: "error", at: state.at });
