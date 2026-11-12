@@ -49,7 +49,7 @@ export function Home() {
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Выбери урок и прокачай веб-разработку</h1>
         <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
-          Темы разложены по урокам курса: в каждом уроке — то, что впервые понадобится в его проекте. Внутри темы сначала
+          Темы разложены по урокам курса: в каждом уроке — 3–5 тем, которые пригодятся в его проекте. Внутри темы сначала
           теория с живыми примерами, потом задания.
         </p>
       </div>
