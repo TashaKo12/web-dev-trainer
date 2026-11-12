@@ -1,4 +1,5 @@
 import { useMemo, useState } from "react";
+import { GamePanel } from "../components/GamePanel";
 import { Link } from "react-router-dom";
 import { CalendarClock, Check, ChevronDown, Clock, Cloud, Copy, IdCard, KeyRound, LogIn, Sparkles, Star, Target, X } from "lucide-react";
 import { cloudAvailable, formatCode, formatOwner, getAdminSession, useAccount, useSyncState } from "../lib/cloud";
@@ -353,6 +354,8 @@ export function Profile() {
           <StatCard icon={CalendarClock} label="Последнее занятие" value={lastAt ? formatDate(lastAt, false) : "—"} />
         </div>
       </div>
+
+      <GamePanel />
 
       <div className={CARD}>
         <h2 className="mb-4 text-xl font-extrabold text-slate-800">Последние задания</h2>

@@ -8,6 +8,7 @@ import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
 import { SignInGate } from "./SignInGate";
 import { PixelBuddy } from "./PixelBuddy";
+import { GameToast } from "./GameToast";
 import { formatCode, getAdminSession, useAccount } from "../lib/cloud";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -65,6 +66,7 @@ export function Layout() {
         ) : null}
       </footer>
       {!locked && trainers.some((t) => t.path === pathname) && <PixelBuddy key={pathname} />}
+      {account && <GameToast />}
     </div>
   );
 }

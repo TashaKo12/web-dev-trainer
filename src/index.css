@@ -532,3 +532,11 @@ html.dark .pixel-bot .pb-metal { fill: #818cf8; }
   .pixel-buddy { transition: none; }
   .pixel-bot *, .pixel-bot.is-running * { animation: none !important; }
 }
+
+/* achievement toast */
+.game-toast { animation: game-toast 4.2s ease both; }
+@keyframes game-toast {
+  0% { opacity: 0; transform: translateY(-16px) scale(0.95); }
+  8%, 88% { opacity: 1; transform: none; }
+  100% { opacity: 0; transform: translateY(-10px); }
+}

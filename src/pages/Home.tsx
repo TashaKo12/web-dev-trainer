@@ -1,7 +1,8 @@
 import { Link } from "react-router-dom";
-import { FileCode, CircleCheck } from "lucide-react";
+import { FileCode } from "lucide-react";
+import { GamePanel, Stars } from "../components/GamePanel";
+import { starsFor, useGame } from "../lib/game";
 import { trainers, type TrainerMeta } from "../trainers/registry";
-import { getAllProgress } from "../lib/progress";
 
 const SECTIONS: { key: TrainerMeta["section"]; file: string; title: string; description: string; cls: string }[] = [
   {
@@ -28,7 +29,8 @@ const SECTIONS: { key: TrainerMeta["section"]; file: string; title: string; desc
 ];
 
 export function Home() {
-  const progress = getAllProgress();
+  const { reports } = useGame();
+  const stars = Object.fromEntries(reports.map((r) => [r.meta.id, { count: starsFor(r), solved: r.solved, total: r.statuses.length }]));
 
   return (
     <div>
@@ -41,6 +43,8 @@ export function Home() {
           задания на закрепление.
         </p>
       </div>
+
+      <GamePanel />
 
       {SECTIONS.map((section) => {
         const items = trainers.filter((t) => t.section === section.key);
@@ -58,7 +62,7 @@ export function Home() {
 
             <div className="grid gap-5 sm:grid-cols-2">
               {items.map((t) => {
-                const p = progress[t.id];
+                const p = stars[t.id];
                 const Icon = t.icon;
                 return (
                   <Link
@@ -84,10 +88,11 @@ export function Home() {
                       >
                         Начать →
                       </span>
-                      {p ? (
-                        <span className="flex items-center gap-1 text-slate-400">
-                          {p.score}/{p.total}
-                          <CircleCheck className="h-3.5 w-3.5" strokeWidth={2} />
+                      {p && p.count > 0 ? (
+                        <Stars count={p.count} />
+                      ) : p && p.solved > 0 ? (
+                        <span className="text-slate-400">
+                          {p.solved}/{p.total}
                         </span>
                       ) : (
                         <span className="text-slate-300">не пройдено</span>

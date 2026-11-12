@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from "react";
 import { onPixel } from "../lib/pixelBus";
+import { getStreak } from "../lib/game";
 
 // Pixel the robot keeps a student company on every task page: runs along with the scroll,
 // cheers right answers, comforts after mistakes and now and then fools around.
@@ -65,6 +66,8 @@ export function PixelBuddy() {
       onPixel((e) => {
         if (e === "correct") react(pick(["happy", "love", "wink"] as Mood[]), pick(["jump", "spin", "dance"] as Act[]), pick(PRAISE));
         else if (e === "wrong") react(pick(["sad", "thinking"] as Mood[]), "shake", pick(COMFORT), 3200);
+        else if (e === "streak") react("love", "dance", `Серия ${getStreak().current} подряд! Огонь!`, 3000);
+        else if (e === "achievement") react("love", "jump", "Новая награда! Ура!", 3000);
         else react("love", "spin", "Ура! Тема пройдена! Я горжусь тобой", 4000);
       }),
     [],
