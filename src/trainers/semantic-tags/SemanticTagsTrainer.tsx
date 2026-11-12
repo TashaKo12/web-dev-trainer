@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -220,6 +221,7 @@ export function SemanticTagsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      <WebMissions trainerId="semantic-tags" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и кликай по макету." />
       <div className="mb-10">
         <Tasks />

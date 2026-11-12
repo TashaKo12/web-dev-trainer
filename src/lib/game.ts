@@ -1,5 +1,8 @@
 import { useEffect, useState, useSyncExternalStore } from "react";
-import { loadItem, loadJSON, saveJSON, useTotalPoints } from "./storage";
+import { loadItem, loadJSON, POINTS, saveJSON, useTotalPoints } from "./storage";
+import { trainers } from "../trainers/registry";
+
+const CARDS_PER_TOPIC = 10;
 import { readReports, type TopicReport } from "./reports";
 import { emitPixel, onPixel } from "./pixelBus";
 
@@ -8,15 +11,26 @@ import { emitPixel, onPixel } from "./pixelBus";
 
 export type Rank = { title: string; from: number };
 
-export const RANKS: Rank[] = [
-  { title: "Новичок", from: 0 },
-  { title: "Стажёр", from: 50 },
-  { title: "Верстальщик", from: 150 },
-  { title: "Мастер тегов", from: 300 },
-  { title: "Повелитель стилей", from: 600 },
-  { title: "Веб-разработчик", from: 1000 },
-  { title: "Гуру веба", from: 1600 },
+/** Everything a student can earn in the course today: practice levels, true/false cards, missions. */
+export const MAX_XP = trainers.reduce(
+  (sum, t) => sum + t.taskCount * POINTS.practice + CARDS_PER_TOPIC * POINTS.card + (t.missions?.count ?? 0) * POINTS.mission,
+  0,
+);
+/** Ranks are spread over all current points plus 1000 in reserve for lessons that are still to come. */
+export const RANK_SCALE = MAX_XP + 1000;
+
+const STEPS: [string, number][] = [
+  ["Новичок", 0],
+  ["Стажёр", 0.02],
+  ["Верстальщик", 0.06],
+  ["Мастер тегов", 0.13],
+  ["Повелитель стилей", 0.25],
+  ["Веб-разработчик", 0.4],
+  ["Гуру веба", 0.6],
+  ["Легенда кода", 0.85],
 ];
+
+export const RANKS: Rank[] = STEPS.map(([title, share]) => ({ title, from: Math.round((share * RANK_SCALE) / 10) * 10 }));
 
 export function rankFor(xp: number) {
   let i = 0;

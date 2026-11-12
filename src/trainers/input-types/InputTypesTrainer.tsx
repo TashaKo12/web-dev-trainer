@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -325,6 +326,7 @@ export function InputTypesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      <WebMissions trainerId="input-types" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка и пиши сам." />
       <div className="mb-10">
         <Tasks />

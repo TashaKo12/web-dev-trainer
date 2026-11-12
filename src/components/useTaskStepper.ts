@@ -20,10 +20,26 @@ export function loadSession(trainerId: TrainerId, total: number): SavedSession |
   return { index: Math.min(Math.max((saved.index ?? 0) | 0, 0), total - 1), statuses: saved.statuses, dates };
 }
 
+/** A link like #/headings?level=4 opens the practice right on that level (used by the teacher dashboard). */
+function levelFromUrl(total: number) {
+  const query = window.location.hash.split("?")[1];
+  if (!query) return null;
+  const n = Number(new URLSearchParams(query).get("level"));
+  return Number.isInteger(n) && n >= 1 && n <= total ? n - 1 : null;
+}
+
 export function useTaskStepper(total: number, trainerId: TrainerId) {
-  const [session, setSession] = useState<SavedSession>(
-    () => loadSession(trainerId, total) ?? { index: 0, statuses: Array(total).fill("idle"), dates: Array(total).fill(null) },
-  );
+  const [session, setSession] = useState<SavedSession>(() => {
+    const saved = loadSession(trainerId, total) ?? { index: 0, statuses: Array(total).fill("idle"), dates: Array(total).fill(null) };
+    const level = levelFromUrl(total);
+    return level === null ? saved : { ...saved, index: level };
+  });
+
+  useEffect(() => {
+    if (levelFromUrl(total) === null) return;
+    const t = setTimeout(() => document.querySelector("[data-practice]")?.scrollIntoView({ behavior: "smooth", block: "start" }), 700);
+    return () => clearTimeout(t);
+  }, [total]);
   const { index, statuses } = session;
 
   const score = useMemo(

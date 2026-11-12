@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WebMissions } from "../../missions/WebMissions";
 import { Megaphone } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -707,6 +708,7 @@ export function HtmlStructureTrainer() {
       <div className="mb-10">
         <MoreTagsTheory />
       </div>
+      <WebMissions trainerId="html-structure" />
       <SectionHeading
         kicker="Практика"
         title="Закрепим"

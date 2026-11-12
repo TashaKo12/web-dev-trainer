@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -276,6 +277,7 @@ export function DivClassesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      <WebMissions trainerId="div-classes" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />
       <div className="mb-10">
         <Tasks />

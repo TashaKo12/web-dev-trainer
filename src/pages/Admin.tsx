@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
-import { CalendarClock, Check, ChevronDown, Clock, Copy, Crown, Eye, EyeOff, KeyRound, Pencil, RefreshCw, Trash2, Search, Star, Target, Users, X } from "lucide-react";
+import { Link } from "react-router-dom";
+import { CalendarClock, Check, AlertTriangle, ChevronDown, Clock, Copy, Crown, Eye, EyeOff, KeyRound, Pencil, RefreshCw, Trash2, Search, Star, Target, Users, X } from "lucide-react";
 import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
@@ -284,6 +285,85 @@ function TeacherKey() {
   );
 }
 
+/** Where students go wrong most often: practice levels with the most wrong answers, with a link straight to the level. */
+function Mistakes({ people }: { people: Participant[] }) {
+  const [showAll, setShowAll] = useState(false);
+  const rows = trainers
+    .flatMap((meta, idx) =>
+      Array.from({ length: meta.taskCount }, (_, level) => {
+        const answers = people.map((p) => ({ p, s: p.reports[idx]?.statuses[level] })).filter((a) => a.s && a.s !== "idle");
+        const wrong = answers.filter((a) => a.s === "wrong");
+        return { meta, level, answered: answers.length, wrong: wrong.length, who: wrong.map((a) => a.p.label) };
+      }),
+    )
+    .filter((r) => r.wrong > 0)
+    .sort((a, b) => b.wrong - a.wrong || b.wrong / b.answered - a.wrong / a.answered);
+  const topics = new Map<string, { title: string; path: string; wrong: number }>();
+  for (const r of rows) {
+    const t = topics.get(r.meta.id) ?? { title: r.meta.title, path: r.meta.path, wrong: 0 };
+    t.wrong += r.wrong;
+    topics.set(r.meta.id, t);
+  }
+  const topTopics = [...topics.values()].sort((a, b) => b.wrong - a.wrong).slice(0, 5);
+  const shown = showAll ? rows : rows.slice(0, 8);
+
+  return (
+    <div className={CARD}>
+      <h2 className="mb-1 flex items-center gap-2 text-xl font-extrabold text-slate-800">
+        <AlertTriangle className="h-5 w-5 text-amber-500" strokeWidth={2} />
+        Где чаще ошибаются
+      </h2>
+      <p className="mb-4 text-sm text-slate-500">
+        Уровни практики, на которых больше всего неверных ответов (по последнему ответу каждого ученика). Нажми «Открыть» — уровень откроется сразу.
+      </p>
+      {rows.length === 0 ? (
+        <p className="text-sm text-slate-500">Пока ошибок нет — или ученики ещё не решали задания.</p>
+      ) : (
+        <>
+          <div className="mb-4 flex flex-wrap gap-2">
+            {topTopics.map((t) => (
+              <Link key={t.path} to={t.path} className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 hover:ring-2 hover:ring-amber-200">
+                {t.title} · {t.wrong} ош.
+              </Link>
+            ))}
+          </div>
+          <div className="space-y-2">
+            {shown.map((r) => (
+              <div key={r.meta.id + r.level} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-slate-50 p-3 text-sm">
+                <div className="min-w-[12rem] flex-1">
+                  <p className="font-bold text-slate-800">
+                    {r.meta.title} · <span className="text-slate-500">уровень {r.level + 1}</span>
+                  </p>
+                  <p className="truncate text-xs text-slate-500" title={r.who.join(", ")}>
+                    Ошиблись: {r.who.join(", ")}
+                  </p>
+                </div>
+                <div className="w-40">
+                  <div className="mb-1 flex justify-between text-xs font-bold text-slate-500">
+                    <span className="text-rose-600">{r.wrong} ошиб.</span>
+                    <span>из {r.answered}</span>
+                  </div>
+                  <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
+                    <div className="h-full rounded-full bg-rose-500" style={{ width: `${(r.wrong / r.answered) * 100}%` }} />
+                  </div>
+                </div>
+                <Link to={`${r.meta.path}?level=${r.level + 1}`} className={BTN_SECOND}>
+                  Открыть
+                </Link>
+              </div>
+            ))}
+          </div>
+          {rows.length > 8 && (
+            <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-3 text-sm font-bold text-indigo-600">
+              {showAll ? "Свернуть" : `Показать все (${rows.length})`}
+            </button>
+          )}
+        </>
+      )}
+    </div>
+  );
+}
+
 function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefresh: () => void; busy: boolean; actions: Actions }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
@@ -367,6 +447,8 @@ function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefre
           </div>
         )}
       </div>
+
+      <Mistakes people={people} />
 
       <div className={CARD}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">

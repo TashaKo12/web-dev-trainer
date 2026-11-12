@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { HTML_MISSIONS } from "../missions/html";
 import {
   Tag,
   LayoutTemplate,
@@ -471,3 +472,9 @@ export const trainers: TrainerMeta[] = [
     missions: { storageKey: "wdt:missions:python-input", count: 5 },
   },
 ];
+
+// HTML topics have Pixel's missions too: register them so progress pages count them
+for (const t of trainers) {
+  const set = HTML_MISSIONS[t.id];
+  if (set && !t.missions) t.missions = { storageKey: `wdt:missions:${t.id}`, count: set.missions.length };
+}

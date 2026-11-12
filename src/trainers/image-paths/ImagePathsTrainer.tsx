@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -362,6 +363,7 @@ export function ImagePathsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      <WebMissions trainerId="image-paths" />
       <SectionHeading
         kicker="Практика"
         title="9 уровней"

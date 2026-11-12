@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WebMissions } from "../../missions/WebMissions";
 import { Image } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -326,6 +327,7 @@ export function IdAttributeTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      <WebMissions trainerId="id-attribute" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — кликай, выбирай и пиши сам." />
       <div className="mb-10">
         <Tasks />

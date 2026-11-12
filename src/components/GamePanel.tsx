@@ -1,6 +1,6 @@
 import { Link } from "react-router-dom";
 import { Award, Flame, Lock, Shield } from "lucide-react";
-import { useGame } from "../lib/game";
+import { MAX_XP, useGame } from "../lib/game";
 
 /** Rank, experience to the next rank, streak and achievements — the game status of the student. */
 export function GamePanel() {
@@ -27,7 +27,7 @@ export function GamePanel() {
           <p className="mt-1.5 text-xs text-slate-500">
             {next ? (
               <>
-                {xp} XP · до звания «{next.title}» ещё {next.from - xp} XP
+                {xp} из {MAX_XP} XP в курсе · до звания «{next.title}» ещё {next.from - xp} XP
               </>
             ) : (
               <>{xp} XP · высшее звание!</>

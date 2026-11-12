@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { WebMissions } from "../../missions/WebMissions";
 import { Image, ImageOff } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -417,6 +418,7 @@ export function ImagesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      <WebMissions trainerId="images" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, сравнивай вживую и пиши сам." />
       <div className="mb-10">
         <Tasks />
