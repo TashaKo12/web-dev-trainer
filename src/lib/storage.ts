@@ -218,3 +218,17 @@ export function useTotalPoints() {
 }
 
 export const POINTS = { practice: 10, mission: 10, card: 5 } as const;
+
+// ── progress changed from outside (the teacher counted tasks): open pages re-read it ──
+const replacedListeners = new Set<() => void>();
+
+export function onProgressReplaced(listener: () => void) {
+  replacedListeners.add(listener);
+  return () => {
+    replacedListeners.delete(listener);
+  };
+}
+
+export function notifyProgressReplaced() {
+  replacedListeners.forEach((l) => l());
+}

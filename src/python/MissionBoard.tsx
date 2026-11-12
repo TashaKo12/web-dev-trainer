@@ -1,7 +1,7 @@
 import { useEffect, useState, type ReactNode } from "react";
 import { emitPixel } from "../lib/pixelBus";
 import { Bot, Check, ChevronRight, Lightbulb, Lock, Sparkles, Trophy } from "lucide-react";
-import { loadItem, loadJSON, POINTS, reportPoints, saveItem, saveJSON } from "../lib/storage";
+import { loadItem, loadJSON, onProgressReplaced, POINTS, reportPoints, saveItem, saveJSON } from "../lib/storage";
 
 export function missionDatesKey(pointsSource: string) {
   return `wdt:mission-dates:${pointsSource}`;
@@ -33,6 +33,17 @@ export function MissionBoard({
   const [done, setDone] = useState(readDone);
   const [active, setActive] = useState(() => Math.min(readDone(), missions.length - 1));
   const [dates, setDates] = useState<(string | null)[]>(() => loadJSON<(string | null)[]>(missionDatesKey(pointsSource)) ?? []);
+
+  // the teacher counted missions: pick them up
+  useEffect(
+    () =>
+      onProgressReplaced(() => {
+        setDone((d) => Math.max(d, readDone()));
+        setDates(loadJSON<(string | null)[]>(missionDatesKey(pointsSource)) ?? []);
+      }),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [pointsSource],
+  );
 
   const xp = done * POINTS.mission;
   const maxXp = missions.length * POINTS.mission;

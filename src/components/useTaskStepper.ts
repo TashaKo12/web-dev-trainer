@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { saveProgress, type TrainerId } from "../lib/progress";
-import { loadJSON, POINTS, reportPoints, saveJSON } from "../lib/storage";
+import { loadJSON, onProgressReplaced, POINTS, reportPoints, saveJSON } from "../lib/storage";
 import { setTimeLevel } from "../lib/timeTracker";
 import { emitPixel } from "../lib/pixelBus";
 
@@ -47,6 +47,16 @@ export function useTaskStepper(total: number, trainerId: TrainerId) {
     [statuses],
   );
   const allAnswered = statuses.every((s) => s !== "idle");
+
+  // the teacher counted levels: take them from storage before this page saves its own copy again
+  useEffect(
+    () =>
+      onProgressReplaced(() => {
+        const fresh = loadSession(trainerId, total);
+        if (fresh) setSession((s) => ({ ...fresh, index: s.index }));
+      }),
+    [trainerId, total],
+  );
 
   useEffect(() => {
     saveJSON(sessionKey(trainerId), session);

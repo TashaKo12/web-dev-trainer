@@ -1,6 +1,7 @@
 import { useSyncExternalStore } from "react";
 import { CLOUD } from "./cloudConfig";
 import { flush as flushTime, TIME_KEY } from "./timeTracker";
+import { applyMarksLocally, type Marks } from "./marks";
 import { CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, removeItem, resetDevice, saveItem, setConsent } from "./storage";
 
 // Progress stored on the server under a short participant code (e.g. K7QM-2XWD),
@@ -208,8 +209,24 @@ export async function restoreFromCloud(input: string) {
 let timer: ReturnType<typeof setTimeout> | undefined;
 let timerDue = 0;
 
+/** Asks the server whether the teacher counted any tasks and counts them here too. */
+export async function pullTeacherMarks() {
+  const code = getCloudCode();
+  if (!cloudAvailable || !code) return;
+  try {
+    const marks = await rpc<Marks>("load_marks", { p_code: code });
+    if (marks) applyMarksLocally(marks);
+  } catch {
+    // offline or the server is not updated yet — try again later
+  }
+}
+
 export function startAutoSync() {
   if (!cloudAvailable) return;
+  pullTeacherMarks();
+  setInterval(() => {
+    if (document.visibilityState === "visible") pullTeacherMarks();
+  }, 60_000);
   onSave((key) => {
     if (key === CLOUD_CODE_KEY || !getCloudCode()) return;
     // answers go up within seconds; time-on-task counters only once a minute

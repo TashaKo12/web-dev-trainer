@@ -4,6 +4,7 @@ import { CalendarClock, Check, AlertTriangle, ChevronDown, Clock, Copy, Crown, E
 import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
+import { markKey, withMarks, type Marks } from "../lib/marks";
 import { trainers } from "../trainers/registry";
 
 // Author-only page: progress of every participant. The data comes from the server only for the admin code.
@@ -17,10 +18,19 @@ const BTN_SECOND =
 
 const WEEK = 7 * 24 * 3600 * 1000;
 
-type Row = { code: string; name: string | null; surname3: string | null; created_at: string; updated_at: string; data: Record<string, string> };
+type Row = {
+  code: string;
+  name: string | null;
+  surname3: string | null;
+  created_at: string;
+  updated_at: string;
+  data: Record<string, string>;
+  marks?: Marks;
+};
 type Overview = { admin: string; participants: Row[] };
 
 type Participant = {
+  marks: Marks;
   row: Row;
   label: string;
   reports: TopicReport[];
@@ -40,10 +50,13 @@ const fmtCode = (c: string) => c.match(/.{1,4}/g)?.join("-") ?? c;
 const normalize = (s: string) => s.toUpperCase().replace(/[^A-Z0-9]/g, "");
 
 function toParticipant(row: Row): Participant {
-  const get = (k: string) => (typeof row.data?.[k] === "string" ? row.data[k] : null);
+  // the teacher's marks count right away, even before the student's device picks them up
+  const data = withMarks(row.data ?? {}, row.marks);
+  const get = (k: string) => (typeof data[k] === "string" ? data[k] : null);
   const reports = readReports(get);
   const lastAt = reports.map((r) => r.lastAt).filter((d): d is string => !!d).sort().pop() ?? row.updated_at;
   return {
+    marks: row.marks ?? {},
     row,
     label: row.name ? `${row.name} ${row.surname3 ?? ""}.` : "Без имени",
     reports,
@@ -81,6 +94,8 @@ function StatusDot({ s, i }: { s: string; i: number }) {
 type Actions = {
   rename: (code: string, name: string, surname3: string) => Promise<void>;
   remove: (code: string) => Promise<void>;
+  /** Counts tasks as done: keys like headings:L2 (level) or python-print:M0 (mission). */
+  mark: (code: string, keys: string[]) => Promise<void>;
 };
 
 const FIELD =
@@ -173,6 +188,94 @@ function Manage({ p, actions }: { p: Participant; actions: Actions }) {
   );
 }
 
+const topicDone = (r: TopicReport) => r.solved === r.statuses.length && (!r.meta.missions || r.missionsDone >= r.meta.missions.count);
+
+function topicKeys(r: TopicReport) {
+  const keys = r.statuses.flatMap((s, i) => (s === "correct" ? [] : [markKey(r.meta.id, "L", i)]));
+  if (r.meta.missions) for (let i = r.missionsDone; i < r.meta.missions.count; i++) keys.push(markKey(r.meta.id, "M", i));
+  return keys;
+}
+
+/** A small action that asks once more before doing it. */
+function ConfirmButton({ label, confirm, onConfirm, small }: { label: string; confirm: string; onConfirm: () => Promise<void>; small?: boolean }) {
+  const [step, setStep] = useState<"idle" | "ask" | "busy" | "error">("idle");
+  const base = small ? "px-2 py-0.5 text-[11px]" : "px-3 py-1 text-xs";
+  if (step === "ask" || step === "busy") {
+    return (
+      <span className="inline-flex items-center gap-1">
+        <span className="text-xs font-bold text-slate-600">{confirm}</span>
+        <button
+          type="button"
+          disabled={step === "busy"}
+          onClick={async () => {
+            setStep("busy");
+            try {
+              await onConfirm();
+              setStep("idle");
+            } catch {
+              setStep("error");
+            }
+          }}
+          className={`rounded-full bg-emerald-500 font-bold text-white disabled:opacity-50 ${base}`}
+        >
+          {step === "busy" ? "…" : "Да"}
+        </button>
+        <button type="button" onClick={() => setStep("idle")} className={`rounded-full border border-slate-200 font-bold text-slate-500 ${base}`}>
+          Нет
+        </button>
+      </span>
+    );
+  }
+  return (
+    <button
+      type="button"
+      onClick={() => setStep("ask")}
+      title={step === "error" ? "Не получилось — проверь интернет" : undefined}
+      className={`inline-flex items-center gap-1 rounded-full border font-bold ${base} ${
+        step === "error" ? "border-rose-200 text-rose-600" : "border-emerald-200 text-emerald-700 hover:bg-emerald-50"
+      }`}
+    >
+      <Check className={small ? "h-3 w-3" : "h-3.5 w-3.5"} strokeWidth={2.5} />
+      {step === "error" ? "Ошибка, ещё раз" : label}
+    </button>
+  );
+}
+
+/** Count any topic, even one the student has not opened yet. */
+function MarkAnyTopic({ p, actions }: { p: Participant; actions: Actions }) {
+  const open = p.reports.filter((r) => !topicDone(r));
+  const [id, setId] = useState("");
+  const chosen = open.find((r) => r.meta.id === id);
+  return (
+    <span className="flex flex-wrap items-center gap-2">
+      <select
+        value={id}
+        onChange={(e) => setId(e.target.value)}
+        aria-label="Тема, которую засчитать"
+        className="max-w-[16rem] rounded-xl border-2 border-slate-200 bg-white px-2 py-1 text-xs font-bold text-slate-600 outline-none focus:border-indigo-300"
+      >
+        <option value="">Засчитать тему…</option>
+        {open.map((r) => (
+          <option key={r.meta.id} value={r.meta.id}>
+            {r.meta.title}
+          </option>
+        ))}
+      </select>
+      {chosen && (
+        <ConfirmButton
+          key={chosen.meta.id}
+          label="Засчитать"
+          confirm={`Засчитать «${chosen.meta.title}» целиком?`}
+          onConfirm={async () => {
+            await actions.mark(p.row.code, topicKeys(chosen));
+            setId("");
+          }}
+        />
+      )}
+    </span>
+  );
+}
+
 function ParticipantDetail({ p, actions }: { p: Participant; actions: Actions }) {
   const started = p.reports.filter((r) => r.lastAt || r.time > 0 || r.missionsDone > 0);
   const activity = buildActivity(p.reports, 15);
@@ -209,32 +312,54 @@ function ParticipantDetail({ p, actions }: { p: Participant; actions: Actions })
       </div>
 
       <div>
-        <p className="mb-2 font-extrabold text-slate-800">По темам</p>
+        <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <p className="font-extrabold text-slate-800">По темам</p>
+          <MarkAnyTopic p={p} actions={actions} />
+        </div>
         {started.length === 0 ? (
           <p className="text-slate-500">Ни одна тема не начата.</p>
         ) : (
           <div className="space-y-3">
             {started.map((r) => (
               <div key={r.meta.id} className="rounded-2xl border-2 border-slate-200 p-3">
-                <div className="mb-2 flex flex-wrap items-baseline gap-x-3">
+                <div className="mb-2 flex flex-wrap items-center gap-x-3 gap-y-1">
                   <span className="font-bold text-slate-800">{r.meta.title}</span>
                   <span className="text-xs text-slate-500">
                     решено {r.solved} из {r.statuses.length} · время на теме {formatDuration(r.time)}
                   </span>
+                  {!topicDone(r) && (
+                    <ConfirmButton label="Засчитать всю тему" confirm="Засчитать все уровни и миссии?" onConfirm={() => actions.mark(p.row.code, topicKeys(r))} />
+                  )}
                 </div>
                 {r.meta.missions && (
-                  <p className="mb-2 text-xs text-slate-500">
+                  <p className="mb-2 flex flex-wrap items-center gap-2 text-xs text-slate-500">
                     Миссии: {r.missionsDone} из {r.meta.missions.count} · время {formatDuration(r.missionsTime)}
+                    {r.missionsDone < r.meta.missions.count && (
+                      <ConfirmButton
+                        label="Засчитать миссии"
+                        confirm="Засчитать все миссии?"
+                        onConfirm={() => actions.mark(p.row.code, Array.from({ length: r.meta.missions!.count }, (_, i) => markKey(r.meta.id, "M", i)))}
+                      />
+                    )}
                   </p>
                 )}
                 <div className="grid gap-1 sm:grid-cols-2">
                   {r.statuses.map((s, i) => (
-                    <div key={i} className="flex items-center gap-2">
+                    <div key={i} className="flex min-h-[2rem] items-center gap-2">
                       <StatusDot s={s} i={i} />
                       <span className="text-slate-700">Уровень {i + 1}</span>
-                      <span className="ml-auto text-right text-xs text-slate-400">
-                        {r.dates[i] ? formatDate(r.dates[i]!) : "—"}
-                        {r.levelTimes[i] > 0 && ` · ${formatDuration(r.levelTimes[i])}`}
+                      {p.marks[markKey(r.meta.id, "L", i)] && (
+                        <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-600">засчитал педагог</span>
+                      )}
+                      <span className="ml-auto flex items-center gap-2 text-right text-xs text-slate-400">
+                        {s !== "correct" ? (
+                          <ConfirmButton small label="Засчитать" confirm="Точно?" onConfirm={() => actions.mark(p.row.code, [markKey(r.meta.id, "L", i)])} />
+                        ) : (
+                          <>
+                            {r.dates[i] ? formatDate(r.dates[i]!) : "—"}
+                            {r.levelTimes[i] > 0 && ` · ${formatDuration(r.levelTimes[i])}`}
+                          </>
+                        )}
                       </span>
                     </div>
                   ))}
@@ -539,6 +664,11 @@ export function Admin() {
         actions={{
           rename: async (target, name, surname3) => {
             const ok = await rpc<boolean>("admin_rename_participant", { p_admin: code, p_code: target, p_name: name, p_surname3: surname3 });
+            if (!ok) throw new Error("Такого аккаунта уже нет.");
+            await load(code);
+          },
+          mark: async (target, keys) => {
+            const ok = await rpc<boolean>("admin_mark", { p_admin: code, p_code: target, p_keys: keys });
             if (!ok) throw new Error("Такого аккаунта уже нет.");
             await load(code);
           },
