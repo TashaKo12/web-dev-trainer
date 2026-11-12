@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarClock, Check, ChevronDown, Clock, Cloud, Copy, IdCard, KeyRound, LogIn, Sparkles, Star, Target, X } from "lucide-react";
-import { cloudAvailable, formatCode, formatOwner, useAccount, useSyncState } from "../lib/cloud";
+import { cloudAvailable, formatCode, formatOwner, getAdminSession, useAccount, useSyncState } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { type TrainerMeta } from "../trainers/registry";
 import { loadItem, useConsent, useTotalPoints } from "../lib/storage";
@@ -406,8 +406,13 @@ export function Profile() {
         )}
       </div>
 
-      {cloudAvailable && <ParticipantCode />}
-      <RestoreCode />
+      {/* the teacher has no participant code: the code cards are for students only */}
+      {!getAdminSession() && (
+        <>
+          {cloudAvailable && <ParticipantCode />}
+          <RestoreCode />
+        </>
+      )}
     </div>
   );
 }
