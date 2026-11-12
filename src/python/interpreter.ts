@@ -1,6 +1,7 @@
-// A tiny Python subset that runs in the browser: enough for lessons about print().
-// Supports literals, arithmetic, string concatenation/repetition, comparisons,
-// variables, and the builtins print/str/int/float/len — with real Python error messages.
+// A small Python subset that runs in the browser for the lessons: print, input, variables,
+// arithmetic, comparisons, and/or/not, if/elif/else, while, for over range() or a string,
+// break/continue, += and friends, and the builtins print/input/str/int/float/len/range/abs/min/max —
+// with real Python error messages and hints in Russian.
 
 export type PyValue =
   | { t: "int"; v: bigint }
@@ -8,6 +9,7 @@ export type PyValue =
   | { t: "str"; v: string }
   | { t: "bool"; v: boolean }
   | { t: "none" }
+  | { t: "range"; start: bigint; stop: bigint; step: bigint }
   | { t: "builtin"; name: string };
 
 export type PyErrorInfo = {
@@ -58,20 +60,37 @@ type Expr =
   | { k: "lit"; val: PyValue }
   | { k: "name"; id: string }
   | { k: "un"; op: string; e: Expr }
+  | { k: "not"; e: Expr }
+  | { k: "logic"; op: "and" | "or"; l: Expr; r: Expr }
   | { k: "bin"; op: string; l: Expr; r: Expr }
-  | { k: "cmp"; op: string; l: Expr; r: Expr }
+  /** a < b <= c: every neighbouring pair is compared, like in real Python */
+  | { k: "cmp"; ops: string[]; items: Expr[] }
   | { k: "call"; fn: Expr; args: Expr[]; kw: { name: string; e: Expr }[] };
 
-type Stmt = { k: "expr"; e: Expr } | { k: "assign"; id: string; e: Expr };
+type Simple =
+  | { k: "expr"; e: Expr }
+  | { k: "assign"; id: string; e: Expr }
+  | { k: "aug"; id: string; op: string; e: Expr }
+  | { k: "break" }
+  | { k: "continue" }
+  | { k: "pass" };
+
+type Stmt =
+  | (Simple & { line: number })
+  | { k: "if"; branches: { cond: Expr; body: Stmt[]; line: number }[]; orelse: Stmt[] | null; line: number }
+  | { k: "while"; cond: Expr; body: Stmt[]; line: number }
+  | { k: "for"; id: string; iter: Expr; body: Stmt[]; line: number };
 
 const MAX_OUTPUT = 20000;
 const MAX_STRING = 100000;
 const MAX_INT_DIGITS = 4300;
+const MAX_STEPS = 200000; // a loop that never ends must not freeze the page
 
 const NAME_START = /[A-Za-z_Ѐ-ӿ]/;
 const NAME_CHAR = /[A-Za-z0-9_Ѐ-ӿ]/;
 const ODD_QUOTES = new Set(["“", "”", "‘", "’", "«", "»", "„"]);
-const BUILTINS = new Set(["print", "input", "str", "int", "float", "len"]);
+const BUILTINS = new Set(["print", "input", "str", "int", "float", "len", "range", "abs", "min", "max"]);
+const KEYWORDS = new Set(["if", "elif", "else", "while", "for", "in", "break", "continue", "pass", "and", "or", "not", "def", "return", "import", "class", "True", "False", "None", "is"]);
 
 function tokenize(line: string, lineNo: number): Tok[] {
   const toks: Tok[] = [];
@@ -127,13 +146,19 @@ function tokenize(line: string, lineNo: number): Tok[] {
       continue;
     }
 
+    const three = line.slice(i, i + 3);
+    if (three === "//=") {
+      toks.push({ k: "op", v: three });
+      i += 3;
+      continue;
+    }
     const two = line.slice(i, i + 2);
-    if (["**", "//", "==", "!=", "<=", ">="].includes(two)) {
+    if (["**", "//", "==", "!=", "<=", ">=", "+=", "-=", "*=", "/=", "%="].includes(two)) {
       toks.push({ k: "op", v: two });
       i += 2;
       continue;
     }
-    if ("+-*/%(),=<>".includes(ch)) {
+    if ("+-*/%(),=<>:".includes(ch)) {
       toks.push({ k: "op", v: ch });
       i++;
       continue;
@@ -159,37 +184,88 @@ class Parser {
     this.line = line;
   }
 
-  private peek(offset = 0): Tok {
+  peek(offset = 0): Tok {
     return this.toks[Math.min(this.pos + offset, this.toks.length - 1)];
   }
 
-  private isOp(v: string, offset = 0) {
+  isOp(v: string, offset = 0) {
     const t = this.peek(offset);
     return t.k === "op" && t.v === v;
+  }
+
+  isWord(v: string, offset = 0) {
+    const t = this.peek(offset);
+    return t.k === "name" && t.v === v;
+  }
+
+  atEnd() {
+    return this.peek().k === "eof";
   }
 
   private next(): Tok {
     return this.toks[this.pos++];
   }
 
-  private fail(message = "invalid syntax"): never {
+  fail(message = "invalid syntax"): never {
     throw new PyError("SyntaxError", message, this.line);
   }
 
-  parseStatement(): Stmt {
+  /** The keyword that starts a block line (if, elif, else, while, for), or null. */
+  headerKeyword(): string | null {
+    const t = this.peek();
+    return t.k === "name" && ["if", "elif", "else", "while", "for"].includes(t.v) ? t.v : null;
+  }
+
+  /** Parses "if x > 0:" / "while ...:" / "for i in ...:" / "else:" up to and including the colon. */
+  parseHeader(): { kw: string; cond?: Expr; id?: string; iter?: Expr } {
+    const kw = (this.next() as { v: string }).v;
+    let result: { kw: string; cond?: Expr; id?: string; iter?: Expr } = { kw };
+    if (kw === "if" || kw === "elif" || kw === "while") {
+      if (this.isOp(":") || this.atEnd()) this.fail();
+      result.cond = this.parseExpr();
+    } else if (kw === "for") {
+      const v = this.peek();
+      if (v.k !== "name" || KEYWORDS.has(v.v)) this.fail();
+      this.next();
+      if (!this.isWord("in")) this.fail("invalid syntax. Did you mean 'in'?");
+      this.next();
+      result = { kw, id: v.v, iter: this.parseExpr() };
+    }
+    if (this.isOp("=")) this.fail("invalid syntax. Maybe you meant '==' or ':=' instead of '='?");
+    if (!this.isOp(":")) this.fail("expected ':'");
+    this.next();
+    return result;
+  }
+
+  parseSimple(loopDepth: number): Simple {
     const first = this.peek();
     const second = this.peek(1);
 
     if (first.k === "name" && first.v === "print" && second.k !== "eof" && !(second.k === "op" && (second.v === "(" || second.v === "="))) {
       this.fail("Missing parentheses in call to 'print'. Did you mean print(...)?");
     }
+    if (first.k === "name" && (first.v === "break" || first.v === "continue" || first.v === "pass")) {
+      this.next();
+      this.expectEnd();
+      if (first.v !== "pass" && loopDepth === 0) this.fail(`'${first.v}' outside loop`);
+      return { k: first.v } as Simple;
+    }
+    if (first.k === "name" && ["elif", "else"].includes(first.v)) this.fail();
 
     if (first.k === "name" && this.isOp("=", 1)) {
       if (["True", "False", "None"].includes(first.v)) this.fail(`cannot assign to ${first.v}`);
+      if (KEYWORDS.has(first.v)) this.fail();
       this.pos += 2;
       const e = this.parseExpr();
       this.expectEnd();
       return { k: "assign", id: first.v, e };
+    }
+    if (first.k === "name" && second.k === "op" && ["+=", "-=", "*=", "/=", "//=", "%="].includes(second.v)) {
+      if (KEYWORDS.has(first.v)) this.fail();
+      this.pos += 2;
+      const e = this.parseExpr();
+      this.expectEnd();
+      return { k: "aug", id: first.v, op: second.v.slice(0, -1), e };
     }
 
     const e = this.parseExpr();
@@ -197,22 +273,63 @@ class Parser {
     return { k: "expr", e };
   }
 
-  private expectEnd() {
+  expectEnd() {
     const t = this.peek();
     if (t.k === "eof") return;
     if (t.k === "op" && t.v === ")") this.fail("unmatched ')'");
+    if (t.k === "op" && t.v === ":") this.fail();
     this.fail();
   }
 
-  private parseExpr(): Expr {
-    let l = this.parseArith();
+  parseExpr(): Expr {
+    return this.parseOr();
+  }
+
+  private parseOr(): Expr {
+    let l = this.parseAnd();
+    while (this.isWord("or")) {
+      this.next();
+      l = { k: "logic", op: "or", l, r: this.parseAnd() };
+    }
+    return l;
+  }
+
+  private parseAnd(): Expr {
+    let l = this.parseNot();
+    while (this.isWord("and")) {
+      this.next();
+      l = { k: "logic", op: "and", l, r: this.parseNot() };
+    }
+    return l;
+  }
+
+  private parseNot(): Expr {
+    if (this.isWord("not")) {
+      this.next();
+      return { k: "not", e: this.parseNot() };
+    }
+    return this.parseComparison();
+  }
+
+  private parseComparison(): Expr {
+    const first = this.parseArith();
+    const ops: string[] = [];
+    const items: Expr[] = [first];
     while (true) {
       const t = this.peek();
       if (t.k === "op" && ["==", "!=", "<", ">", "<=", ">="].includes(t.v)) {
         this.next();
-        l = { k: "cmp", op: t.v, l, r: this.parseArith() };
-      } else return l;
+        ops.push(t.v);
+      } else if (this.isWord("in")) {
+        this.next();
+        ops.push("in");
+      } else if (this.isWord("not") && this.isWord("in", 1)) {
+        this.pos += 2;
+        ops.push("not in");
+      } else break;
+      items.push(this.parseArith());
     }
+    return ops.length ? { k: "cmp", ops, items } : first;
   }
 
   private parseArith(): Expr {
@@ -309,10 +426,11 @@ class Parser {
       return { k: "lit", val: { t: "str", v: value } };
     }
     if (t.k === "name") {
+      if (t.v === "True") return this.next(), { k: "lit", val: { t: "bool", v: true } };
+      if (t.v === "False") return this.next(), { k: "lit", val: { t: "bool", v: false } };
+      if (t.v === "None") return this.next(), { k: "lit", val: { t: "none" } };
+      if (KEYWORDS.has(t.v)) this.fail();
       this.next();
-      if (t.v === "True") return { k: "lit", val: { t: "bool", v: true } };
-      if (t.v === "False") return { k: "lit", val: { t: "bool", v: false } };
-      if (t.v === "None") return { k: "lit", val: { t: "none" } };
       return { k: "name", id: t.v };
     }
     if (t.k === "op" && t.v === "(") {
@@ -340,6 +458,8 @@ function typeName(v: PyValue): string {
       return "bool";
     case "none":
       return "NoneType";
+    case "range":
+      return "range";
     case "builtin":
       return "builtin_function_or_method";
   }
@@ -375,6 +495,8 @@ function toStr(v: PyValue, line: number): string {
       return v.v ? "True" : "False";
     case "none":
       return "None";
+    case "range":
+      return v.step === 1n ? `range(${v.start}, ${v.stop})` : `range(${v.start}, ${v.stop}, ${v.step})`;
     case "builtin":
       return `<built-in function ${v.name}>`;
   }
@@ -502,6 +624,9 @@ function compare(op: string, a: PyValue, b: PyValue, line: number): PyValue {
   return { t: "bool", v: result };
 }
 
+class BreakSignal {}
+class ContinueSignal {}
+
 class Machine {
   output = "";
   printed = "";
@@ -510,6 +635,7 @@ class Machine {
   private env = new Map<string, PyValue>();
   private inputs: string[];
   private nextInput = 0;
+  private steps = 0;
 
   constructor(inputs: string[]) {
     this.inputs = inputs;
@@ -524,9 +650,73 @@ class Machine {
     if (text) this.events.push({ k: kind, text });
   }
 
-  run(stmt: Stmt, line: number) {
-    if (stmt.k === "assign") this.env.set(stmt.id, this.eval(stmt.e, line));
-    else this.eval(stmt.e, line);
+  private tick(line: number) {
+    if (++this.steps > MAX_STEPS) throw new PyError("Timeout", "программа работает слишком долго", line);
+  }
+
+  runBlock(body: Stmt[]) {
+    for (const s of body) this.run(s);
+  }
+
+  private run(s: Stmt) {
+    this.tick(s.line);
+    switch (s.k) {
+      case "expr":
+        this.eval(s.e, s.line);
+        return;
+      case "assign":
+        this.env.set(s.id, this.eval(s.e, s.line));
+        return;
+      case "aug": {
+        const cur = this.env.get(s.id);
+        if (!cur) throw new PyError("NameError", `name '${s.id}' is not defined`, s.line);
+        this.env.set(s.id, binary(s.op, cur, this.eval(s.e, s.line), s.line));
+        return;
+      }
+      case "pass":
+        return;
+      case "break":
+        throw new BreakSignal();
+      case "continue":
+        throw new ContinueSignal();
+      case "if": {
+        for (const b of s.branches) {
+          if (truthy(this.eval(b.cond, b.line))) {
+            this.runBlock(b.body);
+            return;
+          }
+        }
+        if (s.orelse) this.runBlock(s.orelse);
+        return;
+      }
+      case "while":
+        while (truthy(this.eval(s.cond, s.line))) {
+          this.tick(s.line);
+          try {
+            this.runBlock(s.body);
+          } catch (signal) {
+            if (signal instanceof BreakSignal) break;
+            if (signal instanceof ContinueSignal) continue;
+            throw signal;
+          }
+        }
+        return;
+      case "for": {
+        const iterable = this.eval(s.iter, s.line);
+        for (const item of iterate(iterable, s.line)) {
+          this.tick(s.line);
+          this.env.set(s.id, item);
+          try {
+            this.runBlock(s.body);
+          } catch (signal) {
+            if (signal instanceof BreakSignal) break;
+            if (signal instanceof ContinueSignal) continue;
+            throw signal;
+          }
+        }
+        return;
+      }
+    }
   }
 
   private eval(e: Expr, line: number): PyValue {
@@ -545,10 +735,26 @@ class Machine {
         if (e.op === "+") return isIntLike(v) ? { t: "int", v: toBig(v) } : v;
         return isIntLike(v) ? { t: "int", v: -toBig(v) } : { t: "float", v: -toNum(v) };
       }
+      case "not":
+        return { t: "bool", v: !truthy(this.eval(e.e, line)) };
+      case "logic": {
+        const l = this.eval(e.l, line);
+        if (e.op === "and") return truthy(l) ? this.eval(e.r, line) : l;
+        return truthy(l) ? l : this.eval(e.r, line);
+      }
       case "bin":
         return binary(e.op, this.eval(e.l, line), this.eval(e.r, line), line);
-      case "cmp":
-        return compare(e.op, this.eval(e.l, line), this.eval(e.r, line), line);
+      case "cmp": {
+        let left = this.eval(e.items[0], line);
+        for (let i = 0; i < e.ops.length; i++) {
+          const right = this.eval(e.items[i + 1], line);
+          const op = e.ops[i];
+          const ok = op === "in" || op === "not in" ? contains(right, left, line) === (op === "in") : (compare(op, left, right, line) as { v: boolean }).v;
+          if (!ok) return { t: "bool", v: false };
+          left = right;
+        }
+        return { t: "bool", v: true };
+      }
       case "call":
         return this.call(e, line);
     }
@@ -594,15 +800,39 @@ class Machine {
       throw new PyError("TypeError", `${fn.name}() takes no keyword arguments`, line);
     }
 
+    if (fn.name === "range") {
+      if (!args.length) throw new PyError("TypeError", "range expected at least 1 argument, got 0", line);
+      if (args.length > 3) throw new PyError("TypeError", `range expected at most 3 arguments, got ${args.length}`, line);
+      for (const a of args) {
+        if (!isIntLike(a)) throw new PyError("TypeError", `'${typeName(a)}' object cannot be interpreted as an integer`, line);
+      }
+      const n = args.map(toBig);
+      const [start, stop, step] = n.length === 1 ? [0n, n[0], 1n] : [n[0], n[1], n[2] ?? 1n];
+      if (step === 0n) throw new PyError("ValueError", "range() arg 3 must not be zero", line);
+      return { t: "range", start, stop, step };
+    }
+
+    if (fn.name === "min" || fn.name === "max") {
+      const items = args.length === 1 ? [...iterate(args[0], line)] : args;
+      if (!items.length) throw new PyError("ValueError", `${fn.name}() arg is an empty sequence`, line);
+      return items.reduce((best, x) => ((compare(fn.name === "min" ? "<" : ">", x, best, line) as { v: boolean }).v ? x : best));
+    }
+
     if (fn.name === "len") {
       if (args.length !== 1) throw new PyError("TypeError", `len() takes exactly one argument (${args.length} given)`, line);
       const [v] = args;
-      if (v.t !== "str") throw new PyError("TypeError", `object of type '${typeName(v)}' has no len()`, line);
-      return { t: "int", v: BigInt([...v.v].length) };
+      if (v.t === "str") return { t: "int", v: BigInt([...v.v].length) };
+      if (v.t === "range") return { t: "int", v: BigInt(rangeLength(v)) };
+      throw new PyError("TypeError", `object of type '${typeName(v)}' has no len()`, line);
     }
 
     if (args.length > 1) throw new PyError("TypeError", `${fn.name}() takes at most 1 argument (${args.length} given)`, line);
     const v = args[0];
+
+    if (fn.name === "abs") {
+      if (!v || !isNumeric(v)) throw new PyError("TypeError", `bad operand type for abs(): '${v ? typeName(v) : "NoneType"}'`, line);
+      return isIntLike(v) ? { t: "int", v: toBig(v) < 0n ? -toBig(v) : toBig(v) } : { t: "float", v: Math.abs(toNum(v)) };
+    }
 
     if (fn.name === "str") return { t: "str", v: v ? toStr(v, line) : "" };
 
@@ -627,16 +857,77 @@ class Machine {
   }
 }
 
+function truthy(v: PyValue): boolean {
+  switch (v.t) {
+    case "bool":
+      return v.v;
+    case "int":
+      return v.v !== 0n;
+    case "float":
+      return v.v !== 0;
+    case "str":
+      return v.v.length > 0;
+    case "none":
+      return false;
+    case "range":
+      return rangeLength(v) > 0;
+    default:
+      return true;
+  }
+}
+
+function rangeLength(r: Extract<PyValue, { t: "range" }>) {
+  const { start, stop, step } = r;
+  if (step > 0n) return stop > start ? Number((stop - start + step - 1n) / step) : 0;
+  return start > stop ? Number((start - stop - step - 1n) / -step) : 0;
+}
+
+function* iterate(v: PyValue, line: number): Generator<PyValue> {
+  if (v.t === "str") {
+    for (const ch of v.v) yield { t: "str", v: ch };
+    return;
+  }
+  if (v.t === "range") {
+    for (let i = v.start; v.step > 0n ? i < v.stop : i > v.stop; i += v.step) yield { t: "int", v: i };
+    return;
+  }
+  throw new PyError("TypeError", `'${typeName(v)}' object is not iterable`, line);
+}
+
+function contains(container: PyValue, item: PyValue, line: number): boolean {
+  if (container.t === "str") {
+    if (item.t !== "str") throw new PyError("TypeError", `'in <string>' requires string as left operand, not ${typeName(item)}`, line);
+    return container.v.includes(item.v);
+  }
+  if (container.t === "range") {
+    if (!isIntLike(item)) return false;
+    const x = toBig(item);
+    const { start, stop, step } = container;
+    const inside = step > 0n ? x >= start && x < stop : x <= start && x > stop;
+    return inside && (x - start) % step === 0n;
+  }
+  throw new PyError("TypeError", `argument of type '${typeName(container)}' is not iterable`, line);
+}
+
 function hintFor(type: string, message: string, source: string): string {
   if (type === "NameError") {
     const name = /'(.+)'/.exec(message)?.[1] ?? "";
     if (name.toLowerCase() === "print" || BUILTINS.has(name.toLowerCase())) {
       return `Команды в Python пишутся маленькими буквами: ${name.toLowerCase()}, а не ${name}.`;
     }
-    return `Python не знает слова «${name}». Если это текст — возьми его в кавычки: "${name}".`;
+    return `Python не знает слова «${name}». Если это переменная — сначала создай её: ${name} = ... Если это текст — возьми его в кавычки: "${name}".`;
   }
-  if (type === "IndentationError") return "Строка не должна начинаться с пробела — убери пробелы в начале.";
+  if (type === "IndentationError") {
+    if (message.startsWith("expected an indented block")) return "После строки с двоеточием : следующие строки должны начинаться с отступа — 4 пробела (или клавиша Tab).";
+    if (message.startsWith("unindent")) return "Отступы не совпадают: у строк одного блока должно быть одинаковое число пробелов в начале.";
+    return "Лишний отступ: эта строка не внутри if, for или while — убери пробелы в начале.";
+  }
+  if (type === "Timeout") return "Цикл, похоже, никогда не заканчивается. Проверь, что условие while когда-нибудь станет ложным — например, что переменная меняется внутри цикла.";
   if (type === "SyntaxError") {
+    if (message === "expected ':'") return "В конце строки с if, elif, else, for или while нужно двоеточие :";
+    if (message.includes("Maybe you meant '=='")) return "Чтобы сравнить, пиши два знака равно: ==. Один знак = — это запись в переменную.";
+    if (message.includes("outside loop")) return "break и continue работают только внутри цикла for или while.";
+    if (message.includes("Did you mean 'in'")) return "Цикл for пишется так: for i in range(5):";
     if (message.startsWith("unterminated string")) return "Кавычка открыта, но не закрыта. Текст должен быть с кавычками с обеих сторон.";
     if (message.includes("was never closed")) return "Не хватает закрывающей скобки ) в конце.";
     if (message.startsWith("unmatched")) return "Лишняя закрывающая скобка ) — у неё нет пары.";
@@ -659,13 +950,102 @@ function hintFor(type: string, message: string, source: string): string {
     if (message.includes("can't multiply sequence")) return "Текст можно умножить только на целое число.";
     if (message.includes("invalid keyword argument")) return "У print есть только два особых параметра: sep и end.";
     if (message.includes("must be None or a string")) return "Значения sep и end должны быть текстом в кавычках.";
+    if (message.includes("cannot be interpreted as an integer")) return "range() принимает только целые числа. Если число пришло из input(), оберни его: int(input()).";
+    if (message.includes("not supported between")) return "Сравнивать можно число с числом или текст с текстом. Если число пришло из input(), оберни его в int(...).";
+    if (message.includes("is not iterable")) return "Перебирать в for можно range(...) или строку.";
     return "Значения не подходят друг к другу по типу.";
   }
   if (type === "ZeroDivisionError") return "На ноль делить нельзя — даже Python так не умеет.";
   if (type === "ValueError") return "Программа ждала число, а получила текст, который нельзя превратить в число. Введи цифры.";
   if (type === "OverflowError" || type === "MemoryError") return "Получилось слишком большое значение для тренажёра.";
-  if (type === "OutputLimit") return "Программа печатает слишком много — сократи вывод.";
+  if (type === "OutputLimit") return "Программа печатает слишком много. Если это цикл — проверь, что он когда-нибудь заканчивается: переменная в условии while должна меняться.";
   return "";
+}
+
+type SrcLine = { no: number; indent: number; text: string };
+
+/** Turns indented lines into blocks the way Python does: a line ending with ":" opens a block. */
+function buildProgram(lines: string[]): Stmt[] {
+  const src: SrcLine[] = [];
+  lines.forEach((raw, i) => {
+    if (/^\s*(#.*)?$/.test(raw)) return;
+    const expanded = raw.replace(/\t/g, "    ");
+    const indent = expanded.length - expanded.trimStart().length;
+    src.push({ no: i + 1, indent, text: expanded.trimStart() });
+  });
+  let pos = 0;
+
+  const body = (parser: Parser, header: SrcLine, kw: string, outer: number, loops: number): Stmt[] => {
+    if (!parser.atEnd()) {
+      // one-line form: if x > 0: print(x)
+      return [{ ...parser.parseSimple(loops), line: header.no }];
+    }
+    const nextLine = src[pos];
+    if (!nextLine || nextLine.indent <= outer) {
+      throw new PyError("IndentationError", `expected an indented block after '${kw}' statement on line ${header.no}`, nextLine?.no ?? header.no);
+    }
+    return block(nextLine.indent, loops);
+  };
+
+  const block = (indent: number, loops: number): Stmt[] => {
+    const out: Stmt[] = [];
+    let afterBlock = false;
+    while (pos < src.length) {
+      const ln = src[pos];
+      if (ln.indent < indent) break;
+      if (ln.indent > indent) {
+        throw new PyError("IndentationError", afterBlock ? "unindent does not match any outer indentation level" : "unexpected indent", ln.no);
+      }
+      pos++;
+      const parser = new Parser(tokenize(ln.text, ln.no), ln.no);
+      const kw = parser.headerKeyword();
+      afterBlock = false;
+
+      if (kw === "elif" || kw === "else") parser.fail();
+
+      if (kw === "if") {
+        const branches: { cond: Expr; body: Stmt[]; line: number }[] = [];
+        const h = parser.parseHeader();
+        branches.push({ cond: h.cond!, body: body(parser, ln, "if", indent, loops), line: ln.no });
+        let orelse: Stmt[] | null = null;
+        while (pos < src.length && src[pos].indent === indent) {
+          const nx = src[pos];
+          const p2 = new Parser(tokenize(nx.text, nx.no), nx.no);
+          const k2 = p2.headerKeyword();
+          if (k2 !== "elif" && k2 !== "else") break;
+          pos++;
+          const h2 = p2.parseHeader();
+          if (k2 === "elif") branches.push({ cond: h2.cond!, body: body(p2, nx, "elif", indent, loops), line: nx.no });
+          else {
+            orelse = body(p2, nx, "else", indent, loops);
+            break;
+          }
+        }
+        out.push({ k: "if", branches, orelse, line: ln.no });
+        afterBlock = true;
+        continue;
+      }
+      if (kw === "while") {
+        const h = parser.parseHeader();
+        out.push({ k: "while", cond: h.cond!, body: body(parser, ln, "while", indent, loops + 1), line: ln.no });
+        afterBlock = true;
+        continue;
+      }
+      if (kw === "for") {
+        const h = parser.parseHeader();
+        out.push({ k: "for", id: h.id!, iter: h.iter!, body: body(parser, ln, "for", indent, loops + 1), line: ln.no });
+        afterBlock = true;
+        continue;
+      }
+      out.push({ ...parser.parseSimple(loops), line: ln.no });
+    }
+    return out;
+  };
+
+  if (src.length && src[0].indent > 0) throw new PyError("IndentationError", "unexpected indent", src[0].no);
+  const program = block(0, 0);
+  if (pos < src.length) throw new PyError("IndentationError", "unindent does not match any outer indentation level", src[pos].no);
+  return program;
 }
 
 /**
@@ -675,7 +1055,6 @@ function hintFor(type: string, message: string, source: string): string {
  */
 export function runPython(code: string, inputs: string[] = []): RunResult {
   const lines = code.replace(/\r\n?/g, "\n").split("\n");
-  const program: { stmt: Stmt; line: number }[] = [];
   const empty = { output: "", printed: "", events: [], waiting: false, prompts: [] };
 
   const toError = (err: unknown): PyErrorInfo => {
@@ -684,13 +1063,9 @@ export function runPython(code: string, inputs: string[] = []): RunResult {
     return { type: err.pyType, message: err.pyMessage, line: err.line, source, hint: hintFor(err.pyType, err.pyMessage, source) };
   };
 
+  let program: Stmt[];
   try {
-    lines.forEach((text, index) => {
-      const lineNo = index + 1;
-      if (/^\s*(#.*)?$/.test(text)) return;
-      if (/^\s/.test(text)) throw new PyError("IndentationError", "unexpected indent", lineNo);
-      program.push({ stmt: new Parser(tokenize(text, lineNo), lineNo).parseStatement(), line: lineNo });
-    });
+    program = buildProgram(lines);
   } catch (err) {
     return { ...empty, error: toError(err) };
   }
@@ -704,7 +1079,7 @@ export function runPython(code: string, inputs: string[] = []): RunResult {
     waiting: false,
   });
   try {
-    for (const { stmt, line } of program) machine.run(stmt, line);
+    machine.runBlock(program);
   } catch (err) {
     if (err instanceof WaitForInput) return { ...snapshot(), waiting: true };
     return { ...snapshot(), error: toError(err) };

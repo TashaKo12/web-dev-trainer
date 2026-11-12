@@ -179,10 +179,46 @@ export function CodeEditor({
 }) {
   const lineCount = Math.max(value.split("\n").length, 3);
 
+  function insert(t: HTMLTextAreaElement, text: string, removeBefore = 0) {
+    const a = t.selectionStart - removeBefore;
+    const b = t.selectionEnd;
+    onChange(value.slice(0, a) + text + value.slice(b));
+    requestAnimationFrame(() => t.setSelectionRange(a + text.length, a + text.length));
+  }
+
   function onKeyDown(e: KeyboardEvent<HTMLTextAreaElement>) {
+    const t = e.currentTarget;
     if (e.key === "Enter" && (e.ctrlKey || e.metaKey)) {
       e.preventDefault();
       onRun();
+      return;
+    }
+    // Tab puts 4 spaces — the indent Python expects inside if, for and while
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault();
+      insert(t, "    ");
+      return;
+    }
+    // Enter keeps the indent of the line; after a line ending with ":" it adds one more level
+    if (e.key === "Enter" && !e.shiftKey) {
+      const lineStart = value.lastIndexOf("\n", t.selectionStart - 1) + 1;
+      const current = value.slice(lineStart, t.selectionStart);
+      const indent = /^ */.exec(current)![0];
+      const extra = /:\s*(#.*)?$/.test(current) ? "    " : "";
+      if (indent || extra) {
+        e.preventDefault();
+        insert(t, "\n" + indent + extra);
+      }
+      return;
+    }
+    // Backspace right after an indent removes a whole level
+    if (e.key === "Backspace" && t.selectionStart === t.selectionEnd) {
+      const lineStart = value.lastIndexOf("\n", t.selectionStart - 1) + 1;
+      const before = value.slice(lineStart, t.selectionStart);
+      if (before.length >= 4 && /^ +$/.test(before) && before.length % 4 === 0) {
+        e.preventDefault();
+        insert(t, "", 4);
+      }
     }
   }
 
