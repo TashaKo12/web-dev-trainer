@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TopicSlider } from "../../components/TopicSlider";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -239,6 +240,7 @@ const TASK_META = [
   { badge: "посчитай ширину", prompt: "", explain: "Без border-box ширина складывается из content + 2×padding + 2×border = 100 + 40 + 10 = 150px." },
   { badge: "выбери из списка", prompt: "Какое значение box-sizing действует по умолчанию, если его вообще не менять?", explain: "content-box — padding и border добавляются ПОВЕРХ заданного width, это и есть поведение по умолчанию." },
   { badge: "посчитай ширину", prompt: "", explain: "С border-box ширина остаётся ровно заданной (200px) — padding и border просто «съедают» место внутри неё." },
+  { badge: "посчитай ширину", prompt: "", explain: "Без border-box ширина складывается: 150 (содержимое) + 2×15 (padding) + 2×5 (border) = 190px." },
   { badge: "выбери из списка", prompt: "Почему border-box так часто включают ГЛОБАЛЬНО, через * в самом начале файла?", explain: "Чтобы для ВСЕХ элементов сразу работала простая и предсказуемая формула ширины — не нужно отдельно считать padding/border для каждого блока." },
 ];
 
@@ -301,7 +303,7 @@ function Tasks() {
 
 export function ResetBoxSizingTrainer() {
   return (
-    <div>
+    <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
@@ -321,6 +323,6 @@ export function ResetBoxSizingTrainer() {
         description="Пролистай 10 карточек — угадай, где правда, а где нет."
       />
       <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-    </div>
+    </TopicSlider>
   );
 }

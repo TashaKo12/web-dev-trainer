@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TopicSlider } from "../../components/TopicSlider";
 import { FileCode } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -453,7 +454,7 @@ function TypeRelLevel({ onResult }: { onResult: (correct: boolean) => void }) {
 
 export function CssIntroTrainer() {
   return (
-    <div>
+    <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
@@ -473,6 +474,6 @@ export function CssIntroTrainer() {
         description="Пролистай 10 карточек — угадай, где правда, а где нет."
       />
       <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-    </div>
+    </TopicSlider>
   );
 }

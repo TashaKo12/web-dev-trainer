@@ -54,7 +54,7 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="animate-fade-in mx-auto max-w-5xl px-5 py-8 sm:py-12">
+      <main className="animate-fade-in relative z-[15] mx-auto max-w-5xl px-5 py-8 sm:py-12">
         {locked ? <SignInGate /> : <Outlet />}
       </main>
       <footer className="mx-auto max-w-5xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">

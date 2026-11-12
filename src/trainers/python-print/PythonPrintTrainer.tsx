@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { TopicSlider } from "../../components/TopicSlider";
 import { PrintTheory } from "../../python/PythonTheory";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -138,7 +139,7 @@ const MISSIONS: Mission[] = [
   },
 ];
 
-function MissionPlay({ mission, isDone, onComplete }: { mission: Mission; isDone: boolean; onComplete: () => void }) {
+function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: Mission; isDone: boolean; onComplete: () => void; onMistake: () => void }) {
   const [arg, setArg] = useState(mission.start);
   const [result, setResult] = useState<RunResult | null>(null);
   const [solved, setSolved] = useState(false);
@@ -148,10 +149,14 @@ function MissionPlay({ mission, isDone, onComplete }: { mission: Mission; isDone
     const r = runPython(`print(${arg})`);
     setResult(r);
     setHint(null);
-    if (r.error || !sameOutput(r.output, mission.goal)) return;
+    if (r.error || !sameOutput(r.output, mission.goal)) {
+      if (!isDone) onMistake();
+      return;
+    }
     const techniqueHint = mission.technique?.(arg) ?? null;
     if (techniqueHint) {
       setHint(techniqueHint);
+      if (!isDone) onMistake();
       return;
     }
     setSolved(true);
@@ -386,7 +391,7 @@ const TRUE_FALSE: TrueFalseStatement[] = [
 
 export function PythonPrintTrainer() {
   return (
-    <div>
+    <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading kicker="Теория" title="Как работает print" description="Сначала разберём всё, что понадобится в миссиях и заданиях: текст, числа, запятые, sep, перенос строки и частые ошибки." />
       <div className="mb-10">
@@ -401,7 +406,7 @@ export function PythonPrintTrainer() {
         <MissionBoard
           missions={MISSIONS.map((m) => ({
             title: m.title,
-            render: ({ isDone, onComplete }) => <MissionPlay mission={m} isDone={isDone} onComplete={onComplete} />,
+            render: ({ isDone, onComplete, onMistake }) => <MissionPlay mission={m} isDone={isDone} onComplete={onComplete} onMistake={onMistake} />,
           }))}
           storageKey={meta.missions!.storageKey}
           pointsSource="missions:python-print"
@@ -418,6 +423,6 @@ export function PythonPrintTrainer() {
       </div>
       <SectionHeading kicker="Проверь себя" title="Верно или неверно?" description="Пролистай 10 карточек — угадай, где правда, а где нет." />
       <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-    </div>
+    </TopicSlider>
   );
 }

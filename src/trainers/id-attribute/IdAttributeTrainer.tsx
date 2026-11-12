@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TopicSlider } from "../../components/TopicSlider";
 import { WebMissions } from "../../missions/WebMissions";
 import { Image } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
@@ -317,7 +318,7 @@ const TRUE_FALSE: TrueFalseStatement[] = [
 
 export function IdAttributeTrainer() {
   return (
-    <div>
+    <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
@@ -338,6 +339,6 @@ export function IdAttributeTrainer() {
         description="Пролистай 10 карточек — угадай, где правда, а где нет."
       />
       <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-    </div>
+    </TopicSlider>
   );
 }

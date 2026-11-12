@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { TopicSlider } from "../../components/TopicSlider";
 import { InputTheory } from "../../python/PythonTheory";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -136,7 +137,7 @@ const MISSIONS: IOMission[] = [
   },
 ];
 
-function MissionPlay({ mission, isDone, onComplete }: { mission: IOMission; isDone: boolean; onComplete: () => void }) {
+function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: IOMission; isDone: boolean; onComplete: () => void; onMistake: () => void }) {
   const [code, setCode] = useState(mission.start);
   const runner = useProgramRunner();
   const [solved, setSolved] = useState(false);
@@ -144,12 +145,19 @@ function MissionPlay({ mission, isDone, onComplete }: { mission: IOMission; isDo
 
   function evaluate({ result, answers }: { result: RunResult; answers: string[] }) {
     setHint(null);
-    if (result.error || result.waiting) return;
+    if (result.waiting) return;
+    if (result.error) {
+      if (!isDone) onMistake();
+      return;
+    }
     const verdict = mission.check(result, answers);
     if (verdict === true) {
       setSolved(true);
       onComplete();
-    } else setHint(verdict);
+    } else {
+      setHint(verdict);
+      if (!isDone) onMistake();
+    }
   }
 
   const r = runner.result;
@@ -384,7 +392,7 @@ const TRUE_FALSE: TrueFalseStatement[] = [
 
 export function PythonInputTrainer() {
   return (
-    <div>
+    <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading kicker="Теория" title="Как работает input" description="Сначала разберём всё, что понадобится в миссиях и заданиях: вопросы, переменные, превращение ответа в число и частые ошибки." />
       <div className="mb-10">
@@ -399,7 +407,7 @@ export function PythonInputTrainer() {
         <MissionBoard
           missions={MISSIONS.map((m) => ({
             title: m.title,
-            render: ({ isDone, onComplete }) => <MissionPlay mission={m} isDone={isDone} onComplete={onComplete} />,
+            render: ({ isDone, onComplete, onMistake }) => <MissionPlay mission={m} isDone={isDone} onComplete={onComplete} onMistake={onMistake} />,
           }))}
           storageKey={meta.missions!.storageKey}
           pointsSource="missions:python-input"
@@ -416,6 +424,6 @@ export function PythonInputTrainer() {
       </div>
       <SectionHeading kicker="Проверь себя" title="Верно или неверно?" description="Пролистай 10 карточек — угадай, где правда, а где нет." />
       <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-    </div>
+    </TopicSlider>
   );
 }

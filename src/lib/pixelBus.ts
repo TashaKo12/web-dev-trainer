@@ -1,6 +1,6 @@
 // Lets any task tell the mascot what just happened, without passing props through the page.
 
-export type PixelEvent = "correct" | "wrong" | "complete" | "streak" | "achievement";
+export type PixelEvent = "correct" | "wrong" | "complete" | "streak" | "achievement" | "enter";
 
 const listeners = new Set<(e: PixelEvent) => void>();
 

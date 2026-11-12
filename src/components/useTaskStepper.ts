@@ -1,4 +1,5 @@
 import { useEffect, useMemo, useState } from "react";
+import { logMistake } from "../lib/mistakes";
 import { saveProgress, type TrainerId } from "../lib/progress";
 import { loadJSON, onProgressReplaced, POINTS, reportPoints, saveJSON } from "../lib/storage";
 import { setTimeLevel } from "../lib/timeTracker";
@@ -77,6 +78,7 @@ export function useTaskStepper(total: number, trainerId: TrainerId) {
 
   function markResult(correct: boolean) {
     emitPixel(correct ? "correct" : "wrong");
+    if (!correct) logMistake(`${trainerId}:L${session.index}`);
     setSession((s) => {
       const statusesNext = [...s.statuses];
       const datesNext = [...s.dates];

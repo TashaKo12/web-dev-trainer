@@ -5,6 +5,7 @@ import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cl
 import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
 import { markKey, withMarks, type Marks } from "../lib/marks";
+import { describeTask, MISTAKES_KEY } from "../lib/mistakes";
 import { trainers } from "../trainers/registry";
 
 // Author-only page: progress of every participant. The data comes from the server only for the admin code.
@@ -27,7 +28,7 @@ type Row = {
   data: Record<string, string>;
   marks?: Marks;
 };
-type Overview = { admin: string; participants: Row[] };
+type Overview = { admin: string; participants: Row[]; resets?: Record<string, string> };
 
 type Participant = {
   marks: Marks;
@@ -96,6 +97,8 @@ type Actions = {
   remove: (code: string) => Promise<void>;
   /** Counts tasks as done: keys like headings:L2 (level) or python-print:M0 (mission). */
   mark: (code: string, keys: string[]) => Promise<void>;
+  /** Starts counting mistakes on a task (or "*" — all tasks) from zero. */
+  resetMistakes: (key: string) => Promise<void>;
 };
 
 const FIELD =
@@ -410,75 +413,94 @@ function TeacherKey() {
   );
 }
 
-/** Where students go wrong most often: practice levels with the most wrong answers, with a link straight to the level. */
-function Mistakes({ people }: { people: Participant[] }) {
+/** Where students go wrong most often: every wrong attempt counts, even if fixed later. Metrics for future edits. */
+function Mistakes({ people, resets, actions }: { people: Participant[]; resets: Record<string, string>; actions: Actions }) {
   const [showAll, setShowAll] = useState(false);
-  const rows = trainers
-    .flatMap((meta, idx) =>
-      Array.from({ length: meta.taskCount }, (_, level) => {
-        const answers = people.map((p) => ({ p, s: p.reports[idx]?.statuses[level] })).filter((a) => a.s && a.s !== "idle");
-        const wrong = answers.filter((a) => a.s === "wrong");
-        return { meta, level, answered: answers.length, wrong: wrong.length, who: wrong.map((a) => a.p.label) };
+  const since = (key: string) => {
+    const a = resets[key] ?? "";
+    const b = resets["*"] ?? "";
+    return a > b ? a : b;
+  };
+
+  const byTask = new Map<string, { total: number; who: Set<string> }>();
+  const add = (key: string, dates: string[], who: string) => {
+    const from = since(key);
+    const n = dates.filter((d) => typeof d === "string" && d > from).length;
+    if (!n) return;
+    const t = byTask.get(key) ?? { total: 0, who: new Set<string>() };
+    t.total += n;
+    t.who.add(who);
+    byTask.set(key, t);
+  };
+
+  for (const p of people) {
+    let log: Record<string, string[]> = {};
+    try {
+      log = JSON.parse(p.row.data?.[MISTAKES_KEY] ?? "{}") ?? {};
+    } catch {
+      log = {};
+    }
+    for (const [key, dates] of Object.entries(log)) if (Array.isArray(dates)) add(key, dates, p.label);
+    // answers saved before mistakes were logged: a level still marked wrong counts once
+    p.reports.forEach((r) =>
+      r.statuses.forEach((s, i) => {
+        const key = `${r.meta.id}:L${i}`;
+        if (s === "wrong" && !log[key]) add(key, [r.dates[i] ?? p.row.updated_at], p.label);
       }),
-    )
-    .filter((r) => r.wrong > 0)
-    .sort((a, b) => b.wrong - a.wrong || b.wrong / b.answered - a.wrong / a.answered);
-  const topics = new Map<string, { title: string; path: string; wrong: number }>();
-  for (const r of rows) {
-    const t = topics.get(r.meta.id) ?? { title: r.meta.title, path: r.meta.path, wrong: 0 };
-    t.wrong += r.wrong;
-    topics.set(r.meta.id, t);
+    );
   }
-  const topTopics = [...topics.values()].sort((a, b) => b.wrong - a.wrong).slice(0, 5);
-  const shown = showAll ? rows : rows.slice(0, 8);
+
+  const rows = [...byTask.entries()]
+    .map(([key, v]) => ({ key, ...v, task: describeTask(key), meta: trainers.find((t) => t.id === describeTask(key)?.topicId) }))
+    .filter((r) => r.task && r.meta)
+    .sort((a, b) => b.total - a.total || b.who.size - a.who.size);
+  const max = rows[0]?.total ?? 1;
+  const shown = showAll ? rows : rows.slice(0, 10);
 
   return (
     <div className={CARD}>
-      <h2 className="mb-1 flex items-center gap-2 text-xl font-extrabold text-slate-800">
-        <AlertTriangle className="h-5 w-5 text-amber-500" strokeWidth={2} />
-        Где чаще ошибаются
-      </h2>
+      <div className="mb-1 flex flex-wrap items-center justify-between gap-2">
+        <h2 className="flex items-center gap-2 text-xl font-extrabold text-slate-800">
+          <AlertTriangle className="h-5 w-5 text-amber-500" strokeWidth={2} />
+          Где чаще ошибаются
+        </h2>
+        {rows.length > 0 && <ConfirmButton label="Обнулить всё" confirm="Обнулить все счётчики ошибок?" onConfirm={() => actions.resetMistakes("*")} />}
+      </div>
       <p className="mb-4 text-sm text-slate-500">
-        Уровни практики, на которых больше всего неверных ответов (по последнему ответу каждого ученика). Нажми «Открыть» — уровень откроется сразу.
+        Все неверные попытки всех учеников — даже если потом ответ исправлен. Это подсказка, какие задания стоит переделать.
+        «Обнулить» начинает счёт заново, данные учеников не меняются.
       </p>
       {rows.length === 0 ? (
-        <p className="text-sm text-slate-500">Пока ошибок нет — или ученики ещё не решали задания.</p>
+        <p className="text-sm text-slate-500">Ошибок пока нет — или счётчики только что обнулены.</p>
       ) : (
         <>
-          <div className="mb-4 flex flex-wrap gap-2">
-            {topTopics.map((t) => (
-              <Link key={t.path} to={t.path} className="rounded-full bg-amber-50 px-3 py-1 text-xs font-bold text-amber-800 hover:ring-2 hover:ring-amber-200">
-                {t.title} · {t.wrong} ош.
-              </Link>
-            ))}
-          </div>
           <div className="space-y-2">
             {shown.map((r) => (
-              <div key={r.meta.id + r.level} className="flex flex-wrap items-center gap-x-4 gap-y-1 rounded-2xl bg-slate-50 p-3 text-sm">
+              <div key={r.key} className="flex flex-wrap items-center gap-x-4 gap-y-2 rounded-2xl bg-slate-50 p-3 text-sm">
                 <div className="min-w-[12rem] flex-1">
                   <p className="font-bold text-slate-800">
-                    {r.meta.title} · <span className="text-slate-500">уровень {r.level + 1}</span>
+                    {r.meta!.title} · <span className="text-slate-500">{r.task!.label}</span>
                   </p>
-                  <p className="truncate text-xs text-slate-500" title={r.who.join(", ")}>
-                    Ошиблись: {r.who.join(", ")}
+                  <p className="truncate text-xs text-slate-500" title={[...r.who].join(", ")}>
+                    {r.who.size} {r.who.size === 1 ? "ученик" : r.who.size < 5 ? "ученика" : "учеников"}: {[...r.who].join(", ")}
                   </p>
                 </div>
                 <div className="w-40">
-                  <div className="mb-1 flex justify-between text-xs font-bold text-slate-500">
-                    <span className="text-rose-600">{r.wrong} ошиб.</span>
-                    <span>из {r.answered}</span>
+                  <div className="mb-1 text-xs font-bold text-rose-600">
+                    {r.total} {r.total % 10 === 1 && r.total % 100 !== 11 ? "ошибка" : r.total % 10 >= 2 && r.total % 10 <= 4 && (r.total % 100 < 12 || r.total % 100 > 14) ? "ошибки" : "ошибок"}
                   </div>
                   <div className="h-1.5 overflow-hidden rounded-full bg-slate-200">
-                    <div className="h-full rounded-full bg-rose-500" style={{ width: `${(r.wrong / r.answered) * 100}%` }} />
+                    <div className="h-full rounded-full bg-rose-500" style={{ width: `${(r.total / max) * 100}%` }} />
                   </div>
                 </div>
-                <Link to={`${r.meta.path}?level=${r.level + 1}`} className={BTN_SECOND}>
+                <Link to={r.task!.kind === "L" ? `${r.meta!.path}?level=${Number(r.key.split(":L")[1]) + 1}` : r.meta!.path} className={BTN_SECOND}>
                   Открыть
                 </Link>
+                <ConfirmButton small label="Обнулить" confirm="Обнулить?" onConfirm={() => actions.resetMistakes(r.key)} />
               </div>
             ))}
           </div>
-          {rows.length > 8 && (
+          {rows.length > 10 && (
             <button type="button" onClick={() => setShowAll((v) => !v)} className="mt-3 text-sm font-bold text-indigo-600">
               {showAll ? "Свернуть" : `Показать все (${rows.length})`}
             </button>
@@ -573,7 +595,7 @@ function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefre
         )}
       </div>
 
-      <Mistakes people={people} />
+      <Mistakes people={people} resets={data.resets ?? {}} actions={actions} />
 
       <div className={CARD}>
         <div className="mb-4 flex flex-wrap items-center justify-between gap-3">
@@ -665,6 +687,10 @@ export function Admin() {
           rename: async (target, name, surname3) => {
             const ok = await rpc<boolean>("admin_rename_participant", { p_admin: code, p_code: target, p_name: name, p_surname3: surname3 });
             if (!ok) throw new Error("Такого аккаунта уже нет.");
+            await load(code);
+          },
+          resetMistakes: async (key) => {
+            await rpc("admin_reset_mistakes", { p_admin: code, p_key: key });
             await load(code);
           },
           mark: async (target, keys) => {

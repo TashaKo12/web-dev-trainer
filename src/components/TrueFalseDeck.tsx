@@ -1,4 +1,6 @@
 import { useEffect, useState } from "react";
+import { trainers } from "../trainers/registry";
+import { logMistake } from "../lib/mistakes";
 import { emitPixel } from "../lib/pixelBus";
 import { useLocation } from "react-router-dom";
 import { loadJSON, POINTS, reportPoints, saveJSON } from "../lib/storage";
@@ -44,6 +46,8 @@ export function TrueFalseDeck({
   function pick(value: boolean) {
     if (picked !== null) return;
     emitPixel(value === statements[index].answer ? "correct" : "wrong");
+    const topic = trainers.find((t) => t.path === pathname)?.id;
+    if (topic && value !== statements[index].answer) logMistake(`${topic}:C${index}`);
     setPicks((prev) => {
       const next = [...prev];
       next[index] = value;
@@ -53,7 +57,10 @@ export function TrueFalseDeck({
 
   function goNext() {
     if (index < total - 1) setIndex(index + 1);
-    else setShowResult(true);
+    else {
+      setShowResult(true);
+      emitPixel("complete");
+    }
   }
 
   function goPrev() {

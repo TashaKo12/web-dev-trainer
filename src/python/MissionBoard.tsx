@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { logMistake } from "../lib/mistakes";
 import { emitPixel } from "../lib/pixelBus";
 import { Bot, Check, ChevronRight, Lightbulb, Lock, Sparkles, Trophy } from "lucide-react";
 import { loadItem, loadJSON, onProgressReplaced, POINTS, reportPoints, saveItem, saveJSON } from "../lib/storage";
@@ -7,7 +8,7 @@ export function missionDatesKey(pointsSource: string) {
   return `wdt:mission-dates:${pointsSource}`;
 }
 
-export type MissionRender = (props: { isDone: boolean; onComplete: () => void }) => ReactNode;
+export type MissionRender = (props: { isDone: boolean; onComplete: () => void; onMistake: () => void }) => ReactNode;
 
 const RANKS = ["Новичок", "Ученик робота", "Знаток", "Мастер терминала"];
 
@@ -60,6 +61,7 @@ export function MissionBoard({
   function complete(i: number) {
     if (i !== done) return;
     emitPixel("correct");
+    if (i === missions.length - 1) setTimeout(() => emitPixel("complete"), 1800);
     setDone(done + 1);
     setDates((d) => {
       const next = [...d];
@@ -141,6 +143,7 @@ export function MissionBoard({
                     {m.render({
                       isDone,
                       onComplete: () => complete(i),
+                      onMistake: () => logMistake(`${pointsSource.replace(/^missions:/, "")}:M${i}`),
                     })}
                   </div>
                   {isDone && i < missions.length - 1 && (

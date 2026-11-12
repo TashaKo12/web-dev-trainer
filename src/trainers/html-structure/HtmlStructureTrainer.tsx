@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TopicSlider } from "../../components/TopicSlider";
 import { TheoryNotes } from "../../components/TheoryNotes";
 import { WebMissions } from "../../missions/WebMissions";
 import { Megaphone } from "lucide-react";
@@ -685,7 +686,7 @@ function Tasks() {
 
 export function HtmlStructureTrainer() {
   return (
-    <div>
+    <TopicSlider>
       <TrainerHero
         icon={meta.icon}
         title={meta.title}
@@ -725,6 +726,6 @@ export function HtmlStructureTrainer() {
         description="Пролистай 10 карточек — угадай, где правда, а где нет."
       />
       <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-    </div>
+    </TopicSlider>
   );
 }

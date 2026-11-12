@@ -30,7 +30,17 @@ export function parseHtml(code: string) {
   return new DOMParser().parseFromString(code, "text/html");
 }
 
-export function HtmlMissionPlay({ mission, isDone, onComplete }: { mission: HtmlMissionDef; isDone: boolean; onComplete: () => void }) {
+export function HtmlMissionPlay({
+  mission,
+  isDone,
+  onComplete,
+  onMistake,
+}: {
+  mission: HtmlMissionDef;
+  isDone: boolean;
+  onComplete: () => void;
+  onMistake?: () => void;
+}) {
   const [code, setCode] = useState(mission.starter);
   const [checked, setChecked] = useState<string | null | undefined>(undefined);
   const preview = useMemo(() => PREVIEW_STYLE + code, [code]);
@@ -39,7 +49,10 @@ export function HtmlMissionPlay({ mission, isDone, onComplete }: { mission: Html
     const hint = mission.check(parseHtml(code), code);
     setChecked(hint);
     if (hint === null) onComplete();
-    else emitPixel("wrong");
+    else {
+      emitPixel("wrong");
+      onMistake?.();
+    }
   }
 
   return (
@@ -73,7 +86,7 @@ export function HtmlMissionPlay({ mission, isDone, onComplete }: { mission: Html
             spellCheck={false}
             rows={Math.max(7, code.split("\n").length + 1)}
             aria-label="Редактор HTML"
-            className="w-full resize-y rounded-2xl border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[13px] leading-relaxed text-slate-100 outline-none focus:border-indigo-400"
+            className="w-full resize-y rounded-2xl border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[13px] leading-relaxed text-slate-100 outline-none [font-variant-ligatures:none] focus:border-indigo-400"
           />
         </div>
         <div>

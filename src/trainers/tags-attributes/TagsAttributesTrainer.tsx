@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TopicSlider } from "../../components/TopicSlider";
 import { TheoryNotes } from "../../components/TheoryNotes";
 import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
@@ -356,7 +357,7 @@ function Tasks() {
 
 export function TagsAttributesTrainer() {
   return (
-    <div>
+    <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
       <SectionHeading
         kicker="Теория"
@@ -368,7 +369,7 @@ export function TagsAttributesTrainer() {
         <TheoryNotes trainerId="tags-attributes" />
       </div>
       <WebMissions trainerId="tags-attributes" />
-      <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по частям тега, потом собирай тег сам." />
+      <SectionHeading kicker="Практика" title="Закрепим" description="10 уровней — сначала кликай по частям тега, потом собирай тег сам." />
       <div className="mb-10">
         <Tasks />
       </div>
@@ -378,6 +379,6 @@ export function TagsAttributesTrainer() {
         description="Пролистай 10 карточек — угадай, где правда, а где нет."
       />
       <TrueFalseDeck statements={TRUE_FALSE} accent={meta.gradient} />
-    </div>
+    </TopicSlider>
   );
 }

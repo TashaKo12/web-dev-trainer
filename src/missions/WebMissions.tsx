@@ -20,7 +20,7 @@ export function WebMissions({ trainerId }: { trainerId: string }) {
         <MissionBoard
           missions={set.missions.map((m) => ({
             title: m.title,
-            render: ({ isDone, onComplete }) => <HtmlMissionPlay mission={m} isDone={isDone} onComplete={onComplete} />,
+            render: ({ isDone, onComplete, onMistake }) => <HtmlMissionPlay mission={m} isDone={isDone} onComplete={onComplete} onMistake={onMistake} />,
           }))}
           storageKey={missionStorageKey(trainerId)}
           pointsSource={`missions:${trainerId}`}

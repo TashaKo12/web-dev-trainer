@@ -2,8 +2,9 @@ import { useEffect, useRef, useState } from "react";
 import { onPixel } from "../lib/pixelBus";
 import { getStreak } from "../lib/game";
 
-// Pixel the robot keeps a student company on every task page: stands left of the task on screen,
-// cheers right answers, comforts after mistakes and now and then fools around.
+// Pixel the robot keeps a student company on every part of a topic: on each slide he peeks out from
+// behind the task, hangs around, cheers right answers, comforts after mistakes, and when the part is
+// done he pulls a funny face and runs back behind it.
 
 type Mood = "happy" | "neutral" | "surprised" | "sad" | "thinking" | "wink" | "silly" | "love";
 type Act = "jump" | "spin" | "dance" | "shake" | null;
@@ -35,6 +36,9 @@ export function PixelBuddy() {
   const [say, setSay] = useState<string | null>("Привет! Я буду рядом");
   const [running, setRunning] = useState(false);
   const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
+  const [out, setOut] = useState(false);
+  const [corner, setCorner] = useState(false);
+  const outTimer = useRef<ReturnType<typeof setTimeout>>();
   const busyUntil = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -54,10 +58,13 @@ export function PixelBuddy() {
     ];
   }
 
-  // first greeting fades away
+  // opening a topic: come out from behind the first slide, say hello, then let the greeting fade
   useEffect(() => {
-    const t = setTimeout(() => setSay(null), 3000);
-    return () => clearTimeout(t);
+    setRunning(true);
+    const a = setTimeout(() => setOut(true), 500);
+    const b = setTimeout(() => setRunning(false), 1200);
+    const c = setTimeout(() => setSay(null), 3200);
+    return () => [a, b, c].forEach(clearTimeout);
   }, []);
 
   // answers from any task on the page
@@ -68,7 +75,26 @@ export function PixelBuddy() {
         else if (e === "wrong") react(pick(["sad", "thinking"] as Mood[]), "shake", pick(COMFORT), 3200);
         else if (e === "streak") react("love", "dance", `Серия ${getStreak().current} подряд! Огонь!`, 3000);
         else if (e === "achievement") react("love", "jump", "Новая награда! Ура!", 3000);
-        else react("love", "spin", "Ура! Тема пройдена! Я горжусь тобой", 4000);
+        else if (e === "enter") {
+          // a new part of the topic: come out from behind it
+          clearTimeout(outTimer.current);
+          setOut(false);
+          setRunning(true);
+          outTimer.current = setTimeout(() => {
+            setOut(true);
+            react("happy", null, pick(["А вот и я!", "Ку-ку!", "Поехали дальше!", "Я тут, рядом"]), 2200);
+            setTimeout(() => setRunning(false), 700);
+          }, 450);
+        } else {
+          // the part is done: a funny face, then run back behind the task
+          react(pick(["silly", "love", "wink"] as Mood[]), pick(["dance", "spin"] as Act[]), pick(["Готово! Бегу прятаться!", "Ура! Я побежал!", "Справились! Пока-пока!"]), 2400);
+          clearTimeout(outTimer.current);
+          outTimer.current = setTimeout(() => {
+            setRunning(true);
+            setOut(false);
+            setTimeout(() => setRunning(false), 700);
+          }, 2400);
+        }
       }),
     [],
   );
@@ -81,17 +107,15 @@ export function PixelBuddy() {
     const place = () => {
       frame = 0;
       const h = window.innerHeight;
-      const blocks = Array.from(document.querySelectorAll<HTMLElement>("[data-missions], [data-practice], [data-deck]"))
-        .map((el) => el.getBoundingClientRect())
-        .filter((r) => r.bottom > 120 && r.top < h - 120);
-      if (!blocks.length) {
+      const slide = document.querySelector<HTMLElement>("[data-slide]");
+      const r = slide?.getBoundingClientRect();
+      if (!r || r.bottom < 120 || r.top > h - 120) {
         setPos(null);
         return;
       }
-      // the block that takes most of the screen
-      const r = blocks.sort((x, y) => Math.min(y.bottom, h) - Math.max(y.top, 0) - (Math.min(x.bottom, h) - Math.max(x.top, 0)))[0];
       // no room left of the task (phones, small windows): stand in the bottom-left corner instead
       const narrow = r.left < 104;
+      setCorner(narrow);
       const left = narrow ? 4 : r.left - 88 - 12;
       const top = narrow ? h - 92 : Math.round(Math.min(Math.max(r.top + 16, 130), Math.min(r.bottom - 150, h - 170)));
       const next = { left: Math.round(left), top };
@@ -124,7 +148,7 @@ export function PixelBuddy() {
     let t: ReturnType<typeof setTimeout>;
     const next = () => {
       t = setTimeout(() => {
-        if (document.visibilityState === "visible" && Date.now() > busyUntil.current) {
+        if (document.visibilityState === "visible" && Date.now() > busyUntil.current && document.querySelector(".pixel-buddy.is-out")) {
           const j = pick(JOKES);
           react(j.mood, j.act, j.text, 2800);
         }
@@ -135,10 +159,16 @@ export function PixelBuddy() {
     return () => clearTimeout(t);
   }, []);
 
-  useEffect(() => () => timers.current.forEach(clearTimeout), []);
+  useEffect(
+    () => () => {
+      timers.current.forEach(clearTimeout);
+      clearTimeout(outTimer.current);
+    },
+    [],
+  );
 
   return (
-    <div className={`pixel-buddy ${pos ? "" : "is-away"}`} style={pos ?? undefined} aria-live="polite">
+    <div className={`pixel-buddy ${pos ? "" : "is-away"} ${out ? "is-out" : "is-behind"} ${corner ? "is-corner" : ""}`} style={pos ?? undefined} aria-live="polite">
       {say && <p className="pixel-bubble">{say}</p>}
       <button
         type="button"

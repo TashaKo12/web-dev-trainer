@@ -64,7 +64,7 @@ export const trainers: TrainerMeta[] = [
     title: "Что такое теги и атрибуты",
     summary:
       "Разбери HTML-тег на части: имя тега, атрибут, значение атрибута — и собери свой.",
-    taskCount: 9,
+    taskCount: 10,
     gradient: "from-orange-500 to-amber-600",
     section: "html",
   },
