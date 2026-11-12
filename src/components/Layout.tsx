@@ -1,11 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect } from "react";
 import { trainers } from "../trainers/registry";
 import { setTimeTopic } from "../lib/timeTracker";
 import { Link, Outlet, useLocation } from "react-router-dom";
 import { Blocks } from "lucide-react";
-import { useConsent } from "../lib/storage";
 import { AnimatedBackground } from "./AnimatedBackground";
-import { ConsentBanner } from "./ConsentBanner";
 import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
 import { SignInGate } from "./SignInGate";
@@ -14,8 +12,6 @@ import { ThemeToggle } from "./ThemeToggle";
 
 export function Layout() {
   const { pathname } = useLocation();
-  const consent = useConsent();
-  const [askAgain, setAskAgain] = useState(false);
   const account = useAccount();
   // trainers open only for signed-in students (or the teacher); the teacher dashboard checks its own code
   const locked = !account && !getAdminSession() && pathname !== "/admin";
@@ -65,16 +61,8 @@ export function Layout() {
             Прогресс сохраняется в аккаунте {account.owner ? `${account.owner.name} ${account.owner.surname3}. ` : ""}
             <span className="font-mono font-bold tracking-widest">{formatCode(account.code)}</span>
           </p>
-        ) : consent && (
-          <p className="mt-3 text-xs">
-            Сохранение прогресса в браузере: {consent === "granted" ? "включено" : "выключено"} ·{" "}
-            <button type="button" onClick={() => setAskAgain(true)} className="font-bold underline underline-offset-2 hover:text-indigo-500">
-              изменить
-            </button>
-          </p>
-        )}
+        ) : null}
       </footer>
-      {!locked && (consent === null || askAgain) && <ConsentBanner onClose={() => setAskAgain(false)} />}
     </div>
   );
 }
