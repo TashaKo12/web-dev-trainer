@@ -2,7 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import { onPixel } from "../lib/pixelBus";
 import { getStreak } from "../lib/game";
 
-// Pixel the robot keeps a student company on every task page: runs along with the scroll,
+// Pixel the robot keeps a student company on every task page: stands left of the task on screen,
 // cheers right answers, comforts after mistakes and now and then fools around.
 
 type Mood = "happy" | "neutral" | "surprised" | "sad" | "thinking" | "wink" | "silly" | "love";
@@ -34,7 +34,7 @@ export function PixelBuddy() {
   const [act, setAct] = useState<Act>(null);
   const [say, setSay] = useState<string | null>("Привет! Я буду рядом");
   const [running, setRunning] = useState(false);
-  const [top, setTop] = useState<number | null>(null);
+  const [pos, setPos] = useState<{ left: number; top: number } | null>(null);
   const busyUntil = useRef(0);
   const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
 
@@ -73,28 +73,48 @@ export function PixelBuddy() {
     [],
   );
 
-  // runs along with the scroll: travels from the top of the screen to the bottom as the page scrolls
+  // stays to the left of the task block that is on screen (missions, practice, cards) and rides along with it
   useEffect(() => {
-    if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
     let stop: ReturnType<typeof setTimeout>;
+    let frame = 0;
+    let last: { left: number; top: number } | null = null;
     const place = () => {
-      const max = document.documentElement.scrollHeight - window.innerHeight;
-      const progress = max > 0 ? window.scrollY / max : 1;
+      frame = 0;
       const h = window.innerHeight;
-      setTop(Math.round(h * 0.16 + progress * (h * 0.84 - 190)));
+      const blocks = Array.from(document.querySelectorAll<HTMLElement>("[data-missions], [data-practice], [data-deck]"))
+        .map((el) => el.getBoundingClientRect())
+        .filter((r) => r.bottom > 120 && r.top < h - 120);
+      if (!blocks.length) {
+        setPos(null);
+        return;
+      }
+      // the block that takes most of the screen
+      const r = blocks.sort((x, y) => Math.min(y.bottom, h) - Math.max(y.top, 0) - (Math.min(x.bottom, h) - Math.max(x.top, 0)))[0];
+      // no room left of the task (phones, small windows): stand in the bottom-left corner instead
+      const narrow = r.left < 104;
+      const left = narrow ? 4 : r.left - 88 - 12;
+      const top = narrow ? h - 92 : Math.round(Math.min(Math.max(r.top + 16, 130), Math.min(r.bottom - 150, h - 170)));
+      const next = { left: Math.round(left), top };
+      if (last && (Math.abs(last.top - next.top) > 4 || Math.abs(last.left - next.left) > 4)) {
+        setRunning(true);
+        clearTimeout(stop);
+        stop = setTimeout(() => setRunning(false), 450);
+      }
+      last = next;
+      setPos(next);
     };
-    const onScroll = () => {
-      place();
-      setRunning(true);
-      clearTimeout(stop);
-      stop = setTimeout(() => setRunning(false), 450);
+    const schedule = () => {
+      if (!frame) frame = requestAnimationFrame(place);
     };
     place();
-    window.addEventListener("scroll", onScroll, { passive: true });
-    window.addEventListener("resize", place);
+    window.addEventListener("scroll", schedule, { passive: true });
+    window.addEventListener("resize", schedule);
+    const poll = setInterval(schedule, 800); // blocks change size when answers open
     return () => {
-      window.removeEventListener("scroll", onScroll);
-      window.removeEventListener("resize", place);
+      window.removeEventListener("scroll", schedule);
+      window.removeEventListener("resize", schedule);
+      clearInterval(poll);
+      cancelAnimationFrame(frame);
       clearTimeout(stop);
     };
   }, []);
@@ -118,7 +138,7 @@ export function PixelBuddy() {
   useEffect(() => () => timers.current.forEach(clearTimeout), []);
 
   return (
-    <div className="pixel-buddy" style={top === null ? undefined : { top }} aria-live="polite">
+    <div className={`pixel-buddy ${pos ? "" : "is-away"}`} style={pos ?? undefined} aria-live="polite">
       {say && <p className="pixel-bubble">{say}</p>}
       <button
         type="button"
