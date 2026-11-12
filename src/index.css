@@ -419,3 +419,116 @@ html.dark main .border-yellow-300,
 html.dark main .border-yellow-400 {
   border-color: #a16207;
 }
+
+/* ── Pixel the mascot on task pages ── */
+.pixel-buddy {
+  position: fixed;
+  right: 14px;
+  top: calc(100vh - 190px);
+  z-index: 30;
+  display: flex;
+  align-items: flex-start;
+  gap: 6px;
+  pointer-events: none;
+  transition: top 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.pixel-bot {
+  pointer-events: auto;
+  width: 88px;
+  padding: 0;
+  border: 0;
+  background: none;
+  cursor: pointer;
+  order: 2;
+}
+.pixel-bot svg { display: block; width: 100%; height: auto; overflow: visible; }
+.pixel-bubble {
+  order: 1;
+  pointer-events: auto;
+  max-width: 190px;
+  margin: 8px 0 0;
+  padding: 9px 13px;
+  border-radius: 16px 16px 4px 16px;
+  background: #fff;
+  color: #1e293b;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1.35;
+  box-shadow: 0 10px 30px rgb(15 23 42 / 0.18);
+  animation: pb-pop 0.25s ease both;
+}
+html.dark .pixel-bubble { background: #1e1b4b; color: #e0e7ff; box-shadow: 0 10px 30px rgb(0 0 0 / 0.45); }
+@media (max-width: 640px) {
+  .pixel-buddy { right: 6px; }
+  .pixel-bot { width: 62px; }
+  .pixel-bubble { max-width: 150px; font-size: 12px; }
+}
+
+.pixel-bot .pb-fill { fill: url(#pbBody); }
+.pixel-bot .pb-metal { fill: #c7d2fe; }
+html.dark .pixel-bot .pb-metal { fill: #818cf8; }
+.pixel-bot .pb-screen { fill: #0f172a; }
+.pixel-bot .pb-face { fill: none; stroke: #67e8f9; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.pixel-bot .pb-face-fill { fill: #67e8f9; }
+.pixel-bot .pb-heart { fill: #f472b6; }
+.pixel-bot .pb-tongue { fill: #f472b6; }
+.pixel-bot .pb-shadow { fill: rgb(15 23 42 / 0.25); }
+.pixel-bot .pb-light { fill: #34d399; animation: pb-blink-light 1.6s infinite; }
+.pixel-bot .pb-light-2 { fill: #fbbf24; animation-delay: -0.5s; }
+.pixel-bot .pb-light-3 { fill: #f472b6; animation-delay: -1s; }
+.pixel-bot .pb-antenna { fill: #f472b6; transform-box: fill-box; transform-origin: center; animation: pb-glow 2s ease-in-out infinite; }
+
+.pixel-bot [data-for] { display: none; }
+.pixel-bot[data-mood="neutral"] [data-for~="neutral"],
+.pixel-bot[data-mood="happy"] [data-for~="happy"],
+.pixel-bot[data-mood="surprised"] [data-for~="surprised"],
+.pixel-bot[data-mood="sad"] [data-for~="sad"],
+.pixel-bot[data-mood="thinking"] [data-for~="thinking"],
+.pixel-bot[data-mood="wink"] [data-for~="wink"],
+.pixel-bot[data-mood="silly"] [data-for~="silly"],
+.pixel-bot[data-mood="love"] [data-for~="love"] { display: inline; }
+
+.pixel-bot .pb-whole { transform-box: view-box; transform-origin: 60px 140px; animation: pb-bob 2.4s ease-in-out infinite; }
+.pixel-bot .pb-eyes { transform-box: fill-box; transform-origin: center; animation: pb-blink 4.4s infinite; }
+.pixel-bot .pb-leg, .pixel-bot .pb-arm { transform-box: view-box; }
+.pixel-bot .pb-leg-l { transform-origin: 47px 122px; }
+.pixel-bot .pb-leg-r { transform-origin: 72px 122px; }
+.pixel-bot .pb-arm-l { transform-origin: 21px 86px; }
+.pixel-bot .pb-arm-r { transform-origin: 99px 86px; animation: pb-wave 4s ease-in-out infinite; }
+
+/* running along with the scroll */
+.pixel-bot.is-running .pb-whole { animation: pb-run-body 0.32s ease-in-out infinite; }
+.pixel-bot.is-running .pb-leg-l { animation: pb-step 0.32s ease-in-out infinite; }
+.pixel-bot.is-running .pb-leg-r { animation: pb-step 0.32s ease-in-out infinite reverse; }
+.pixel-bot.is-running .pb-arm-l { animation: pb-swing 0.32s ease-in-out infinite; }
+.pixel-bot.is-running .pb-arm-r { animation: pb-swing 0.32s ease-in-out infinite reverse; }
+
+/* reactions */
+.pixel-bot.act-jump .pb-whole { animation: pb-jump 0.7s ease-out 2; }
+.pixel-bot.act-spin .pb-whole { animation: pb-spin 0.9s ease-in-out; }
+.pixel-bot.act-dance .pb-whole { animation: pb-dance 0.5s ease-in-out 4; }
+.pixel-bot.act-shake .pb-whole { animation: pb-shake 0.45s ease-in-out 2; }
+.pixel-bot.act-jump .pb-arm-l, .pixel-bot.act-dance .pb-arm-l { animation: pb-cheer 0.35s ease-in-out infinite alternate; }
+.pixel-bot.act-jump .pb-arm-r, .pixel-bot.act-dance .pb-arm-r { animation: pb-cheer-r 0.35s ease-in-out infinite alternate; }
+.pixel-bot[data-mood="sad"] .pb-arm-r { animation: none; }
+
+@keyframes pb-pop { from { opacity: 0; transform: translateY(6px) scale(0.95); } }
+@keyframes pb-bob { 50% { transform: translateY(-3px); } }
+@keyframes pb-blink { 0%, 93%, 100% { transform: scaleY(1); } 96% { transform: scaleY(0.1); } }
+@keyframes pb-blink-light { 50% { opacity: 0.3; } }
+@keyframes pb-glow { 50% { transform: scale(1.3); } }
+@keyframes pb-wave { 0%, 60%, 100% { transform: rotate(0); } 12%, 36% { transform: rotate(-150deg); } 24%, 48% { transform: rotate(-120deg); } }
+@keyframes pb-run-body { 50% { transform: translateY(-5px) rotate(-3deg); } }
+@keyframes pb-step { 0%, 100% { transform: rotate(22deg); } 50% { transform: rotate(-22deg); } }
+@keyframes pb-swing { 0%, 100% { transform: rotate(-30deg); } 50% { transform: rotate(30deg); } }
+@keyframes pb-jump { 40% { transform: translateY(-26px); } 70% { transform: translateY(0) scaleY(0.92); } }
+@keyframes pb-spin { to { transform: rotate(360deg); } }
+@keyframes pb-dance { 25% { transform: rotate(-10deg) translateX(-4px); } 75% { transform: rotate(10deg) translateX(4px); } }
+@keyframes pb-shake { 25% { transform: translateX(-5px) rotate(-4deg); } 75% { transform: translateX(5px) rotate(4deg); } }
+@keyframes pb-cheer { from { transform: rotate(0); } to { transform: rotate(150deg); } }
+@keyframes pb-cheer-r { from { transform: rotate(0); } to { transform: rotate(-150deg); } }
+
+@media (prefers-reduced-motion: reduce) {
+  .pixel-buddy { transition: none; }
+  .pixel-bot *, .pixel-bot.is-running * { animation: none !important; }
+}

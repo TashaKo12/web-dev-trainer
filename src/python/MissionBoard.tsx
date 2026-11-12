@@ -1,4 +1,5 @@
 import { useEffect, useState, type ReactNode } from "react";
+import { emitPixel } from "../lib/pixelBus";
 import { Bot, Check, ChevronRight, Lightbulb, Lock, Sparkles, Trophy } from "lucide-react";
 import { loadItem, loadJSON, POINTS, reportPoints, saveItem, saveJSON } from "../lib/storage";
 
@@ -47,6 +48,7 @@ export function MissionBoard({
 
   function complete(i: number) {
     if (i !== done) return;
+    emitPixel("correct");
     setDone(done + 1);
     setDates((d) => {
       const next = [...d];

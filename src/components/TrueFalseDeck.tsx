@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { emitPixel } from "../lib/pixelBus";
 import { useLocation } from "react-router-dom";
 import { loadJSON, POINTS, reportPoints, saveJSON } from "../lib/storage";
 import { Trophy, Sparkles, Target, Check, X } from "lucide-react";
@@ -42,6 +43,7 @@ export function TrueFalseDeck({
 
   function pick(value: boolean) {
     if (picked !== null) return;
+    emitPixel(value === statements[index].answer ? "correct" : "wrong");
     setPicks((prev) => {
       const next = [...prev];
       next[index] = value;

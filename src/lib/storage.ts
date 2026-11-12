@@ -169,12 +169,38 @@ let total = Object.values(points).reduce((a, b) => a + b, 0);
 
 /** Records the best result for one source (a practice, a deck, missions); the total only grows. */
 export function reportPoints(source: string, value: number) {
-  if (value <= (points[source] ?? 0)) return;
+  const gained = value - (points[source] ?? 0);
+  if (gained <= 0) return;
   points = { ...points, [source]: value };
   total = Object.values(points).reduce((a, b) => a + b, 0);
   saveJSON(POINTS_KEY, points);
+  addSeasonPoints(gained);
   emit();
 }
+
+// ── seasons: the rating restarts every season (winter = December to February) ──
+const SEASON_POINTS_KEY = "wdt:points-season";
+
+/** "2026-autumn"; December counts toward the next year's winter, e.g. December 2026 → "2027-winter". */
+export function seasonKey(d = new Date()) {
+  const m = d.getMonth() + 1;
+  const y = d.getFullYear();
+  if (m === 12) return `${y + 1}-winter`;
+  if (m <= 2) return `${y}-winter`;
+  if (m <= 5) return `${y}-spring`;
+  if (m <= 8) return `${y}-summer`;
+  return `${y}-autumn`;
+}
+
+function addSeasonPoints(gained: number) {
+  const ledger = loadJSON<Record<string, number>>(SEASON_POINTS_KEY) ?? {};
+  const key = seasonKey();
+  ledger[key] = (ledger[key] ?? 0) + gained;
+  saveJSON(SEASON_POINTS_KEY, ledger);
+}
+
+// points earned before seasons existed count toward the season in progress
+if (total > 0 && loadItem(SEASON_POINTS_KEY) === null) saveJSON(SEASON_POINTS_KEY, { [seasonKey()]: total });
 
 function subscribe(listener: () => void) {
   listeners.add(listener);

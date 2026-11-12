@@ -1,4 +1,6 @@
+import { useEffect } from "react";
 import { Trophy, Sparkles, Target } from "lucide-react";
+import { emitPixel } from "../lib/pixelBus";
 
 export function CompletionBanner({
   score,
@@ -10,6 +12,9 @@ export function CompletionBanner({
   onRestart: () => void;
 }) {
   const ratio = score / total;
+  useEffect(() => {
+    emitPixel("complete");
+  }, []);
   const { Icon, title } =
     ratio === 1
       ? { Icon: Trophy, title: "Идеально! Все задания решены верно." }

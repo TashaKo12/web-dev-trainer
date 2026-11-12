@@ -7,6 +7,7 @@ import { AnimatedBackground } from "./AnimatedBackground";
 import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
 import { SignInGate } from "./SignInGate";
+import { PixelBuddy } from "./PixelBuddy";
 import { formatCode, getAdminSession, useAccount } from "../lib/cloud";
 import { ThemeToggle } from "./ThemeToggle";
 
@@ -63,6 +64,7 @@ export function Layout() {
           </p>
         ) : null}
       </footer>
+      {!locked && trainers.some((t) => t.path === pathname) && <PixelBuddy key={pathname} />}
     </div>
   );
 }
