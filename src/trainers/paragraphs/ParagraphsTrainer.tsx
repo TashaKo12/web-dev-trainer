@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { TheoryNotes } from "../../components/TheoryNotes";
 import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -448,6 +449,7 @@ export function ParagraphsTrainer() {
       />
       <div className="mb-10">
         <Theory />
+        <TheoryNotes trainerId="paragraphs" />
       </div>
       <WebMissions trainerId="paragraphs" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и пиши сам." />

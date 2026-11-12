@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { TheoryNotes } from "../../components/TheoryNotes";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -283,6 +284,7 @@ export function PageLayoutTrainer() {
       />
       <div className="mb-10">
         <Theory />
+        <TheoryNotes trainerId="page-layout" />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка, кликай по макету и проверяй вживую." />
       <div className="mb-10">

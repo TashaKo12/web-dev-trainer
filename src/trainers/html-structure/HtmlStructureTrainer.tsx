@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TheoryNotes } from "../../components/TheoryNotes";
 import { WebMissions } from "../../missions/WebMissions";
 import { Megaphone } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
@@ -699,6 +700,7 @@ export function HtmlStructureTrainer() {
       />
       <div className="mb-10">
         <Theory />
+        <TheoryNotes trainerId="html-structure" />
       </div>
       <SectionHeading
         kicker="Теория"

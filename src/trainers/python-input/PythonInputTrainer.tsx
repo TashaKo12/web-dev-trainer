@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { InputTheory } from "../../python/PythonTheory";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -385,6 +386,10 @@ export function PythonInputTrainer() {
   return (
     <div>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <SectionHeading kicker="Теория" title="Как работает input" description="Сначала разберём всё, что понадобится в миссиях и заданиях: вопросы, переменные, превращение ответа в число и частые ошибки." />
+      <div className="mb-10">
+        <InputTheory />
+      </div>
       <SectionHeading
         kicker="Игра"
         title="Научи робота слушать"

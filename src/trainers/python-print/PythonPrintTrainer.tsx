@@ -1,4 +1,5 @@
 import { useState, type ReactNode } from "react";
+import { PrintTheory } from "../../python/PythonTheory";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -387,6 +388,10 @@ export function PythonPrintTrainer() {
   return (
     <div>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
+      <SectionHeading kicker="Теория" title="Как работает print" description="Сначала разберём всё, что понадобится в миссиях и заданиях: текст, числа, запятые, sep, перенос строки и частые ошибки." />
+      <div className="mb-10">
+        <PrintTheory />
+      </div>
       <SectionHeading
         kicker="Игра"
         title="Научи робота говорить"

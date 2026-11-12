@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TheoryNotes } from "../../components/TheoryNotes";
 import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
@@ -364,6 +365,7 @@ export function TagsAttributesTrainer() {
       />
       <div className="mb-10">
         <Theory />
+        <TheoryNotes trainerId="tags-attributes" />
       </div>
       <WebMissions trainerId="tags-attributes" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по частям тега, потом собирай тег сам." />

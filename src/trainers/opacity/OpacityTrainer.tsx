@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TheoryNotes } from "../../components/TheoryNotes";
 import { TrainerHero } from "../../components/TrainerHero";
 import { SectionHeading } from "../../components/SectionHeading";
 import { CompletionBanner } from "../../components/CompletionBanner";
@@ -284,6 +285,7 @@ export function OpacityTrainer() {
       />
       <div className="mb-10">
         <Theory />
+        <TheoryNotes trainerId="opacity" />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, подбирай значение и пиши сам." />
       <div className="mb-10">
