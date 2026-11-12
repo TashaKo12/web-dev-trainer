@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TheoryNotes } from "../../components/TheoryNotes";
 import { TopicSlider } from "../../components/TopicSlider";
 import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
@@ -326,6 +327,7 @@ export function InputTypesTrainer() {
       />
       <div className="mb-10">
         <Theory />
+        <TheoryNotes trainerId="input-types" />
       </div>
       <WebMissions trainerId="input-types" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка и пиши сам." />

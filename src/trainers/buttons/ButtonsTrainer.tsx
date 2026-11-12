@@ -1,4 +1,5 @@
 import { useState } from "react";
+import { TheoryNotes } from "../../components/TheoryNotes";
 import { TopicSlider } from "../../components/TopicSlider";
 import { WebMissions } from "../../missions/WebMissions";
 import { TrainerHero } from "../../components/TrainerHero";
@@ -404,6 +405,7 @@ export function ButtonsTrainer() {
       />
       <div className="mb-10">
         <Theory />
+        <TheoryNotes trainerId="buttons" />
       </div>
       <WebMissions trainerId="buttons" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, нажимай и пиши сам." />

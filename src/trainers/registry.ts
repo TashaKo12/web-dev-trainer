@@ -42,6 +42,13 @@ import {
   SquareTerminal,
   GitBranch,
   Repeat,
+  Ruler,
+  Underline,
+  Italic,
+  Pin,
+  RulerDimensionLine,
+  Maximize,
+  Files,
 } from "lucide-react";
 import type { TrainerId } from "../lib/progress";
 
@@ -56,7 +63,26 @@ export type TrainerMeta = {
   section: "html" | "css" | "js" | "python";
   /** Game missions shown before practice (Python topics). */
   missions?: { storageKey: string; count: number };
+  /** The course lesson where this topic is used for the first time. */
+  lesson?: number;
 };
+
+/** Lessons of the web course, in order: each topic belongs to the lesson where it is first applied. */
+export const LESSONS = [
+  "Сайт про себя",
+  "Меню кафе «Тыковка»",
+  "Музеи мира",
+  "Список рецептов",
+  "Урон оружия CS:GO",
+  "Форма регистрации",
+  "Лучший дизайн",
+  "Баннер",
+  "Личная визитка",
+  "Интерактивные картины",
+  "Подвал страницы",
+  "Стоимость услуг",
+  "Сайт обо мне 2.0",
+];
 
 export const trainers: TrainerMeta[] = [
   // ───────── HTML ─────────
@@ -518,6 +544,96 @@ export const trainers: TrainerMeta[] = [
     section: "python",
     missions: { storageKey: "wdt:missions:python-while", count: 5 },
   },
+  {
+    id: "css-sizes",
+    path: "/css-sizes",
+    icon: Ruler,
+    title: "Ширина и высота: px и %",
+    summary: "Размер блока в пикселях и процентах и страница по центру через margin: 0 auto.",
+    taskCount: 8,
+    gradient: "from-sky-500 to-blue-500",
+    section: "css",
+  },
+  {
+    id: "text-decoration",
+    path: "/text-decoration",
+    icon: Underline,
+    title: "Подчёркивание: text-decoration",
+    summary: "Цвет и вид линии под ссылкой, подчёркивание любого текста и меню без линий.",
+    taskCount: 8,
+    gradient: "from-amber-500 to-yellow-500",
+    section: "css",
+  },
+  {
+    id: "font-style",
+    path: "/font-style",
+    icon: Italic,
+    title: "Курсив: font-style",
+    summary: "Наклонный текст для подписей и пояснений, сочетание с жирностью.",
+    taskCount: 6,
+    gradient: "from-fuchsia-500 to-pink-500",
+    section: "css",
+  },
+  {
+    id: "position-fixed",
+    path: "/position-fixed",
+    icon: Pin,
+    title: "Закреплённый блок: position: fixed",
+    summary: "Шапка и подвал, которые не уезжают при прокрутке: top, bottom, left.",
+    taskCount: 6,
+    gradient: "from-orange-500 to-red-500",
+    section: "css",
+  },
+  {
+    id: "css-units",
+    path: "/css-units",
+    icon: RulerDimensionLine,
+    title: "Единицы em, rem и vh",
+    summary: "Размеры от шрифта страницы, шрифта родителя и высоты экрана.",
+    taskCount: 8,
+    gradient: "from-teal-500 to-cyan-500",
+    section: "css",
+  },
+  {
+    id: "design-palette",
+    path: "/design-palette",
+    icon: Palette,
+    title: "Палитра и шрифты",
+    summary: "Как подобрать 3–4 цвета, сделать текст читаемым и сочетать два шрифта.",
+    taskCount: 7,
+    gradient: "from-rose-500 to-orange-400",
+    section: "css",
+  },
+  {
+    id: "max-size",
+    path: "/max-size",
+    icon: Maximize,
+    title: "Ограничения: max-width и max-height",
+    summary: "Блок не шире и не выше заданного — визитка на телефоне и на большом мониторе.",
+    taskCount: 6,
+    gradient: "from-indigo-500 to-sky-500",
+    section: "css",
+  },
+  {
+    id: "list-style",
+    path: "/list-style",
+    icon: List,
+    title: "Маркеры списка: list-style",
+    summary: "Квадраты, римские цифры и списки без маркеров для меню и тарифов.",
+    taskCount: 7,
+    gradient: "from-lime-500 to-emerald-500",
+    section: "css",
+  },
+  {
+    id: "multi-page",
+    path: "/multi-page",
+    icon: Files,
+    title: "Сайт из нескольких страниц",
+    summary: "Главная, «Обо мне», «Хобби»: меню на каждой странице и общий style.css.",
+    taskCount: 7,
+    gradient: "from-violet-500 to-purple-500",
+    section: "html",
+  },
 ];
 
 // HTML topics have Pixel's missions too: register them so progress pages count them
@@ -525,3 +641,7 @@ for (const t of trainers) {
   const set = HTML_MISSIONS[t.id];
   if (set && !t.missions) t.missions = { storageKey: `wdt:missions:${t.id}`, count: set.missions.length };
 }
+
+// lesson of first use for every web topic
+const LESSON_OF: Record<string, number> = {"html-structure":1,"tags-attributes":1,"headings":1,"paragraphs":1,"css-intro":1,"text-color":1,"background-color":1,"text-align":1,"typography":1,"css-sizes":1,"lists":2,"font-size":2,"links":3,"images":3,"image-paths":3,"font-weight":3,"text-decoration":3,"box-model":4,"tables":5,"semantic-tags":5,"border":5,"font-style":5,"position-fixed":5,"form-basics":6,"form-fields":6,"input-types":6,"buttons":6,"div-classes":6,"selectors":6,"flexbox":6,"grid":6,"pseudo-classes":6,"transitions":6,"shadows":6,"css-units":6,"design-palette":7,"backgrounds":8,"max-size":9,"opacity":10,"id-attribute":11,"reset-box-sizing":11,"page-layout":11,"list-style":12,"multi-page":13};
+for (const t of trainers) if (LESSON_OF[t.id]) t.lesson = LESSON_OF[t.id];

@@ -43,7 +43,16 @@ export type TrainerId =
   | "python-variables"
   | "python-if"
   | "python-for"
-  | "python-while";
+  | "python-while"
+  | "css-sizes"
+  | "text-decoration"
+  | "font-style"
+  | "position-fixed"
+  | "css-units"
+  | "design-palette"
+  | "max-size"
+  | "list-style"
+  | "multi-page";
 
 export type TrainerProgress = {
   score: number;

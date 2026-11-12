@@ -44,6 +44,17 @@ import { PythonHome } from "./pages/PythonHome";
 import { PythonPrintTrainer } from "./trainers/python-print/PythonPrintTrainer";
 import { PythonInputTrainer } from "./trainers/python-input/PythonInputTrainer";
 import { PythonForTrainer, PythonIfTrainer, PythonVariablesTrainer, PythonWhileTrainer } from "./trainers/python-topics/PythonTopicPages";
+import {
+  CssSizesTrainer,
+  CssUnitsTrainer,
+  DesignPaletteTrainer,
+  FontStyleTrainer,
+  ListStyleTrainer,
+  MaxSizeTrainer,
+  MultiPageTrainer,
+  PositionFixedTrainer,
+  TextDecorationTrainer,
+} from "./trainers/css-topics/CssTopicPages";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 
@@ -108,6 +119,15 @@ function App() {
           <Route path="python/if" element={<PythonIfTrainer />} />
           <Route path="python/for" element={<PythonForTrainer />} />
           <Route path="python/while" element={<PythonWhileTrainer />} />
+          <Route path="css-sizes" element={<CssSizesTrainer />} />
+          <Route path="text-decoration" element={<TextDecorationTrainer />} />
+          <Route path="font-style" element={<FontStyleTrainer />} />
+          <Route path="position-fixed" element={<PositionFixedTrainer />} />
+          <Route path="css-units" element={<CssUnitsTrainer />} />
+          <Route path="design-palette" element={<DesignPaletteTrainer />} />
+          <Route path="max-size" element={<MaxSizeTrainer />} />
+          <Route path="list-style" element={<ListStyleTrainer />} />
+          <Route path="multi-page" element={<MultiPageTrainer />} />
 
           <Route path="profile" element={<Profile />} />
           <Route path="admin" element={<Admin />} />

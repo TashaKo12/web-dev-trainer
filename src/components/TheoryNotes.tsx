@@ -46,6 +46,17 @@ const NOTES: Record<string, Note[]> = {
       ),
       code: "<body>\n  <h1>Сайт Пикселя</h1>\n  <p>Привет!</p>\n</body>",
     },
+    {
+      title: "Язык страницы и экран телефона",
+      text: (
+        <>
+          У тега <C>html</C> пишут язык: <C>&lt;html lang="ru"&gt;</C> — так браузер и программы чтения вслух понимают, что текст
+          русский. А строка <C>&lt;meta name="viewport" content="width=device-width"&gt;</C> в head говорит телефону: показывай
+          страницу по ширине экрана, а не уменьшенной копией компьютерной версии.
+        </>
+      ),
+      code: '<html lang="ru">\n<head>\n  <meta charset="utf-8">\n  <meta name="viewport" content="width=device-width">\n</head>',
+    },
   ],
   paragraphs: [
     {
@@ -71,6 +82,16 @@ const NOTES: Record<string, Note[]> = {
       ),
       code: '<tr>\n  <td><img src="ak47.png" alt="AK-47" width="60"></td>\n  <td>AK-47</td>\n</tr>',
     },
+    {
+      title: "Рамки таблицы: border-collapse и border-spacing",
+      text: (
+        <>
+          У каждой ячейки своя рамка, и между ними получаются двойные линии. <C>border-collapse: collapse</C> склеивает их в одну.
+          А если рамки оставить раздельными, расстояние между ячейками задаёт <C>border-spacing</C>.
+        </>
+      ),
+      code: "table { border-collapse: collapse; }\ntd, th { border: 1px solid #555; }\n\n/* или раздельные клетки с промежутком */\ntable { border-spacing: 6px; }",
+    },
   ],
   "form-basics": [
     {
@@ -93,6 +114,30 @@ const NOTES: Record<string, Note[]> = {
         </>
       ),
       code: '<button type="submit">Отправить</button>\n<button type="button">Просто кнопка</button>',
+    },
+  ],
+  buttons: [
+    {
+      title: "Курсор-рука: cursor: pointer",
+      text: (
+        <>
+          Когда наводишь мышку на ссылку, курсор становится рукой — так видно, что на это можно нажать. Кнопкам и карточкам такую
+          руку включают сами: <C>cursor: pointer</C>.
+        </>
+      ),
+      code: "button {\n  cursor: pointer;\n}",
+    },
+  ],
+  "input-types": [
+    {
+      title: "Не больше N символов: maxlength",
+      text: (
+        <>
+          Атрибут <C>maxlength</C> не даёт ввести больше символов, чем указано. Например, телефон — не длиннее 12 знаков, имя — не
+          длиннее 30.
+        </>
+      ),
+      code: '<input type="tel" placeholder="+7 900 000-00-00" maxlength="12">',
     },
   ],
   opacity: [
