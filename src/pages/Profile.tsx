@@ -1,7 +1,7 @@
 import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { CalendarClock, Check, ChevronDown, Clock, Cloud, Copy, IdCard, KeyRound, LogIn, Sparkles, Star, Target, X } from "lucide-react";
-import { cloudAvailable, formatCode, formatOwner, signOut, useAccount, useSyncState } from "../lib/cloud";
+import { cloudAvailable, formatCode, formatOwner, useAccount, useSyncState } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { type TrainerMeta } from "../trainers/registry";
 import { loadItem, useConsent, useTotalPoints } from "../lib/storage";
@@ -32,14 +32,11 @@ function StatCard({ icon: Icon, label, value }: { icon: typeof Star; label: stri
 
 const BTN_MAIN =
   "inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
-const BTN_SECOND =
-  "rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 disabled:cursor-not-allowed disabled:opacity-40";
 
 function ParticipantCode() {
   const account = useAccount();
   const sync = useSyncState();
   const [copied, setCopied] = useState(false);
-  const [leaving, setLeaving] = useState<"none" | "ask" | "busy" | "failed">("none");
 
   if (!account) {
     return (
@@ -72,14 +69,6 @@ function ParticipantCode() {
           ? `Сохранено ${formatDate(sync.at)}`
           : "Прогресс сохраняется автоматически после каждого задания";
 
-  async function leave(force = false) {
-    setLeaving("busy");
-    try {
-      await signOut(force);
-    } catch {
-      setLeaving("failed");
-    }
-  }
 
   return (
     <div className={CARD}>
@@ -117,46 +106,11 @@ function ParticipantCode() {
           {copied ? "Скопировано" : "Скопировать"}
         </button>
       </div>
-      <p className="mb-5 flex items-center gap-1.5 text-xs text-slate-500">
+      <p className="flex items-center gap-1.5 text-xs text-slate-500">
         <Cloud className="h-4 w-4" strokeWidth={2} />
         {status}
       </p>
 
-      {leaving === "none" ? (
-        <button type="button" onClick={() => setLeaving("ask")} className={BTN_SECOND}>
-          Выйти на этом компьютере
-        </button>
-      ) : leaving === "failed" ? (
-        <div className="rounded-2xl bg-rose-50 p-4 text-sm text-rose-700">
-          <p className="mb-3">
-            Не получилось сохранить последний прогресс на сервер — проверь интернет. Если выйти сейчас, несохранённое на этом
-            компьютере пропадёт.
-          </p>
-          <div className="flex flex-wrap gap-2">
-            <button type="button" onClick={() => leave()} className={BTN_MAIN}>
-              Попробовать ещё раз
-            </button>
-            <button type="button" onClick={() => leave(true)} className={BTN_SECOND}>
-              Всё равно выйти
-            </button>
-          </div>
-        </div>
-      ) : (
-        <div className="rounded-2xl bg-amber-50 p-4 text-sm text-amber-800">
-          <p className="mb-3">
-            Прогресс сохранится на сервере, а с этого компьютера всё сотрётся — удобно, если за ним занимается кто-то ещё.
-            Вернуться можно по коду <b>{formatCode(code)}</b>. Выйти?
-          </p>
-          <div className="flex gap-2">
-            <button type="button" onClick={() => leave()} disabled={leaving === "busy"} className={BTN_MAIN}>
-              {leaving === "busy" ? "Сохраняю…" : "Да, выйти"}
-            </button>
-            <button type="button" onClick={() => setLeaving("none")} className={BTN_SECOND}>
-              Отмена
-            </button>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
