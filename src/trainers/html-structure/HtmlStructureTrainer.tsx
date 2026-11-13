@@ -181,6 +181,96 @@ function Theory() {
   );
 }
 
+const ZONE_INFO = [
+  {
+    key: "header",
+    desc: "Шапка — верхняя часть сайта. В ней логотип, название и слоган: по шапке посетитель сразу понимает, куда попал. Она одинаковая на всех страницах сайта.",
+  },
+  {
+    key: "nav",
+    desc: "Меню — набор ссылок на главные разделы сайта. Обычно живёт внутри шапки. По тегу nav браузер и программы чтения вслух понимают: здесь навигация.",
+  },
+  {
+    key: "main",
+    desc: "Основа — главное содержимое страницы, ради которого пришёл посетитель: статья, рецепт, таблица, форма. На странице только один main.",
+  },
+  {
+    key: "footer",
+    desc: "Подвал — нижняя часть сайта: контакты, ссылки на соцсети, год и автор. Как и шапка, он повторяется на каждой странице.",
+  },
+] as const;
+
+function PageZonesTheory() {
+  const [active, setActive] = useState<(typeof ZONE_INFO)[number]["key"]>("header");
+  const info = ZONE_INFO.find((t) => t.key === active)!;
+
+  function boxClass(key: string, extra = "") {
+    return `rounded-xl border-2 p-3 transition ${active === key ? "border-indigo-400 bg-indigo-50" : "border-transparent"} ${extra}`;
+  }
+  const label = (name: string) => (
+    <span className="mb-1.5 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">{name}</span>
+  );
+
+  return (
+    <div className="mb-6 rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+      <p className="mb-5 text-slate-600">
+        Почти любой сайт состоит из четырёх крупных частей: шапки, меню, основы и подвала. Для каждой в HTML есть свой тег.
+        Нажимай на кнопки — соответствующий кусок примера страницы подсветится.
+      </p>
+
+      <div className="mb-4 flex flex-wrap gap-2">
+        {ZONE_INFO.map((t) => (
+          <button
+            key={t.key}
+            type="button"
+            onClick={() => setActive(t.key)}
+            className={`rounded-full border-2 px-4 py-1.5 font-mono text-xs font-bold transition ${
+              active === t.key ? "border-sky-500 bg-sky-50 text-sky-700" : "border-slate-200 text-slate-500 hover:border-sky-200"
+            }`}
+          >
+            &lt;{t.key}&gt;
+          </button>
+        ))}
+      </div>
+
+      <div className="space-y-2">
+        <div className={boxClass("header")}>
+          {label("header")}
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div>
+              <p className="text-sm font-extrabold text-slate-700">Пекарня «Булочка»</p>
+              <p className="text-[11px] text-slate-400">Свежий хлеб каждое утро</p>
+            </div>
+            <div className={boxClass("nav", "!p-2")}>
+              {label("nav")}
+              <div className="flex gap-3 text-[11px] font-bold text-indigo-500">
+                <span>Главная</span>
+                <span>Меню</span>
+                <span>Контакты</span>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div className={boxClass("main")}>
+          {label("main")}
+          <h4 className="mb-1 text-sm font-extrabold text-slate-700">Пирог дня: яблочная шарлотка</h4>
+          <p className="text-xs leading-relaxed text-slate-600">
+            Мягкое тесто, много яблок и щепотка корицы. Успей купить до обеда — к вечеру обычно уже ничего не остаётся!
+          </p>
+        </div>
+        <div className={boxClass("footer")}>
+          {label("footer")}
+          <p className="text-[11px] text-slate-500">ул. Хлебная, 5 · +7 900 000-00-00 · © 2026 Пекарня «Булочка»</p>
+        </div>
+      </div>
+
+      <div className="mt-4 rounded-2xl bg-sky-50 p-4 text-sm text-sky-800">
+        <code className="rounded bg-white px-1">&lt;{info.key}&gt;</code> — {info.desc}
+      </div>
+    </div>
+  );
+}
+
 const TAG_INFO = [
   {
     key: "article",
@@ -694,6 +784,14 @@ export function HtmlStructureTrainer() {
         gradient={meta.gradient}
         section={meta.section}
       />
+      <SectionHeading
+        kicker="Теория"
+        title="Шапка, меню, основа и подвал"
+        description="header, nav, main и footer — посмотри на примере сайта пекарни, где какая часть страницы."
+      />
+      <div className="mb-10">
+        <PageZonesTheory />
+      </div>
       <SectionHeading
         kicker="Теория"
         title="Собери скелет страницы"
