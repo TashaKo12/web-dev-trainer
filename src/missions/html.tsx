@@ -14,6 +14,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Первое слово",
+        tags: "p",
         story: "Привет! Я хочу, чтобы на моём сайте появилась первая фраза. Тег p — это абзац: открывающий <p>, текст и закрывающий </p>.",
         goal: <>Напиши абзац <code>p</code> с текстом «Привет, я Пиксель!».</>,
         starter: "<!-- напиши абзац ниже -->\n",
@@ -22,6 +23,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Подсказка при наведении",
+        tags: "@title",
         story: "Атрибут — это дополнительная настройка тега. Он пишется внутри открывающего тега: имя=\"значение\". Атрибут title показывает подсказку, если навести мышку.",
         goal: <>Добавь абзацу атрибут <code>title</code> с любой подсказкой, например «это я».</>,
         starter: "<p>Привет, я Пиксель!</p>\n",
@@ -29,6 +31,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Линия-разделитель",
+        tags: "p hr",
         story: "Бывают самозакрывающиеся теги — у них нет пары. Например <hr> рисует линию. Его не нужно закрывать.",
         goal: <>Сделай два абзаца, а между ними поставь линию <code>&lt;hr&gt;</code>.</>,
         starter: "<p>Привет, я Пиксель!</p>\n",
@@ -47,6 +50,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Скелет страницы",
+        tags: "!doctype html head body",
         story: "Каждая страница начинается с <!DOCTYPE html>, потом идёт <html>, внутри — <head> (служебное) и <body> (то, что видно).",
         goal: <>Собери скелет: <code>&lt;!DOCTYPE html&gt;</code>, <code>html</code>, внутри <code>head</code> и <code>body</code>.</>,
         starter: "",
@@ -65,6 +69,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Название вкладки",
+        tags: "title",
         story: "Текст на вкладке браузера задаёт тег title. Он живёт в head, а не в body.",
         goal: <>Добавь в <code>head</code> тег <code>title</code> с текстом «Сайт Пикселя».</>,
         starter: "<!DOCTYPE html>\n<html>\n  <head>\n  </head>\n  <body>\n  </body>\n</html>\n",
@@ -76,6 +81,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Важное слово",
+        tags: "p b span",
         story: "Тег b делает слово жирным, а span — просто «обёртка» для кусочка текста, чтобы потом его оформить.",
         goal: <>В <code>body</code> напиши абзац, где одно слово обёрнуто в <code>b</code>, а другое — в <code>span</code>.</>,
         starter: "<!DOCTYPE html>\n<html>\n  <head>\n    <title>Сайт Пикселя</title>\n  </head>\n  <body>\n  </body>\n</html>\n",
@@ -95,6 +101,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Главный заголовок",
+        tags: "h1",
         story: "h1 — самый главный заголовок страницы. Он бывает только один.",
         goal: <>Напиши заголовок <code>h1</code> «Сайт Пикселя».</>,
         starter: "",
@@ -102,6 +109,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Разделы сайта",
+        tags: "h2",
         story: "Разделы помечают заголовками h2 — они чуть меньше h1.",
         goal: <>Под h1 добавь два раздела <code>h2</code>: «Обо мне» и «Мои хобби».</>,
         starter: "<h1>Сайт Пикселя</h1>\n",
@@ -109,6 +117,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Подраздел",
+        tags: "h3",
         story: "Внутри раздела бывают подразделы — это h3. Важно не перепрыгивать уровни: после h2 идёт h3, а не h5.",
         goal: <>После «Мои хобби» добавь подраздел <code>h3</code> «Сборка моделей».</>,
         starter: "<h1>Сайт Пикселя</h1>\n<h2>Обо мне</h2>\n<h2>Мои хобби</h2>\n",
@@ -129,6 +138,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Рассказ о себе",
+        tags: "p",
         story: "Каждая мысль — в своём абзаце p. Браузер сам добавит между ними отступ.",
         goal: <>Напиши два абзаца <code>p</code> о Пикселе.</>,
         starter: "<h2>Обо мне</h2>\n",
@@ -136,6 +146,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Перенос строки",
+        tags: "br",
         story: "Внутри одного абзаца строку можно перенести тегом <br>. Обычный Enter в коде браузер не заметит!",
         goal: <>Сделай абзац-стишок из двух строк: перенеси строку с помощью <code>&lt;br&gt;</code>.</>,
         starter: "<p>Я робот Пиксель, я люблю код\n</p>\n",
@@ -147,6 +158,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Заголовок и текст",
+        tags: "h2 p",
         story: "Красивая страница: сначала заголовок раздела, сразу под ним — абзац.",
         goal: <>Сделай заголовок <code>h2</code> «Мои мечты» и сразу после него абзац <code>p</code>.</>,
         starter: "",
@@ -164,6 +176,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Список хобби",
+        tags: "ul li",
         story: "ul — список с точками. Каждый пункт — тег li внутри ul.",
         goal: <>Сделай список <code>ul</code> из трёх хобби Пикселя.</>,
         starter: "<h2>Мои хобби</h2>\n",
@@ -171,6 +184,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Инструкция",
+        tags: "ol li",
         story: "Если важен порядок шагов, берём ol — пункты пронумеруются сами.",
         goal: <>Напиши инструкцию «Как собрать робота» — нумерованный список <code>ol</code> из трёх шагов.</>,
         starter: "<h2>Как собрать робота</h2>\n",
@@ -178,6 +192,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Список в списке",
+        tags: "ul li",
         story: "Внутри пункта li можно положить ещё один список — получится вложенный.",
         goal: <>В пункт «Игры» вложи список <code>ul</code> из двух любимых игр.</>,
         starter: "<ul>\n  <li>Книги</li>\n  <li>Игры\n  </li>\n</ul>\n",
@@ -195,6 +210,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Карточка",
+        tags: "div @class=card h2 p",
         story: "div — коробка, в которую складывают другие теги. Класс — имя коробки, по нему CSS потом её раскрасит.",
         goal: <>Сделай <code>div</code> с классом <code>card</code>, а внутри — <code>h2</code> и <code>p</code>.</>,
         starter: "",
@@ -206,6 +222,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Два класса",
+        tags: "@class=card+highlight",
         story: "У одного блока может быть несколько классов — через пробел: class=\"card highlight\".",
         goal: <>Дай карточке два класса: <code>card</code> и <code>highlight</code>.</>,
         starter: "<div class=\"card\">\n  <h2>Моя суперсила</h2>\n  <p>Быстро считаю</p>\n</div>\n",
@@ -213,6 +230,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Три карточки",
+        tags: "div @class=card p",
         story: "Один и тот же класс можно давать многим блокам — так все карточки будут одинаково оформлены.",
         goal: <>Сделай три блока <code>div</code> с классом <code>card</code>, в каждом — текст.</>,
         starter: "",
@@ -226,6 +244,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Имя для заголовка",
+        tags: "@id=top",
         story: "id — уникальное имя элемента. В отличие от класса, такой id может быть только у одного тега на странице.",
         goal: <>Дай заголовку <code>h1</code> атрибут <code>id="top"</code>.</>,
         starter: "<h1>Сайт Пикселя</h1>\n",
@@ -233,6 +252,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Без повторов",
+        tags: "section @id=about @id=hobbies h2",
         story: "Два одинаковых id — ошибка! Браузер запутается, к какому элементу прыгать.",
         goal: <>Сделай два раздела <code>section</code> с разными id: <code>about</code> и <code>hobbies</code>.</>,
         starter: "",
@@ -244,6 +264,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Прыжок по странице",
+        tags: "a @href=#hobbies",
         story: "Ссылка с href=\"#hobbies\" прыгает к элементу с id=\"hobbies\". Решётка значит «на этой же странице».",
         goal: <>Добавь ссылку <code>a</code>, которая ведёт к разделу <code>#hobbies</code>.</>,
         starter: "<section id=\"hobbies\">\n  <h2>Мои хобби</h2>\n</section>\n",
@@ -257,6 +278,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Первая кнопка",
+        tags: "button",
         story: "Кнопка — тег button. Текст между тегами — это надпись на кнопке.",
         goal: <>Сделай кнопку «Поздороваться».</>,
         starter: "",
@@ -264,6 +286,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Пока нельзя",
+        tags: "button @disabled",
         story: "Атрибут disabled выключает кнопку — нажать её нельзя. У него даже нет значения.",
         goal: <>Добавь вторую кнопку «Скоро» и выключи её атрибутом <code>disabled</code>.</>,
         starter: "<button>Поздороваться</button>\n",
@@ -271,6 +294,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Панель кнопок",
+        tags: "div @class=actions button @disabled",
         story: "Кнопки удобно собрать в один блок — так их проще расставить рядом.",
         goal: <>Положи в <code>div</code> с классом <code>actions</code> три кнопки с надписями, одна из них выключена.</>,
         starter: "",
@@ -290,6 +314,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Портрет",
+        tags: "img @src=pixel.png @alt",
         story: "Картинка — тег img. Он самозакрывающийся. src — откуда взять картинку, alt — описание, если она не загрузится.",
         goal: <>Добавь <code>img</code> с <code>src="pixel.png"</code> и описанием <code>alt</code>.</>,
         starter: "",
@@ -302,6 +327,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "По размеру",
+        tags: "@width=120",
         story: "Атрибут width задаёт ширину картинки в пикселях.",
         goal: <>Сделай ширину портрета 120: <code>width="120"</code>.</>,
         starter: "<img src=\"pixel.png\" alt=\"Робот Пиксель\">\n",
@@ -309,6 +335,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Галерея",
+        tags: "img @src @alt",
         story: "Хорошее описание alt помогает тем, кто не видит картинку. Опиши, что на ней!",
         goal: <>Сделай две картинки с разными <code>src</code> и понятным <code>alt</code> (хотя бы 5 букв) у каждой.</>,
         starter: "",
@@ -327,6 +354,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Из папки images",
+        tags: "@src=images/pixel.png",
         story: "Путь images/pixel.png значит: «зайди в папку images рядом со страницей и возьми pixel.png».",
         goal: <>Укажи картинке путь <code>images/pixel.png</code>.</>,
         starter: "<img src=\"\" alt=\"Пиксель\">\n",
@@ -334,6 +362,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "На папку выше",
+        tags: "@src=../logo.png",
         story: "Две точки ../ значат «выйти из текущей папки на уровень выше».",
         goal: <>Картинка <code>logo.png</code> лежит на папку выше. Укажи путь с <code>../</code>.</>,
         starter: "<img src=\"\" alt=\"Логотип\">\n",
@@ -341,6 +370,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "С другого сайта",
+        tags: "img @src=https:// @alt",
         story: "Абсолютный путь — полный адрес в интернете, он начинается с https://.",
         goal: <>Добавь картинку с абсолютным адресом, который начинается с <code>https://</code>.</>,
         starter: "",
@@ -354,6 +384,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Любимый сайт",
+        tags: "a @href=https://",
         story: "Ссылка — тег a. В href пишем адрес, а между тегами — текст, на который нажимают.",
         goal: <>Сделай ссылку на любой сайт с адресом <code>https://…</code> и текстом.</>,
         starter: "",
@@ -366,6 +397,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "В новой вкладке",
+        tags: "@target=_blank",
         story: "target=\"_blank\" открывает ссылку в новой вкладке — твой сайт останется открытым.",
         goal: <>Сделай так, чтобы ссылка открывалась в новой вкладке.</>,
         starter: "<a href=\"https://example.com\">Мой любимый сайт</a>\n",
@@ -373,6 +405,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Меню сайта",
+        tags: "a @href=#about @href=#hobbies @href=#contacts",
         story: "Меню — это несколько ссылок рядом. Ссылки на разделы своей страницы начинаются с #.",
         goal: <>Сделай три ссылки на разделы: <code>#about</code>, <code>#hobbies</code>, <code>#contacts</code>.</>,
         starter: "",
@@ -391,6 +424,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Шапка и подвал",
+        tags: "header h1 footer p",
         story: "header — шапка сайта сверху, footer — подвал снизу. Так браузер и поисковики понимают, где что.",
         goal: <>Сделай <code>header</code> с заголовком <code>h1</code> и <code>footer</code> с абзацем.</>,
         starter: "",
@@ -398,6 +432,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Навигация",
+        tags: "nav a @href",
         story: "nav — блок с главными ссылками сайта, то есть меню.",
         goal: <>Добавь в шапку <code>nav</code> с двумя ссылками.</>,
         starter: "<header>\n  <h1>Сайт Пикселя</h1>\n</header>\n",
@@ -405,6 +440,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Главное — в main",
+        tags: "main article",
         story: "main — основное содержимое. Оно стоит между шапкой и подвалом, а статья в нём — article.",
         goal: <>Поставь <code>main</code> со статьёй <code>article</code> между <code>header</code> и <code>footer</code>.</>,
         starter: "<header>\n  <h1>Сайт Пикселя</h1>\n</header>\n\n<footer>\n  <p>Сделано Пикселем</p>\n</footer>\n",
@@ -424,6 +460,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Первая таблица",
+        tags: "table tr td",
         story: "table — таблица, tr — строка, td — ячейка. Ячейки живут внутри строк.",
         goal: <>Сделай таблицу из двух строк по две ячейки.</>,
         starter: "",
@@ -436,6 +473,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Заголовки столбцов",
+        tags: "tr th",
         story: "Ячейки-заголовки пишут тегом th — браузер сделает их жирными.",
         goal: <>Сделай первую строку из заголовков <code>th</code>: «День» и «Тренировка».</>,
         starter: "<table>\n  <tr>\n    <td>Понедельник</td>\n    <td>Бег</td>\n  </tr>\n</table>\n",
@@ -446,6 +484,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Широкая ячейка",
+        tags: "tr td @colspan=2",
         story: "colspan=\"2\" растягивает ячейку на два столбца — например, для итога.",
         goal: <>Добавь строку с одной ячейкой на два столбца: <code>colspan="2"</code>.</>,
         starter: "<table>\n  <tr><th>День</th><th>Тренировка</th></tr>\n  <tr><td>Понедельник</td><td>Бег</td></tr>\n</table>\n",
@@ -459,6 +498,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Форма",
+        tags: "form input button",
         story: "form — рамка формы. Внутри поле ввода input и кнопка.",
         goal: <>Сделай <code>form</code>, внутри <code>input</code> и <code>button</code>.</>,
         starter: "",
@@ -466,6 +506,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Куда отправить",
+        tags: "@action=/send @method=post",
         story: "action — адрес, куда уйдут данные, method — способ отправки (get или post).",
         goal: <>Добавь форме <code>action="/send"</code> и <code>method="post"</code>.</>,
         starter: "<form>\n  <input>\n  <button>Отправить</button>\n</form>\n",
@@ -473,6 +514,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Кнопка отправки",
+        tags: "@name=message @type=submit",
         story: "Кнопка с type=\"submit\" отправляет форму. Поле с name — подписывает, что именно отправляем.",
         goal: <>Дай полю <code>name="message"</code>, а кнопке — <code>type="submit"</code> и надпись «Отправить».</>,
         starter: "<form action=\"/send\" method=\"post\">\n  <input>\n  <button>Отправить</button>\n</form>\n",
@@ -486,6 +528,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Подпись поля",
+        tags: "label @for=name input @id=name",
         story: "label — подпись к полю. Её for должен совпадать с id поля — тогда клик по подписи ставит курсор в поле.",
         goal: <>Сделай <code>label for="name"</code> «Имя» и поле <code>input id="name"</code>.</>,
         starter: "",
@@ -493,6 +536,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Подсказка внутри",
+        tags: "@placeholder",
         story: "placeholder — бледная подсказка прямо в поле. Она исчезает, когда начинаешь печатать.",
         goal: <>Добавь полю подсказку <code>placeholder</code>, например «Как тебя зовут?».</>,
         starter: "<label for=\"name\">Имя</label>\n<input id=\"name\">\n",
@@ -500,6 +544,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Анкета",
+        tags: "label @for input @id",
         story: "Каждому полю — своя подпись. Проверь, что for и id совпадают у каждой пары.",
         goal: <>Сделай два поля («Имя» и «Город»), у каждого — своя подпись <code>label</code> с правильным <code>for</code>.</>,
         starter: "",
@@ -518,6 +563,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
     missions: [
       {
         title: "Почта",
+        tags: "input @type=email",
         story: "type=\"email\" — поле для почты. Браузер не даст отправить текст без @.",
         goal: <>Сделай поле с <code>type="email"</code>.</>,
         starter: "",
@@ -525,6 +571,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Пароль",
+        tags: "input @type=password @required",
         story: "type=\"password\" прячет символы точками, а required делает поле обязательным.",
         goal: <>Добавь поле пароля, обязательное для заполнения.</>,
         starter: "<input type=\"email\">\n",
@@ -532,6 +579,7 @@ export const HTML_MISSIONS: Record<string, { intro: string; missions: HtmlMissio
       },
       {
         title: "Галочка",
+        tags: "input @type=checkbox label @for @id",
         story: "type=\"checkbox\" — галочка. Рядом с ней обязательно подпись label, чтобы было понятно, на что соглашаемся.",
         goal: <>Сделай галочку «Хочу получать новости» с подписью <code>label</code>.</>,
         starter: "",
