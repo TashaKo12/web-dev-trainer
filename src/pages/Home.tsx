@@ -6,7 +6,7 @@ import { starsFor, useGame } from "../lib/game";
 import { loadJSON, saveJSON } from "../lib/storage";
 import { LESSONS, trainers, type TrainerMeta } from "../trainers/registry";
 
-// The web course grouped by lessons: each topic sits in the lesson where it is first used.
+// The web courses. Course 1 is grouped by its 13 lessons; course 2 by language: HTML, CSS and JavaScript.
 
 const FILE: Record<TrainerMeta["section"], { label: string; cls: string }> = {
   html: { label: "HTML", cls: "border-sky-200 bg-sky-50 text-sky-700" },
@@ -15,7 +15,14 @@ const FILE: Record<TrainerMeta["section"], { label: string; cls: string }> = {
   python: { label: "PY", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
 };
 
-const OPEN_KEY = "home-open-lessons"; // a view preference only: not part of the progress
+const OPEN_KEY = "home-open-lessons"; // view preferences only: not part of the progress
+const COURSE_KEY = "home-course";
+
+const COURSE_2: { key: TrainerMeta["section"]; title: string; note: string }[] = [
+  { key: "html", title: "HTML", note: "Разметка посложнее." },
+  { key: "css", title: "CSS", note: "Стили и анимации посложнее." },
+  { key: "js", title: "JavaScript", note: "Программы на странице: функции, аргументы и работа с элементами." },
+];
 
 const plural = (n: number, one: string, few: string, many: string) => {
   const m10 = n % 10;
@@ -23,7 +30,7 @@ const plural = (n: number, one: string, few: string, many: string) => {
   return m10 === 1 && m100 !== 11 ? one : m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14) ? few : many;
 };
 
-type Group = { key: string; number: number | null; title: string; items: TrainerMeta[] };
+type Group = { key: string; badge: string | null; kicker?: string; title: string; note?: string; items: TrainerMeta[] };
 
 export function Home() {
   const { reports } = useGame();
@@ -38,20 +45,49 @@ export function Home() {
     });
   }
 
+  const [course, setCourse] = useState<1 | 2>(() => (loadJSON<number>(COURSE_KEY) === 2 ? 2 : 1));
+  function pickCourse(c: 1 | 2) {
+    setCourse(c);
+    saveJSON(COURSE_KEY, c);
+  }
+
   const web = trainers.filter((t) => t.section !== "python");
-  const groups: Group[] = [
-    ...LESSONS.map((title, i) => ({ key: `lesson-${i + 1}`, number: i + 1, title, items: web.filter((t) => t.lesson === i + 1) })),
-    { key: "extra", number: null, title: "Дополнительно", items: web.filter((t) => !t.lesson) },
-  ].filter((g) => g.items.length);
+  const first = web.filter((t) => (t.course ?? 1) === 1);
+  const second = web.filter((t) => t.course === 2);
+  const groups: Group[] =
+    course === 1
+      ? [
+          ...LESSONS.map((title, i) => ({ key: `lesson-${i + 1}`, badge: String(i + 1), kicker: `Урок ${i + 1}`, title, items: first.filter((t) => t.lesson === i + 1) })),
+          { key: "extra", badge: null, title: "Дополнительно", note: "Темы, которые не встречаются в проектах уроков, — для тех, кто хочет больше.", items: first.filter((t) => !t.lesson) },
+        ].filter((g) => g.items.length)
+      : COURSE_2.map((c) => ({ key: `c2-${c.key}`, badge: c.key.toUpperCase(), kicker: "2 курс", title: c.title, note: c.note, items: second.filter((t) => t.section === c.key) }));
 
   return (
     <div>
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Выбери урок и прокачай веб-разработку</h1>
         <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
-          Темы разложены по урокам курса: в каждом уроке — 3–5 тем, которые пригодятся в его проекте. Внутри темы сначала
-          теория с живыми примерами, потом задания.
+          {course === 1
+            ? "Темы разложены по урокам курса: в каждом уроке — 3–5 тем, которые пригодятся в его проекте."
+            : "Второй курс разделён на HTML, CSS и JavaScript."}{" "}
+          Внутри темы сначала теория с живыми примерами, потом задания.
         </p>
+        <div role="tablist" aria-label="Курс" className="mx-auto mt-6 inline-flex rounded-full border border-slate-200 bg-white p-1 shadow-sm">
+          {([1, 2] as const).map((c) => (
+            <button
+              key={c}
+              type="button"
+              role="tab"
+              aria-selected={course === c}
+              onClick={() => pickCourse(c)}
+              className={`rounded-full px-5 py-2 text-sm font-extrabold transition ${
+                course === c ? "bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow" : "text-slate-500 hover:text-slate-800"
+              }`}
+            >
+              {c} курс
+            </button>
+          ))}
+        </div>
       </div>
 
       <GamePanel />
@@ -66,31 +102,38 @@ export function Home() {
               <button type="button" onClick={() => toggle(g.key)} aria-expanded={isOpen} className="flex w-full flex-wrap items-center gap-x-4 gap-y-3 p-5 text-left sm:p-6">
                 <span
                   className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl text-lg font-extrabold ${
-                    g.number ? "bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow" : "bg-slate-100 text-slate-400"
-                  }`}
+                    g.badge ? "bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow" : "bg-slate-100 text-slate-400"
+                  } ${g.badge && g.badge.length > 2 ? "text-xs" : ""}`}
                 >
-                  {g.number ?? "+"}
+                  {g.badge ?? "+"}
                 </span>
                 <span className="min-w-[12rem] flex-1">
-                  {g.number && <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">Урок {g.number}</span>}
+                  {g.kicker && <span className="block text-xs font-bold uppercase tracking-wide text-slate-400">{g.kicker}</span>}
                   <span className="block text-xl font-extrabold text-slate-800">{g.title}</span>
-                  {!g.number && <span className="mt-1 block text-sm text-slate-500">Темы, которые не встречаются в проектах уроков, — для тех, кто хочет больше.</span>}
+                  {g.note && <span className="mt-1 block text-sm text-slate-500">{g.note}</span>}
                 </span>
                 <span className="flex items-center gap-4">
-                  <span className="text-right">
-                    <span className="block text-sm font-extrabold text-slate-700">
-                      {done} из {g.items.length} {plural(g.items.length, "темы", "тем", "тем")}
+                  {g.items.length ? (
+                    <span className="text-right">
+                      <span className="block text-sm font-extrabold text-slate-700">
+                        {done} из {g.items.length} {plural(g.items.length, "темы", "тем", "тем")}
+                      </span>
+                      <span className="mt-0.5 flex items-center justify-end gap-1 text-xs font-bold text-amber-500">
+                        <Star className="h-3.5 w-3.5" strokeWidth={2.2} fill="currentColor" />
+                        {starSum} / {g.items.length * 3}
+                      </span>
                     </span>
-                    <span className="mt-0.5 flex items-center justify-end gap-1 text-xs font-bold text-amber-500">
-                      <Star className="h-3.5 w-3.5" strokeWidth={2.2} fill="currentColor" />
-                      {starSum} / {g.items.length * 3}
-                    </span>
-                  </span>
+                  ) : (
+                    <span className="text-sm font-bold text-slate-400">скоро</span>
+                  )}
                   <ChevronDown className={`h-6 w-6 text-slate-400 transition-transform duration-300 ${isOpen ? "rotate-180" : ""}`} strokeWidth={2} />
                 </span>
               </button>
 
-              {isOpen && (
+              {isOpen && !g.items.length && (
+                <p className="animate-fade-in border-t border-slate-200 p-5 text-sm text-slate-400">Темы появятся позже.</p>
+              )}
+              {isOpen && g.items.length > 0 && (
                 <div className="grid animate-fade-in gap-3 border-t border-slate-200 p-4 sm:grid-cols-2 sm:p-5 lg:grid-cols-3">
                   {g.items.map((t) => {
                     const p = stars[t.id];

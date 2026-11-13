@@ -171,12 +171,17 @@ export function CodeEditor({
   onChange,
   onRun,
   disabled,
+  lang = "py",
 }: {
   value: string;
   onChange: (v: string) => void;
   onRun: () => void;
   disabled?: boolean;
+  /** py: 4-space indent after ":"; js: 2-space indent after "{". */
+  lang?: "py" | "js";
 }) {
+  const unit = lang === "js" ? "  " : "    ";
+  const opens = lang === "js" ? /[{(]\s*(\/\/.*)?$/ : /:\s*(#.*)?$/;
   const lineCount = Math.max(value.split("\n").length, 3);
 
   function insert(t: HTMLTextAreaElement, text: string, removeBefore = 0) {
@@ -196,7 +201,7 @@ export function CodeEditor({
     // Tab puts 4 spaces — the indent Python expects inside if, for and while
     if (e.key === "Tab" && !e.shiftKey) {
       e.preventDefault();
-      insert(t, "    ");
+      insert(t, unit);
       return;
     }
     // Enter keeps the indent of the line; after a line ending with ":" it adds one more level
@@ -204,7 +209,7 @@ export function CodeEditor({
       const lineStart = value.lastIndexOf("\n", t.selectionStart - 1) + 1;
       const current = value.slice(lineStart, t.selectionStart);
       const indent = /^ */.exec(current)![0];
-      const extra = /:\s*(#.*)?$/.test(current) ? "    " : "";
+      const extra = opens.test(current) ? unit : "";
       if (indent || extra) {
         e.preventDefault();
         insert(t, "\n" + indent + extra);
@@ -215,9 +220,9 @@ export function CodeEditor({
     if (e.key === "Backspace" && t.selectionStart === t.selectionEnd) {
       const lineStart = value.lastIndexOf("\n", t.selectionStart - 1) + 1;
       const before = value.slice(lineStart, t.selectionStart);
-      if (before.length >= 4 && /^ +$/.test(before) && before.length % 4 === 0) {
+      if (before.length >= unit.length && /^ +$/.test(before) && before.length % unit.length === 0) {
         e.preventDefault();
-        insert(t, "", 4);
+        insert(t, "", unit.length);
       }
     }
   }

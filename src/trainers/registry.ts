@@ -49,6 +49,7 @@ import {
   RulerDimensionLine,
   Maximize,
   Files,
+  FunctionSquare,
 } from "lucide-react";
 import type { TrainerId } from "../lib/progress";
 
@@ -65,6 +66,8 @@ export type TrainerMeta = {
   missions?: { storageKey: string; count: number };
   /** The course lesson where this topic is used for the first time. */
   lesson?: number;
+  /** Web course: 1 (the 13 lessons, the default) or 2 (HTML, CSS and JavaScript further on). */
+  course?: 1 | 2;
 };
 
 /** Lessons of the web course, in order: each topic belongs to the lesson where it is first applied. */
@@ -464,7 +467,19 @@ export const trainers: TrainerMeta[] = [
     section: "css",
   },
 
-  // ───────── JS ─────────
+  // ───────── JS (course 2) ─────────
+  {
+    id: "js-functions",
+    path: "/js-functions",
+    icon: FunctionSquare,
+    title: "Функции и аргументы",
+    summary: "Свои команды в JavaScript: параметры, аргументы по порядку, значения по умолчанию и return.",
+    taskCount: 10,
+    gradient: "from-amber-500 to-orange-600",
+    section: "js",
+    course: 2,
+    missions: { storageKey: "wdt:missions:js-functions", count: 5 },
+  },
   {
     id: "dom-access",
     path: "/dom-access",
@@ -475,6 +490,7 @@ export const trainers: TrainerMeta[] = [
     taskCount: 9,
     gradient: "from-violet-500 to-indigo-600",
     section: "js",
+    course: 2,
   },
 
   // ───────── Python ─────────

@@ -6,6 +6,7 @@ export type TrainerId =
   | "flexbox"
   | "selectors"
   | "dom-access"
+  | "js-functions"
   | "typography"
   | "pseudo-classes"
   | "tables"
