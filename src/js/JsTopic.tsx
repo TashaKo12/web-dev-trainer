@@ -1,4 +1,4 @@
-import { Fragment, useState, type ReactNode } from "react";
+import { useState, type ReactNode } from "react";
 import { Check, Lightbulb, X } from "lucide-react";
 import { TopicSlider } from "../components/TopicSlider";
 import { TrainerHero } from "../components/TrainerHero";
@@ -306,8 +306,8 @@ function Tasks({ id, levels }: { id: TrainerId; levels: JsLevel[] }) {
 
 export type JsTopicData = {
   id: TrainerId;
-  /** Each theory block is its own slide with its own reading timer. */
-  theory: { title: string; description: string; parts: Part[]; widget?: ReactNode }[];
+  /** Every part of the theory is its own slide with its own reading timer; a widget gets a slide after its block. */
+  theory: { title: string; description: string; parts: Part[]; widget?: { title: string; node: ReactNode } }[];
   game: { title: string; description: string; finish: string; missions: JsMission[] };
   levels: JsLevel[];
   cards: TrueFalseStatement[];
@@ -318,15 +318,36 @@ export function JsTopicPage({ data }: { data: JsTopicData }) {
   return (
     <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
-      {data.theory.map((t) => (
-        <Fragment key={t.title}>
-          <SectionHeading kicker="Теория" title={t.title} description={t.description} />
-          <div className="mb-10 space-y-5">
-            {t.widget}
-            <PyTheory parts={t.parts} />
-          </div>
-        </Fragment>
-      ))}
+      {/* a flat list: TopicSlider starts a new slide at every SectionHeading among its direct children */}
+      {data.theory.flatMap((t, s) => {
+        const before = data.theory.slice(0, s).reduce((n, x) => n + x.parts.length, 0);
+        const slides = t.parts.flatMap((p, i) => [
+          <SectionHeading
+            key={`h:${p.title}`}
+            kicker="Теория"
+            title={p.title}
+            description={
+              <>
+                <b className="text-slate-600">
+                  Шаг {before + i + 1} · {t.title}
+                </b>
+                {i === 0 && <> — {t.description}</>}
+              </>
+            }
+          />,
+          <div key={`b:${p.title}`} className="mb-10">
+            <PyTheory parts={[p]} bare />
+          </div>,
+        ]);
+        if (t.widget)
+          slides.push(
+            <SectionHeading key={`h:${t.widget.title}`} kicker="Теория" title={t.widget.title} description="Попробуй сам: поменяй значения и посмотри, что изменится." />,
+            <div key={`b:${t.widget.title}`} className="mb-10">
+              {t.widget.node}
+            </div>,
+          );
+        return slides;
+      })}
       <SectionHeading kicker="Игра" title={data.game.title} description={data.game.description} />
       <div className="mb-10">
         <MissionBoard

@@ -49,7 +49,7 @@ export const FUNCTIONS: JsTopicData = {
     {
       title: "Параметры и аргументы",
       description: "Самое важное в функциях: как передать им данные. Параметры — окошки в объявлении, аргументы — то, что кладём в окошки при вызове.",
-      widget: <ArgsPlayground />,
+      widget: { title: "Куда попадают аргументы", node: <ArgsPlayground /> },
       parts: [
         {
           title: "Параметр — окошко для данных",

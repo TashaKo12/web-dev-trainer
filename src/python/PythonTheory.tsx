@@ -23,7 +23,8 @@ function ExampleCard({ e }: { e: Example }) {
   );
 }
 
-export function PyTheory({ parts }: { parts: Part[] }) {
+/** bare: without the step number and title on the card (a slide heading already shows them). */
+export function PyTheory({ parts, startAt = 1, bare = false }: { parts: Part[]; startAt?: number; bare?: boolean }) {
   return (
     <div className="space-y-5">
       {parts.map((p, i) => (
@@ -31,8 +32,12 @@ export function PyTheory({ parts }: { parts: Part[] }) {
           key={p.title}
           className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-7 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]"
         >
-          <p className="mb-1 text-xs font-bold uppercase tracking-wide text-emerald-500">Шаг {i + 1}</p>
-          <h3 className="mb-2 text-lg font-extrabold text-slate-800">{p.title}</h3>
+          {!bare && (
+            <>
+              <p className="mb-1 text-xs font-bold uppercase tracking-wide text-emerald-500">Шаг {startAt + i}</p>
+              <h3 className="mb-2 text-lg font-extrabold text-slate-800">{p.title}</h3>
+            </>
+          )}
           <p className="mb-4 text-sm leading-relaxed text-slate-600">{p.text}</p>
           <div className="grid gap-3 md:grid-cols-2">
             {p.examples.map((e) => (
