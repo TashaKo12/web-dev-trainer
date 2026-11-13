@@ -8,7 +8,7 @@ import { emitPixel } from "../lib/pixelBus";
 import { loadItem, saveItem } from "../lib/storage";
 
 // A topic page as a slider: theory → game → practice → check. One block on screen at a time.
-// The theory must stay open for at least 20 seconds before the student can move on.
+// Every theory block must stay open for at least 20 seconds; no theory block can be skipped.
 
 const THEORY_SECONDS = 20;
 
@@ -46,7 +46,9 @@ export function TopicSlider({ children }: { children: ReactNode }) {
   const { pathname } = useLocation();
   const { hero, slides } = useMemo(() => split(children), [children]);
   const slideKey = `slide:${pathname}`; // view state only — not part of the progress
-  const readKey = (i: number) => `theory-read:${pathname}:${i}`;
+  // keyed by the block title, so adding a block to a topic does not shift what was read
+  const readKey = (i: number) => `theory-read:${pathname}:${slides[i]?.title || i}`;
+  const isRead = (i: number) => slides[i].kind !== "theory" || loadItem(readKey(i)) === "1";
 
   const fromUrl = window.location.hash.includes("level=") ? slides.findIndex((s) => s.kind === "practice") : -1;
   const [index, setIndex] = useState(() => {
@@ -62,8 +64,7 @@ export function TopicSlider({ children }: { children: ReactNode }) {
 
   // a new slide: Pixel comes out from behind it, the theory timer starts again if it was not read yet
   useEffect(() => {
-    const read = slides[index].kind !== "theory" || loadItem(readKey(index)) === "1";
-    setLeft(read ? 0 : THEORY_SECONDS);
+    setLeft(isRead(index) ? 0 : THEORY_SECONDS);
     saveItem(slideKey, String(index));
     emitPixel("enter");
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -88,9 +89,12 @@ export function TopicSlider({ children }: { children: ReactNode }) {
   }, [left > 0, index]);
 
   const locked = left > 0;
+  // the first theory block ahead that has not been read yet: nothing past it opens
+  const nextUnread = slides.findIndex((_, i) => i > index && !isRead(i));
+  const isBlocked = (i: number) => i > index && (locked || (nextUnread >= 0 && i > nextUnread));
 
   function go(i: number) {
-    if (i < 0 || i >= slides.length || (i > index && locked)) return;
+    if (i < 0 || i >= slides.length || isBlocked(i)) return;
     setIndex(i);
     requestAnimationFrame(() => top.current?.scrollIntoView({ behavior: "smooth", block: "start" }));
   }
@@ -104,13 +108,14 @@ export function TopicSlider({ children }: { children: ReactNode }) {
           {slides.map((s, i) => {
             const Icon = ICON[s.kind];
             const active = i === index;
-            const blocked = i > index && locked;
+            const blocked = isBlocked(i);
             return (
               <button
                 key={i}
                 type="button"
                 onClick={() => go(i)}
                 disabled={blocked}
+                title={blocked ? "Сначала изучи теорию перед этой частью" : undefined}
                 aria-current={active ? "step" : undefined}
                 className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3.5 py-1.5 text-sm font-bold transition ${
                   active
