@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { SquareTerminal } from "lucide-react";
+import { SectionHeading } from "../components/SectionHeading";
 
 // Theory for the Python topics: everything the missions and practice ask is explained here first.
 
@@ -194,10 +195,33 @@ const INPUT: Part[] = [
   },
 ];
 
-export function PrintTheory() {
-  return <PyTheory parts={PRINT} />;
+/**
+ * The theory as slides: one page per step. A flat keyed array, because TopicSlider starts a new slide
+ * at every SectionHeading among its direct children and does not look inside Fragments.
+ */
+export function theorySlides(title: string, description: string, parts: Part[]): ReactNode[] {
+  return parts.flatMap((p, i) => [
+    <SectionHeading
+      key={`h:${p.title}`}
+      kicker="Теория"
+      title={p.title}
+      description={
+        <>
+          <b className="text-slate-600">
+            Шаг {i + 1} из {parts.length} · {title}
+          </b>
+          {i === 0 && <> — {description}</>}
+        </>
+      }
+    />,
+    <div key={`b:${p.title}`} className="mb-10">
+      <PyTheory parts={[p]} bare />
+    </div>,
+  ]);
 }
 
-export function InputTheory() {
-  return <PyTheory parts={INPUT} />;
-}
+export const printTheorySlides = () =>
+  theorySlides("Как работает print", "Сначала разберём всё, что понадобится в миссиях и заданиях: текст, числа, запятые, sep, перенос строки и частые ошибки.", PRINT);
+
+export const inputTheorySlides = () =>
+  theorySlides("Как работает input", "Сначала разберём всё, что понадобится в миссиях и заданиях: вопросы, переменные, превращение ответа в число и частые ошибки.", INPUT);

@@ -11,7 +11,7 @@ import type { TrainerId } from "../lib/progress";
 import { CodeEditor, RunButton, TerminalView, useProgramRunner } from "./CodeTerminal";
 import { runPython, sameOutput, type RunResult } from "./interpreter";
 import { MissionBoard, MissionFeedback, MissionGoal, RobotSays } from "./MissionBoard";
-import { PyTheory, type Part } from "./PythonTheory";
+import { theorySlides, type Part } from "./PythonTheory";
 
 // One Python topic built from data: theory → game missions → practice → true/false cards.
 // Missions and practice run the student's code for real; practice checks it with several answers,
@@ -197,10 +197,7 @@ export function PythonTopicPage({ data }: { data: PythonTopicData }) {
   return (
     <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
-      <SectionHeading kicker="Теория" title={data.theory.title} description={data.theory.description} />
-      <div className="mb-10">
-        <PyTheory parts={data.theory.parts} />
-      </div>
+      {theorySlides(data.theory.title, data.theory.description, data.theory.parts)}
       <SectionHeading kicker="Игра" title={data.game.title} description={data.game.description} />
       <div className="mb-10">
         <MissionBoard
