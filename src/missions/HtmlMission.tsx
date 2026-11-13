@@ -1,5 +1,5 @@
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
-import { Eye, Play } from "lucide-react";
+import { Eye, Globe, Play, X } from "lucide-react";
 import { MissionFeedback, MissionGoal, RobotSays } from "../python/MissionBoard";
 import { emitPixel } from "../lib/pixelBus";
 import { chipsFor, TagPalette, type Chip } from "./TagPalette";
@@ -47,6 +47,8 @@ export function HtmlMissionPlay({
   const [code, setCode] = useState(mission.starter);
   const [checked, setChecked] = useState<string | null | undefined>(undefined);
   const preview = useMemo(() => PREVIEW_STYLE + code, [code]);
+  // like a real browser: the tab shows the page title, or the file name when there is none
+  const tabTitle = useMemo(() => parseHtml(code).title.trim() || "index.html", [code]);
   const chips = useMemo(() => chipsFor(mission.title, mission.tags), [mission]);
   const editor = useRef<HTMLTextAreaElement>(null);
   // where a clicked chip goes: the last cursor position in the editor (the end of the starter code at first)
@@ -129,13 +131,26 @@ export function HtmlMissionPlay({
             <Eye className="h-3.5 w-3.5" strokeWidth={2} />
             Так видит браузер
           </p>
-          <iframe
-            title="Результат"
-            sandbox=""
-            srcDoc={preview}
-            className="h-full min-h-[11rem] w-full rounded-2xl border-2 border-slate-200"
-            style={{ background: "#fff" }}
-          />
+          <div className="flex h-full min-h-[13rem] flex-col overflow-hidden rounded-2xl border-2 border-slate-200" style={{ background: "#fff" }}>
+            <div className="flex items-end gap-2 px-2 pt-2" style={{ background: "#e2e8f0" }}>
+              <span className="mb-2 flex shrink-0 gap-1 pl-1" aria-hidden="true">
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#f87171" }} />
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#fbbf24" }} />
+                <span className="h-2.5 w-2.5 rounded-full" style={{ background: "#34d399" }} />
+              </span>
+              <span
+                key={tabTitle}
+                title={`Название вкладки: ${tabTitle}`}
+                className="flex min-w-0 max-w-[15rem] animate-fade-in items-center gap-1.5 rounded-t-lg px-3 py-1.5 text-xs font-semibold"
+                style={{ background: "#fff", color: "#334155" }}
+              >
+                <Globe className="h-3.5 w-3.5 shrink-0" strokeWidth={2} style={{ color: "#6366f1" }} />
+                <span className="truncate">{tabTitle}</span>
+                <X className="ml-1 h-3 w-3 shrink-0" strokeWidth={2.5} style={{ color: "#94a3b8" }} />
+              </span>
+            </div>
+            <iframe title="Результат" sandbox="" srcDoc={preview} className="w-full flex-1 border-0" style={{ background: "#fff" }} />
+          </div>
         </div>
       </div>
 
