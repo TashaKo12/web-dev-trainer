@@ -28,6 +28,7 @@ import { emitPixel } from "../lib/pixelBus";
 
 const MAX_BLOCKS = 40;
 const STEP_MS = 420;
+const CHECK_MS = 160;
 
 const PRAISE = ["Ура, получилось!", "Вот это программа!", "Пиксель в восторге!", "Отличная работа, инженер!"];
 
@@ -254,8 +255,10 @@ function LevelScreen() {
         finish(rs, list);
         return;
       }
-      // a short pause when the next variant starts
-      timer.current = setTimeout(tick, list[i]?.i === 0 ? 900 : STEP_MS);
+      // a short pause when the next variant starts; a wall check is only a quick flash
+      const nextShot = list[i];
+      const isCheck = nextShot && rs[nextShot.v].frames[nextShot.i]?.event === "check";
+      timer.current = setTimeout(tick, nextShot?.i === 0 ? 900 : isCheck ? CHECK_MS : STEP_MS);
     };
     timer.current = setTimeout(tick, STEP_MS);
   }
@@ -313,7 +316,11 @@ function LevelScreen() {
             <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
               <span className="text-sm font-extrabold text-slate-500">{running ? "Проверяем:" : "Посмотри все варианты:"}</span>
               {maps.map((_, v) => {
-                const status = results ? (results[v].outcome === "win" && shots.some((s) => s.v === v) ? "✓" : shots.some((s) => s.v === v) && done ? "✗" : "") : "";
+                // a mark appears only once that variant has been played to the end on the board
+                let lastOfV = -1;
+                shots.forEach((s, k) => s.v === v && (lastOfV = k));
+                const played = lastOfV >= 0 && shown > lastOfV;
+                const status = results && played ? (results[v].outcome === "win" ? "✓" : "✗") : "";
                 return (
                   <button
                     key={v}

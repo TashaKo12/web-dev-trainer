@@ -68,6 +68,8 @@ export type Frame = {
   path: string;
   /** The round of every loop that is running now, by the loop's path. */
   rounds: Record<string, number>;
+  /** While Pixel runs his own command ⭐: the block in the program that called it. */
+  caller?: string;
   event?: "bump" | "dry" | "pick" | "water" | "win" | "check";
   /** For "check": what the "if" found. */
   answer?: boolean;
@@ -111,6 +113,7 @@ export function run(g: Grid, dir0: Dir, program: Program): RunResult {
   const won = (f: Frame) => atExit(f) && f.watered.length === plants && gearsDone(f);
   let steps = 0;
   const rounds: Record<string, number> = {};
+  let caller: string | undefined;
 
   const push = (f: Frame) => {
     frames.push(f);
@@ -119,7 +122,7 @@ export function run(g: Grid, dir0: Dir, program: Program): RunResult {
   };
 
   function doCmd(c: Exclude<Cmd, "A">, path: string) {
-    const next: Frame = { ...s, path, rounds: { ...rounds }, event: undefined, answer: undefined };
+    const next: Frame = { ...s, path, rounds: { ...rounds }, caller, event: undefined, answer: undefined };
     if (c === "L") next.dir = ((s.dir + 3) % 4) as Dir;
     else if (c === "R") next.dir = ((s.dir + 1) % 4) as Dir;
     else if (c === "F") {
@@ -156,7 +159,11 @@ export function run(g: Grid, dir0: Dir, program: Program): RunResult {
       const path = `${base}/${i}`;
       if (n.k === "cmd") {
         if (n.c === "A") {
-          if (!inFn) exec(program.fn, "fn", true);
+          if (!inFn) {
+            caller = path;
+            exec(program.fn, "fn", true);
+            caller = undefined;
+          }
         } else doCmd(n.c, path);
       } else if (n.k === "loop") {
         for (let r = 0; r < n.n; r++) {
@@ -176,7 +183,7 @@ export function run(g: Grid, dir0: Dir, program: Program): RunResult {
         delete rounds[path];
       } else {
         const answer = isWall(g, s.x + DX[s.dir], s.y + DY[s.dir]);
-        push({ ...s, path, rounds: { ...rounds }, event: "check", answer });
+        push({ ...s, path, rounds: { ...rounds }, caller, event: "check", answer });
         exec(answer ? n.then : n.else, `${path}.${answer ? "then" : "else"}`, inFn);
       }
     });

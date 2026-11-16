@@ -17,7 +17,7 @@ export const TOOL: Record<Tool, { label: string; icon: LucideIcon; cls: string }
 };
 
 export const LOOP_MIN = 2;
-export const LOOP_MAX = 9;
+export const LOOP_MAX = 12;
 export const BODY_MAX = 8;
 
 type Props = {
@@ -130,7 +130,7 @@ function Chip({ tool, text }: { tool: Tool; text: string }) {
 function NodeView({ node, path, label, props }: { node: Node; path: string; label: string; props: Props }) {
   const f = props.frame;
   if (node.k === "cmd")
-    return <Tile c={node.c} label={label} active={f?.path === path} failed={props.failed === path} onRemove={() => props.onRemove(path)} />;
+    return <Tile c={node.c} label={label} active={f?.path === path || f?.caller === path} failed={props.failed === path} onRemove={() => props.onRemove(path)} />;
 
   const round = f?.rounds[path];
   if (node.k === "loop")

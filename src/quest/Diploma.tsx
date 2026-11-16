@@ -17,16 +17,16 @@ export function Diploma() {
 
   return (
     <div className="mx-auto max-w-2xl">
-      <div className="quest-diploma relative overflow-hidden rounded-[2rem] border-[6px] border-double border-amber-400 bg-gradient-to-br from-amber-50 via-white to-violet-50 p-8 text-center text-slate-800 shadow-2xl sm:p-10">
+      <div className="quest-diploma relative overflow-hidden rounded-[2rem] border-[6px] border-double border-amber-400 bg-gradient-to-br from-amber-50 via-white to-violet-50 p-8 text-center text-[#1e293b] shadow-2xl sm:p-10">
         <div className="pointer-events-none absolute -left-10 -top-10 h-40 w-40 rounded-full bg-violet-200/50 blur-2xl" />
         <div className="pointer-events-none absolute -bottom-10 -right-10 h-40 w-40 rounded-full bg-amber-200/60 blur-2xl" />
-        <p className="relative text-sm font-extrabold uppercase tracking-[0.35em] text-amber-600">Диплом</p>
-        <h2 className="relative mt-2 text-3xl font-black text-violet-700 sm:text-4xl">Главный инженер станции</h2>
-        <p className="relative mt-5 text-slate-500">Этот диплом получает</p>
-        <p className="relative mt-1 font-serif text-3xl italic text-slate-900 sm:text-4xl">{name}</p>
-        <p className="relative mx-auto mt-5 max-w-md text-slate-600">
-          за то, что научил робота Пикселя думать как программист: шагать, повторять, выбирать, ждать выхода и создавать свои команды — и открыл
-          Сердце станции.
+        <p className="relative text-sm font-extrabold uppercase tracking-[0.35em] text-[#d97706]">Диплом</p>
+        <h2 className="relative mt-2 text-3xl font-black text-[#6d28d9] sm:text-4xl">Главный инженер станции</h2>
+        <p className="relative mt-5 text-[#64748b]">Этот диплом получает</p>
+        <p className="relative mt-1 font-serif text-3xl italic text-[#0f172a] sm:text-4xl">{name}</p>
+        <p className="relative mx-auto mt-5 max-w-md text-[#475569]">
+          за спасение станции «Алгоритм»: с твоей помощью робот Пиксель научился думать как программист — шагать, повторять, выбирать, ждать
+          выхода и создавать свои команды. Сердце станции открыто!
         </p>
         <div className="relative mt-6 flex items-center justify-center gap-6">
           <div className="pixel-bot quest-bot h-20" data-mood="love">
@@ -34,11 +34,11 @@ export function Diploma() {
           </div>
           <div className="text-left">
             <p className="text-2xl font-black text-amber-500">⭐ {stars} из {levels.length * 3}</p>
-            <p className="text-sm font-bold text-slate-500">🔑 6 ключей · 📜 дневник Создательницы</p>
+            <p className="text-sm font-bold text-[#64748b]">🔑 6 ключей · 📜 дневник Создательницы</p>
           </div>
           <BoltFigure className="h-20 w-auto" />
         </div>
-        <div className="relative mt-6 flex items-end justify-between text-sm text-slate-500">
+        <div className="relative mt-6 flex items-end justify-between text-sm text-[#64748b]">
           <span>{date}</span>
           <span className="font-serif italic">Создательница станции, Пиксель и Болтик</span>
         </div>
