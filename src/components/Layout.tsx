@@ -21,12 +21,17 @@ export function Layout() {
   useEffect(() => {
     setTimeTopic(locked ? null : (trainers.find((t) => t.path === pathname)?.id ?? null));
   }, [pathname, locked]);
+  const quest = pathname.match(/^\/quest\/(\d+)(\/\d+)?$/);
   const back =
     pathname === "/" || pathname === "" || pathname === "/python"
       ? null
       : pathname.startsWith("/python/")
         ? { to: "/python", label: "Темы Python" }
-        : { to: "/", label: "Все тренажёры" };
+        : quest
+          ? quest[2]
+            ? { to: `/quest/${quest[1]}`, label: "Уровни отсека" }
+            : { to: "/quest", label: "Карта станции" }
+          : { to: "/", label: "Все тренажёры" };
 
   return (
     <div className="min-h-screen text-slate-800 dark:text-slate-100">

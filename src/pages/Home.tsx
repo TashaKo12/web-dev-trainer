@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, Star } from "lucide-react";
 import { GamePanel, Stars } from "../components/GamePanel";
+import { QuestBanner } from "../quest/QuestHome";
 import { starsFor, useGame } from "../lib/game";
 import { loadJSON, saveJSON } from "../lib/storage";
 import { LESSONS, trainers, type TrainerMeta } from "../trainers/registry";
@@ -89,6 +90,8 @@ export function Home() {
           ))}
         </div>
       </div>
+
+      <QuestBanner />
 
       <GamePanel />
 

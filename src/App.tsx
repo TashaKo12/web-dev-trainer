@@ -56,6 +56,9 @@ import {
   PositionFixedTrainer,
   TextDecorationTrainer,
 } from "./trainers/css-topics/CssTopicPages";
+import { QuestHome } from "./quest/QuestHome";
+import { QuestBay } from "./quest/QuestBay";
+import { QuestLevel } from "./quest/QuestLevel";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 
@@ -130,6 +133,11 @@ function App() {
           <Route path="max-size" element={<MaxSizeTrainer />} />
           <Route path="list-style" element={<ListStyleTrainer />} />
           <Route path="multi-page" element={<MultiPageTrainer />} />
+
+          {/* «Тайна станции»: a block-coding quest for children 7–9 */}
+          <Route path="quest" element={<QuestHome />} />
+          <Route path="quest/:bay" element={<QuestBay />} />
+          <Route path="quest/:bay/:level" element={<QuestLevel />} />
 
           <Route path="profile" element={<Profile />} />
           <Route path="admin" element={<Admin />} />
