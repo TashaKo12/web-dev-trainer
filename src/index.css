@@ -653,3 +653,10 @@ html.dark main .border-violet-200 { border-color: rgb(109 40 217 / 0.55); }
 .pixel-tricks.is-quick .trick-handstand,
 .pixel-tricks.is-quick .trick-moonwalk { animation-duration: 0.95s; }
 .pixel-tricks.is-quick .trick-spin { animation-duration: 0.45s; }
+
+/* ── «Тайна станции»: printing the diploma prints only the diploma ── */
+@media print {
+  body * { visibility: hidden !important; }
+  .quest-diploma, .quest-diploma * { visibility: visible !important; }
+  .quest-diploma { position: fixed; inset: 0; margin: auto; width: 100%; height: fit-content; box-shadow: none !important; print-color-adjust: exact; -webkit-print-color-adjust: exact; }
+}

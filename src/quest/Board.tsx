@@ -33,7 +33,23 @@ function useCellSize(w: number, h: number) {
   return { box, cell };
 }
 
-export function Board({ grid, frame, exit, mood }: { grid: Grid; frame: Frame; exit: string; mood: string }) {
+export function Board({
+  grid,
+  frame,
+  exit,
+  mood,
+  item = "⚙️",
+  visible = null,
+}: {
+  grid: Grid;
+  frame: Frame;
+  exit: string;
+  mood: string;
+  /** What the "G" items look like. */
+  item?: string;
+  /** In a dark mine: the cells that can be seen (null — everything is lit). */
+  visible?: Set<string> | null;
+}) {
   const { w, h } = grid;
   const pct = (n: number, of: number) => `${(n / of) * 100}%`;
   const { box, cell } = useCellSize(w, h);
@@ -53,6 +69,12 @@ export function Board({ grid, frame, exit, mood }: { grid: Grid; frame: Frame; e
           row.map((c, x) => {
             const k = key(x, y);
             const wall = c === "#";
+            if (visible && !visible.has(k))
+              return (
+                <div key={k} className="absolute p-[3px]" style={{ left: pct(x, w), top: pct(y, h), width: pct(1, w), height: pct(1, h) }}>
+                  <div className="h-full w-full rounded-xl bg-slate-950/90" />
+                </div>
+              );
             return (
               <div
                 key={k}
@@ -63,14 +85,19 @@ export function Board({ grid, frame, exit, mood }: { grid: Grid; frame: Frame; e
                   className={`flex h-full w-full items-center justify-center rounded-xl ${
                     wall
                       ? "bg-[repeating-linear-gradient(45deg,#475569_0_8px,#3f4b5e_8px_16px)] shadow-[inset_0_-4px_0_rgb(0_0_0/0.25)]"
-                      : c === "F"
-                        ? "bg-emerald-200/90"
-                        : "bg-slate-200/90"
+                      : c === "B"
+                        ? "bg-[repeating-linear-gradient(90deg,#fecaca_0_6px,#ef4444_6px_9px)] shadow-[0_0_14px_#ef4444]"
+                        : c === "F"
+                          ? "bg-emerald-200/90"
+                          : "bg-slate-200/90"
                   }`}
+                  title={c === "B" ? "Лазерные ворота закрыты" : undefined}
                 >
                   {c === "F" && <span className="drop-shadow">{exit}</span>}
                   {(c === "*" || c === "D") && !frame.got.includes(k) && <span className="animate-bounce drop-shadow [animation-duration:2s]">{ITEM[c]}</span>}
-                  {c === "G" && !frame.got.includes(k) && <span className="inline-block animate-[spin_6s_linear_infinite] drop-shadow">⚙️</span>}
+                  {c === "G" && !frame.got.includes(k) && (
+                    <span className={`inline-block drop-shadow ${item === "⚙️" ? "animate-[spin_6s_linear_infinite]" : "animate-bounce [animation-duration:2s]"}`}>{item}</span>
+                  )}
                   {c === "P" && <span className={frame.watered.includes(k) ? "animate-[quest-bloom_0.6s_ease-out]" : "opacity-90"}>{frame.watered.includes(k) ? "🌷" : "🌱"}</span>}
                 </div>
               </div>

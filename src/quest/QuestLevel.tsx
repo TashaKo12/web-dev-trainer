@@ -1,47 +1,81 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Footprints, Lightbulb, Play, RotateCcw, Star, Trash2, Undo2 } from "lucide-react";
-import { BAYS, DIARY } from "./data";
-import { bestLength, blockCount, flatten, isLoop, parseMap, run, type Block, type Origin, type RunResult, type Tool } from "./engine";
+import { BAYS, DIARY, mapsOf } from "./data";
+import {
+  bestLength,
+  blockCount,
+  depthOf,
+  EMPTY_PROGRAM,
+  getList,
+  key,
+  ownerOf,
+  parentOf,
+  parseMap,
+  run,
+  updateList,
+  type Frame,
+  type Node,
+  type Program,
+  type RunResult,
+  type Tool,
+} from "./engine";
 import { Board } from "./Board";
 import { BoltFigure } from "./Dialogue";
-import { BLOCK, BODY_MAX, LOOP_STYLE, ProgramView } from "./Program";
+import { BODY_MAX, ProgramView, TOOL } from "./Program";
 import { finishLevel, levelOpen, useQuest } from "./progress";
 import { emitPixel } from "../lib/pixelBus";
 
-const MAX_BLOCKS = 30;
-const STEP_MS = 480;
+const MAX_BLOCKS = 40;
+const STEP_MS = 420;
 
 const PRAISE = ["Ура, получилось!", "Вот это программа!", "Пиксель в восторге!", "Отличная работа, инженер!"];
 
 const plural = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "блок" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "блока" : "блоков");
 
 /** Where the mistake happened, in words a child understands. */
-function place(o: Origin | undefined) {
-  if (!o) return "";
-  return o.inner < 0 ? `на ${o.top + 1}-м блоке` : `в повторе (блок ${o.top + 1}), на ${o.round + 1}-м круге`;
+function place(f: Frame) {
+  if (!f.path) return "";
+  if (f.path.startsWith("fn")) return "в твоей команде ⭐";
+  const top = Number(f.path.split("/")[1].split(".")[0]);
+  const round = f.rounds[`main/${top}`];
+  return round === undefined ? `на ${top + 1}-м блоке` : `в блоке ${top + 1}, на ${round + 1}-м круге`;
 }
 
-function boltSays(r: RunResult, program: Block[], at: Origin[]): string {
+function boltSays(r: RunResult, program: Program, variant: number, variants: number): string {
   const last = r.frames[r.frames.length - 1];
-  const where = place(at[last.step]);
+  const where = place(last);
+  const prefix = variants > 1 && r.outcome !== "win" ? `В варианте ${variant + 1}: ` : "";
   switch (r.outcome) {
     case "bump":
-      return `Бум! Пиксель врезался в стену ${where}. Посмотри, куда он смотрел перед этим шагом.`;
+      return `${prefix}Бум! Пиксель врезался в стену ${where}. Посмотри, куда он смотрел перед этим шагом.`;
     case "dry":
-      return `Ой, Пиксель полил пустой пол ${where}. Поливать можно только на клетке с ростком.`;
+      return `${prefix}Ой, Пиксель полил пустой пол ${where}. Поливать можно только на клетке с ростком.`;
     case "unwatered":
-      return "Дверь не открывается: ещё не все ростки политы. Вернись и полей их!";
+      return `${prefix}Дверь не открывается: ещё не все ростки политы. Вернись и полей их!`;
     case "nogears":
-      return "Дверь не открывается: собраны ещё не все детали ⚙️. Пройди по каждой!";
+      return `${prefix}Дверь не открывается: собрано ещё не всё. Пройди по каждой клетке с деталью!`;
+    case "endless":
+      return `${prefix}Пиксель ходит и ходит, а выхода всё нет. Проверь, что он делает внутри повтора.`;
     case "short":
-      return program.length ? "Команды закончились, а Пиксель ещё не у двери. Добавь блоков!" : "Программа пустая. Нажимай на блоки, чтобы добавить команды.";
+      return blockCount(program)
+        ? `${prefix}Команды закончились, а Пиксель ещё не у двери. Добавь блоков!`
+        : "Программа пустая. Нажимай на блоки, чтобы добавить команды.";
     default:
       return PRAISE[Math.floor(Math.random() * PRAISE.length)];
   }
 }
 
+/** One step of the show: which variant is on the board and which frame of it. */
+type Shot = { v: number; i: number };
+
+/** A new level gets a fresh screen: nothing from the previous level (its runs, its variants) may leak in. */
 export function QuestLevel() {
+  const { bay, level } = useParams();
+  return <LevelScreen key={`${bay}/${level}`} />;
+}
+
+function LevelScreen() {
   const { bay: bayParam, level: levelParam } = useParams();
   const navigate = useNavigate();
   const save = useQuest();
@@ -49,16 +83,17 @@ export function QuestLevel() {
   const index = Number(levelParam) - 1;
   const level = bay?.levels[index];
 
-  const grid = useMemo(() => (level ? parseMap(level.map) : null), [level]);
-  // the goal for the second star: with loops — the checked solution, without — the shortest plain program
-  const best = useMemo(() => (level?.solution ? blockCount(level.solution) : grid && level ? bestLength(grid, level.dir, level.blocks) : null), [grid, level]);
-  // optional finds for the third star: crystals and the diary page (gears are part of the goal)
-  const items = useMemo(() => (grid ? grid.cells.flat().filter((c) => c === "*" || c === "D").length : 0), [grid]);
+  const maps = useMemo(() => (level ? mapsOf(level).map(parseMap) : []), [level]);
+  // the goal for the second star: the checked solution, or the shortest plain program
+  const best = useMemo(() => (level?.solution ? blockCount(level.solution) : level && maps[0] ? bestLength(maps[0], level.dir, level.blocks) : null), [level, maps]);
+  const optionalIn = (g: (typeof maps)[number]) => g.cells.flat().filter((c) => c === "*" || c === "D").length;
 
-  const [program, setProgram] = useState<Block[]>([]);
-  const [into, setInto] = useState<number | null>(null);
-  const [result, setResult] = useState<RunResult | null>(null);
-  const [shown, setShown] = useState(0); // how many frames of the result are on the board
+  const [program, setProgram] = useState<Program>(EMPTY_PROGRAM);
+  const [into, setInto] = useState("main");
+  const [view, setView] = useState(0); // which variant is shown while editing
+  const [results, setResults] = useState<RunResult[] | null>(null);
+  const [shots, setShots] = useState<Shot[]>([]);
+  const [shown, setShown] = useState(0);
   const [playing, setPlaying] = useState(false);
   const [hint, setHint] = useState(false);
   const [won, setWon] = useState<{ stars: number; short: boolean; all: boolean; fresh: number; diary: boolean; count: number } | null>(null);
@@ -66,9 +101,11 @@ export function QuestLevel() {
 
   // a new level: start over
   useEffect(() => {
-    setProgram([]);
-    setInto(null);
-    setResult(null);
+    setProgram(EMPTY_PROGRAM);
+    setInto("main");
+    setView(0);
+    setResults(null);
+    setShots([]);
     setShown(0);
     setPlaying(false);
     setHint(false);
@@ -76,7 +113,7 @@ export function QuestLevel() {
     return () => clearTimeout(timer.current);
   }, [bayParam, levelParam]);
 
-  if (!bay || !level || !grid) return <p className="text-center text-slate-500">Такого уровня нет. <Link to="/quest" className="font-bold text-violet-600">На карту станции</Link></p>;
+  if (!bay || !level || !maps.length) return <p className="text-center text-slate-500">Такого уровня нет. <Link to="/quest" className="font-bold text-violet-600">На карту станции</Link></p>;
   if (!levelOpen(save, bay.id, index))
     return (
       <div className="mx-auto max-w-md rounded-3xl bg-white/90 p-8 text-center">
@@ -88,119 +125,162 @@ export function QuestLevel() {
       </div>
     );
 
-  const done = result !== null && shown >= result.frames.length;
-  const frame = result ? result.frames[Math.min(shown, result.frames.length) - 1] ?? result.frames[0] : { x: grid.start.x, y: grid.start.y, dir: level.dir, step: -1, got: [], watered: [] };
-  const mood = !result ? "happy" : frame.event === "bump" || frame.event === "dry" ? "sad" : frame.event === "win" ? "love" : done && result.outcome !== "win" ? "thinking" : "happy";
+  const running = results !== null;
+  const done = running && shown >= shots.length;
+  const shot = running && shots.length ? shots[Math.min(Math.max(shown, 1), shots.length) - 1] : null;
+  const variant = shot ? shot.v : view;
+  const grid = maps[variant];
+  const frame: Frame = shot && results ? results[shot.v].frames[shot.i] : { x: grid.start.x, y: grid.start.y, dir: level.dir, got: [], watered: [], path: "", rounds: {} };
+  const lastResult = results ? results[shots.length ? shots[shots.length - 1].v : 0] : null;
+  const mood = !running ? "happy" : frame.event === "bump" || frame.event === "dry" ? "sad" : frame.event === "win" ? "love" : done && lastResult?.outcome !== "win" ? "thinking" : "happy";
 
-  /** Fast taps must not lose blocks: build on the latest program, not on the one from the last render. */
-  function change(update: (p: Block[]) => Block[]) {
+  // the dark mine: Pixel sees the cells around him and remembers the ones he has passed
+  let visible: Set<string> | null = null;
+  if (level.fog) {
+    visible = new Set();
+    const passed = shot && results ? results[shot.v].frames.slice(0, shot.i + 1) : [frame];
+    for (const f of passed) for (let dy = -1; dy <= 1; dy++) for (let dx = -1; dx <= 1; dx++) visible.add(key(f.x + dx, f.y + dy));
+  }
+
+  const total = blockCount(program);
+  const withFn = level.blocks.includes("A");
+
+  function stop() {
     clearTimeout(timer.current);
     setPlaying(false);
-    setResult(null);
+    setResults(null);
+    setShots([]);
     setShown(0);
+  }
+
+  /** Fast taps must not lose blocks: build on the latest program, not on the one from the last render. */
+  function change(update: (p: Program) => Program) {
+    stop();
     setProgram((p) => {
       const next = update(p);
       return blockCount(next) > MAX_BLOCKS ? p : next;
     });
   }
 
-  /** A palette button: a command goes into the open repeat block (or to the end); "repeat" opens a new one. */
+  /** May this tool go into the open container? Returns the reason when it may not. */
+  function allowed(t: Tool): string | null {
+    const depth = depthOf(into);
+    const inFn = into.startsWith("fn");
+    const slot = into.slice(into.lastIndexOf(".") + 1);
+    if (t === "A" && inFn) return "Свою команду нельзя вызвать внутри неё самой";
+    if ((t === "loop" || t === "while") && depth > 0) return "Повтор можно поставить только в саму программу";
+    if (t === "if" && depth > 0 && slot !== "body") return "«Если» нельзя положить внутрь другого «Если»";
+    if (depth > 0 && getList(program, into).length >= BODY_MAX) return "Сюда больше не помещается";
+    return null;
+  }
+
   function add(t: Tool) {
-    if (t === "loop") {
-      if (into !== null) return; // no loops inside loops for now
-      setInto(program.length);
-      change((p) => [...p, { n: 3, body: [] }]);
-      return;
-    }
-    if (into !== null)
-      change((p) => p.map((b, k) => (k === into && isLoop(b) && b.body.length < BODY_MAX ? { ...b, body: [...b.body, t] } : b)));
-    else change((p) => [...p, t]);
+    if (allowed(t)) return;
+    const len = getList(program, into).length;
+    const node: Node =
+      t === "loop" ? { k: "loop", n: 3, body: [] } : t === "while" ? { k: "while", body: [] } : t === "if" ? { k: "if", cond: "wall", then: [], else: [] } : { k: "cmd", c: t };
+    change((p) => updateList(p, into, (list) => [...list, node]));
+    if (node.k === "loop" || node.k === "while") setInto(`${into}/${len}.body`);
+    if (node.k === "if") setInto(`${into}/${len}.then`);
+  }
+
+  function remove(nodePath: string) {
+    const parent = parentOf(nodePath);
+    const i = Number(nodePath.slice(nodePath.lastIndexOf("/") + 1).split(".")[0]);
+    // paths after the removed block shift: go back to the top of the program
+    setInto(nodePath.startsWith("fn") ? "fn" : "main");
+    change((p) => updateList(p, parent, (list) => list.filter((_, k) => k !== i)));
+  }
+
+  function setCount(nodePath: string, n: number) {
+    const parent = parentOf(nodePath);
+    const i = Number(nodePath.slice(nodePath.lastIndexOf("/") + 1));
+    change((p) => updateList(p, parent, (list) => list.map((x, k) => (k === i && x.k === "loop" ? { ...x, n } : x))));
   }
 
   function undo() {
-    const open = into !== null ? program[into] : undefined;
-    if (open && isLoop(open) && open.body.length) {
-      change((p) => p.map((b, k) => (k === into && isLoop(b) ? { ...b, body: b.body.slice(0, -1) } : b)));
+    const list = getList(program, into);
+    if (list.length) {
+      change((p) => updateList(p, into, (l) => l.slice(0, -1)));
       return;
     }
-    if (into === program.length - 1) setInto(null);
-    change((p) => p.slice(0, -1));
+    if (depthOf(into) > 0) remove(ownerOf(into)); // an empty box: remove the box itself
   }
 
-  const flat = flatten(program);
-
-  function finish(r: RunResult) {
-    if (r.outcome !== "win") {
+  function finish(rs: RunResult[], played: Shot[]) {
+    const allWin = rs.every((r) => r.outcome === "win");
+    if (!allWin || played.length === 0) {
       emitPixel("wrong");
       return;
     }
-    const last = r.frames[r.frames.length - 1];
-    const crystals = last.got.filter((k) => grid!.cells[+k.split(",")[1]][+k.split(",")[0]] === "*");
-    // the third star counts only the optional finds — gears are part of the goal and are always collected
-    const all = last.got.filter((k) => "*D".includes(grid!.cells[+k.split(",")[1]][+k.split(",")[0]])).length === items;
-    const short = best !== null && blockCount(program) <= best;
+    const lastOf = (v: number) => rs[v].frames[rs[v].frames.length - 1];
+    const cell = (v: number, k: string) => maps[v].cells[+k.split(",")[1]][+k.split(",")[0]];
+    const all = rs.every((_, v) => lastOf(v).got.filter((k) => "*D".includes(cell(v, k))).length === optionalIn(maps[v]));
+    const short = best !== null && total <= best;
     const stars = 1 + (short ? 1 : 0) + (all ? 1 : 0);
-    const diaryHere = last.got.some((k) => grid!.cells[+k.split(",")[1]][+k.split(",")[0]] === "D");
+    const crystals = lastOf(0).got.filter((k) => cell(0, k) === "*");
+    const diaryHere = rs.some((_, v) => lastOf(v).got.some((k) => cell(v, k) === "D"));
     const diaryNew = diaryHere && !save.diary.includes(level!.id);
     const fresh = finishLevel(level!.id, stars, crystals, diaryHere);
     emitPixel("complete");
-    setTimeout(() => setWon({ stars, short, all, fresh, diary: diaryNew, count: blockCount(program) }), 700);
+    setTimeout(() => setWon({ stars, short, all, fresh, diary: diaryNew, count: total }), 700);
   }
 
-  function play(r: RunResult, from: number) {
-    setPlaying(true);
-    let i = from;
-    const tick = () => {
-      i++;
-      setShown(i);
-      if (i >= r.frames.length) {
-        setPlaying(false);
-        finish(r);
-        return;
-      }
-      timer.current = setTimeout(tick, STEP_MS);
-    };
-    timer.current = setTimeout(tick, from === 0 ? 50 : STEP_MS);
+  /** Runs every variant; the show goes through them one by one and stops at the first that fails. */
+  function prepare() {
+    const rs = maps.map((g) => run(g, level!.dir, program));
+    const list: Shot[] = [];
+    for (let v = 0; v < rs.length; v++) {
+      rs[v].frames.forEach((_, i) => list.push({ v, i }));
+      if (rs[v].outcome !== "win") break;
+    }
+    setInto("main");
+    setResults(rs);
+    setShots(list);
+    return { rs, list };
   }
 
   function start() {
     clearTimeout(timer.current);
-    setInto(null);
-    const r = run(grid!, level!.dir, flat.cmds);
-    setResult(r);
+    const { rs, list } = prepare();
     setShown(1);
-    play(r, 1);
+    setPlaying(true);
+    let i = 1;
+    const tick = () => {
+      i++;
+      setShown(i);
+      if (i >= list.length) {
+        setPlaying(false);
+        finish(rs, list);
+        return;
+      }
+      // a short pause when the next variant starts
+      timer.current = setTimeout(tick, list[i]?.i === 0 ? 900 : STEP_MS);
+    };
+    timer.current = setTimeout(tick, STEP_MS);
   }
 
   function step() {
     clearTimeout(timer.current);
     setPlaying(false);
-    if (!result || done) {
-      setInto(null);
-      const r = run(grid!, level!.dir, flat.cmds);
-      setResult(r);
+    if (!running || done) {
+      prepare();
       setShown(1);
       return;
     }
     const next = shown + 1;
     setShown(next);
-    if (next >= result.frames.length) finish(result);
+    if (next >= shots.length && results) finish(results, shots);
   }
 
-  function reset() {
-    clearTimeout(timer.current);
-    setPlaying(false);
-    setResult(null);
-    setShown(0);
-  }
-
-  const activeAt = result && !done && frame.step >= 0 ? (flat.at[frame.step] ?? null) : null;
-  const failedAt = done && result && (result.outcome === "bump" || result.outcome === "dry") ? (flat.at[frame.step] ?? null) : null;
-  const total = blockCount(program);
-  const gears = grid.cells.flat().includes("G");
-  const sprouts = grid.cells.flat().includes("P");
+  const activeFrame = running && !done ? frame : null;
+  const failedPath = done && lastResult && (lastResult.outcome === "bump" || lastResult.outcome === "dry") ? frame.path : null;
   const nextLevel = index + 1 < bay.levels.length ? `/quest/${bay.id}/${index + 2}` : `/quest/${bay.id}`;
   const gotStars = save.stars[level.id] ?? 0;
+  const cellsAll = maps.flatMap((g) => g.cells.flat());
+  const sprouts = cellsAll.includes("P");
+  const gears = cellsAll.includes("G");
+  const crystalsHere = grid.cells.flat().filter((c) => c === "*").length;
 
   return (
     <div>
@@ -223,19 +303,41 @@ export function QuestLevel() {
       <div className="mb-5 flex items-end gap-3">
         <BoltFigure className="w-16 shrink-0 sm:w-20" />
         <div className="relative flex-1 rounded-3xl rounded-bl-md border border-orange-200 bg-orange-50 px-4 py-3 text-base font-semibold text-slate-700 sm:text-lg">
-          {done && result ? boltSays(result, program, flat.at) : hint ? level.hint : level.intro}
+          {done && lastResult ? boltSays(lastResult, program, shots[shots.length - 1]?.v ?? 0, maps.length) : hint ? level.hint : level.intro}
         </div>
       </div>
 
       <div className="grid grid-cols-[minmax(0,1fr)] gap-6 lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]">
         <div>
-          <Board grid={grid} frame={frame} exit={bay.exit} mood={mood} />
+          {maps.length > 1 && (
+            <div className="mb-3 flex flex-wrap items-center justify-center gap-2">
+              <span className="text-sm font-extrabold text-slate-500">{running ? "Проверяем:" : "Посмотри все варианты:"}</span>
+              {maps.map((_, v) => {
+                const status = results ? (results[v].outcome === "win" && shots.some((s) => s.v === v) ? "✓" : shots.some((s) => s.v === v) && done ? "✗" : "") : "";
+                return (
+                  <button
+                    key={v}
+                    type="button"
+                    disabled={running}
+                    onClick={() => setView(v)}
+                    className={`rounded-full border-2 px-3 py-1 text-sm font-extrabold transition ${
+                      v === variant ? "border-violet-500 bg-violet-500 text-white" : "border-slate-200 text-slate-500 hover:border-violet-300"
+                    }`}
+                  >
+                    Вариант {v + 1} {status}
+                  </button>
+                );
+              })}
+            </div>
+          )}
+          <Board key={variant} grid={grid} frame={frame} exit={bay.exit} mood={mood} item={bay.item} visible={visible} />
           <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm font-bold text-slate-500">
             <span>
               Цель: {sprouts ? "полить все 🌱 и " : ""}
-              {gears ? "собрать все ⚙️ и " : ""}дойти до {bay.exit}
+              {gears ? `собрать все ${bay.item ?? "⚙️"} и ` : ""}дойти до {bay.exit}
             </span>
-            {items > 0 && <span>Собери: {"💎".repeat(grid.cells.flat().filter((c) => c === "*").length)}{grid.cells.flat().includes("D") ? " 📜" : ""}</span>}
+            {crystalsHere > 0 && <span>Собери: {"💎".repeat(crystalsHere)}</span>}
+            {level.fog && <span>🔦 Темно: видно только клетки рядом</span>}
           </div>
         </div>
 
@@ -243,19 +345,20 @@ export function QuestLevel() {
           <div className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
             <p className="mb-2 text-sm font-extrabold text-slate-500">Команды — нажимай, чтобы добавить:</p>
             <div className="flex flex-wrap gap-2">
-              {level.blocks.map((c) => {
-                const b = c === "loop" ? LOOP_STYLE : BLOCK[c];
+              {level.blocks.map((t) => {
+                const b = TOOL[t];
                 const Icon = b.icon;
+                const why = allowed(t);
                 return (
                   <button
-                    key={c}
+                    key={t}
                     type="button"
-                    disabled={total >= MAX_BLOCKS || (c === "loop" && into !== null)}
-                    title={c === "loop" && into !== null ? "Сначала нажми «Готово» у открытого повтора" : undefined}
-                    onClick={() => add(c)}
+                    disabled={total >= MAX_BLOCKS || !!why}
+                    title={why ?? undefined}
+                    onClick={() => add(t)}
                     className={`flex min-w-[5.5rem] flex-col items-center gap-0.5 rounded-2xl border-b-4 px-3 py-2 text-white shadow transition active:translate-y-0.5 active:border-b-2 disabled:opacity-40 ${b.cls}`}
                   >
-                    <Icon className="h-7 w-7" strokeWidth={2.5} />
+                    <Icon className="h-7 w-7" strokeWidth={2.5} fill={t === "A" ? "currentColor" : "none"} />
                     <span className="text-sm font-extrabold">{b.label}</span>
                   </button>
                 );
@@ -269,21 +372,42 @@ export function QuestLevel() {
                 Программа Пикселя: {total} {plural(total)}
               </p>
               <div className="flex gap-1">
-                <button type="button" onClick={undo} disabled={!program.length} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30" aria-label="Убрать последний блок" title="Убрать последний">
+                <button
+                  type="button"
+                  onClick={undo}
+                  disabled={!total}
+                  className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30"
+                  aria-label="Убрать последний блок"
+                  title="Убрать последний"
+                >
                   <Undo2 className="h-5 w-5" strokeWidth={2} />
                 </button>
                 <button
                   type="button"
                   onClick={() => {
-                    setInto(null);
-                    change(() => []);
+                    setInto("main");
+                    change(() => EMPTY_PROGRAM);
                   }}
-                  disabled={!program.length} className="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-30" aria-label="Очистить программу" title="Очистить всё">
+                  disabled={!total}
+                  className="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-30"
+                  aria-label="Очистить программу"
+                  title="Очистить всё"
+                >
                   <Trash2 className="h-5 w-5" strokeWidth={2} />
                 </button>
               </div>
             </div>
-            <ProgramView program={program} into={into} onInto={setInto} onChange={change} active={activeAt} failed={failedAt} />
+            <ProgramView
+              program={program}
+              into={into}
+              onInto={(c) => !playing && setInto(c)}
+              onChange={change}
+              frame={activeFrame}
+              failed={failedPath}
+              onRemove={remove}
+              onSetCount={setCount}
+              withFn={withFn}
+            />
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -298,8 +422,8 @@ export function QuestLevel() {
                 <Footprints className="h-5 w-5" strokeWidth={2} />
                 По шагам
               </button>
-              {result && (
-                <button type="button" onClick={reset} className="inline-flex items-center gap-1.5 rounded-full px-3 py-2.5 font-bold text-slate-400 hover:text-slate-600">
+              {running && (
+                <button type="button" onClick={stop} className="inline-flex items-center gap-1.5 rounded-full px-3 py-2.5 font-bold text-slate-400 hover:text-slate-600">
                   <RotateCcw className="h-4 w-4" strokeWidth={2} />
                   На старт
                 </button>
@@ -310,7 +434,11 @@ export function QuestLevel() {
               </button>
             </div>
           </div>
-          {best !== null && <p className="text-center text-sm font-semibold text-slate-400">Лучшее решение — {best} {plural(best)}. Сможешь так же?</p>}
+          {best !== null && (
+            <p className="text-center text-sm font-semibold text-slate-400">
+              Лучшее решение — {best} {plural(best)}. Сможешь так же?
+            </p>
+          )}
         </div>
       </div>
 
@@ -330,12 +458,12 @@ export function QuestLevel() {
               ))}
             </div>
             <ul className="mb-4 space-y-1 text-left text-sm font-semibold text-slate-600">
-              <li>⭐ Дошёл до цели</li>
+              <li>⭐ Дошёл до цели{maps.length > 1 ? " во всех вариантах" : ""}</li>
               <li className={won.short ? "" : "text-slate-400"}>
                 {won.short ? "⭐" : "☆"} Программа не длиннее {best} {plural(best ?? 0)} (у тебя {won.count})
               </li>
               <li className={won.all ? "" : "text-slate-400"}>
-                {won.all ? "⭐" : "☆"} Собрал всё: {grid.cells.flat().includes("D") ? "кристаллы и листок" : "все кристаллы"}
+                {won.all ? "⭐" : "☆"} Собрал всё: {cellsAll.includes("D") ? "кристаллы и листок" : "все кристаллы"}
               </li>
             </ul>
             {won.fresh > 0 && <p className="mb-3 rounded-2xl bg-sky-50 p-2 font-bold text-sky-700">+{won.fresh} 💎 в копилку</p>}
@@ -346,11 +474,18 @@ export function QuestLevel() {
               </div>
             )}
             <div className="flex flex-wrap justify-center gap-2">
-              <button type="button" onClick={() => { setWon(null); reset(); }} className="rounded-full border-2 border-slate-200 px-5 py-2.5 font-bold text-slate-600">
+              <button
+                type="button"
+                onClick={() => {
+                  setWon(null);
+                  stop();
+                }}
+                className="rounded-full border-2 border-slate-200 px-5 py-2.5 font-bold text-slate-600"
+              >
                 Ещё раз
               </button>
               <button type="button" onClick={() => navigate(nextLevel)} className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-2.5 font-extrabold text-white shadow">
-                {index + 1 < bay.levels.length ? "Следующий уровень →" : "Чиним отсек! →"}
+                {index + 1 < bay.levels.length ? "Следующий уровень →" : bay.finale ? "Открыть Сердце! →" : "Чиним отсек! →"}
               </button>
             </div>
           </div>

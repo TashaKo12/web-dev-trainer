@@ -1,4 +1,5 @@
-import type { Block, Dir, Tool } from "./engine";
+import { prog, rep, type Dir, type Program, type Tool } from "./engine";
+import { MORE_BAYS, MORE_DIARY } from "./bays456";
 
 // «Тайна станции»: the story, the bays of the station and their levels (for children 7–9).
 
@@ -9,17 +10,21 @@ export type Level = {
   id: string;
   title: string;
   map: string[];
+  /** Other versions of the same level (gates open or closed, tunnels of another length): the program must pass them all. */
+  variants?: string[][];
   dir: Dir;
   blocks: Tool[];
   /** What Bolt says before the level. */
   intro: string;
   hint: string;
   boss?: boolean;
+  /** A dark mine: only the cells next to Pixel and the ones he has passed are visible. */
+  fog?: boolean;
   /**
-   * For levels with the repeat block: the shortest solution in blocks (checked by a script). Its block count
-   * is the goal for the second star. Without it, the goal is the shortest plain program.
+   * For levels with loops, conditions or Pixel's own command: the shortest solution in blocks (checked by a script).
+   * Its block count is the goal for the second star. Without it, the goal is the shortest plain program.
    */
-  solution?: Block[];
+  solution?: Program;
 };
 
 export type Bay = {
@@ -31,10 +36,17 @@ export type Bay = {
   trouble: string;
   /** The exit cell on the map. */
   exit: string;
+  /** What the "G" items look like here (gears by default). */
+  item?: string;
   intro: Line[];
   outro: Line[];
   levels: Level[];
+  /** The Heart of the Station: opens with all six keys and ends the story. */
+  finale?: boolean;
 };
+
+/** All maps of a level: the main one and its variants. */
+export const mapsOf = (l: Level) => [l.map, ...(l.variants ?? [])];
 
 export const PROLOGUE: Line[] = [
   { who: "station", text: "Перезагрузка… Робот П-1 по имени Пиксель — включён." },
@@ -62,12 +74,12 @@ export const DIARY: Record<string, { title: string; text: string }> = {
     title: "Запись 3",
     text: "Я оставила подсказки на каждом шагу. Если Пиксель их находит — значит, кто-то ему помогает. Интересно, кто ты? Наверное, ты очень умный.",
   },
+  ...MORE_DIARY,
 };
 
 const MOVE: Tool[] = ["F", "L", "R"];
 const GARDEN: Tool[] = ["F", "L", "R", "W"];
 const FACTORY: Tool[] = ["F", "L", "R", "loop"];
-const rep = (n: number, ...body: ("F" | "L" | "R" | "W")[]): Block => ({ n, body });
 
 export const BAYS: Bay[] = [
   {
@@ -155,7 +167,7 @@ export const BAYS: Bay[] = [
         blocks: ["F", "loop"],
         intro: "Лента длинная-длинная. Возьми блок «Повтори», положи в него «Вперёд» и выбери, сколько раз шагнуть.",
         hint: "Нажми «Повтори», потом «Вперёд» — он попадёт внутрь. Кнопками − и + поставь 7.",
-        solution: [rep(7, "F")],
+        solution: prog([rep(7, "F")]),
       },
       {
         id: "3-2",
@@ -165,7 +177,7 @@ export const BAYS: Bay[] = [
         blocks: FACTORY,
         intro: "Лента поворачивает вниз. Два повтора и поворот между ними!",
         hint: "Повтори 5 раз «Вперёд», потом «Направо» (нажми на программу, чтобы выйти из повтора), и ещё один повтор вниз.",
-        solution: [rep(5, "F"), "R", rep(3, "F")],
+        solution: prog([rep(5, "F"), "R", rep(3, "F")]),
       },
       {
         id: "3-3",
@@ -175,7 +187,7 @@ export const BAYS: Bay[] = [
         blocks: FACTORY,
         intro: "Ступеньки одинаковые — значит, и команды для них одни и те же. Найди, что повторяется!",
         hint: "Одна ступенька: вперёд, налево, вперёд, направо. Повтори её 3 раза.",
-        solution: [rep(3, "F", "L", "F", "R")],
+        solution: prog([rep(3, "F", "L", "F", "R")]),
       },
       {
         id: "3-4",
@@ -185,7 +197,7 @@ export const BAYS: Bay[] = [
         blocks: FACTORY,
         intro: "Детали лежат по углам цеха. Обойди его по кругу — у квадрата все стороны одинаковые!",
         hint: "Одна сторона: три шага вперёд и поворот направо. Повтори 4 раза.",
-        solution: [rep(4, "F", "F", "F", "R")],
+        solution: prog([rep(4, "F", "F", "F", "R")]),
       },
       {
         id: "3-5",
@@ -195,7 +207,7 @@ export const BAYS: Bay[] = [
         blocks: FACTORY,
         intro: "Теперь лесенка ведёт вверх. Посмотри, куда смотрит Пиксель!",
         hint: "Одна ступенька: вперёд, направо, вперёд, налево. Повтори 3 раза.",
-        solution: [rep(3, "F", "R", "F", "L")],
+        solution: prog([rep(3, "F", "R", "F", "L")]),
       },
       {
         id: "3-6",
@@ -205,7 +217,7 @@ export const BAYS: Bay[] = [
         blocks: FACTORY,
         intro: "На складе кто-то оставил листок. Почерк знакомый…",
         hint: "Повтори 6 раз «Вперёд», поверни направо и повтори ещё 2 шага вниз.",
-        solution: [rep(6, "F"), "R", rep(2, "F")],
+        solution: prog([rep(6, "F"), "R", rep(2, "F")]),
       },
       {
         id: "3-7",
@@ -215,7 +227,7 @@ export const BAYS: Bay[] = [
         blocks: FACTORY,
         intro: "Огромная лестница вниз! Без повтора тут пришлось бы собрать двадцать блоков.",
         hint: "Одна ступенька: вперёд, направо, вперёд, налево. Сколько тут ступенек? Посчитай!",
-        solution: [rep(5, "F", "R", "F", "L")],
+        solution: prog([rep(5, "F", "R", "F", "L")]),
       },
       {
         id: "3-8",
@@ -226,18 +238,16 @@ export const BAYS: Bay[] = [
         intro: "Последние детали — и конвейер оживёт! Тут понадобятся сразу три повтора.",
         hint: "Повтори 4 шага вправо, поверни, повтори 3 шага вниз, поверни, повтори 4 шага налево.",
         boss: true,
-        solution: [rep(4, "F"), "R", rep(3, "F"), "R", rep(4, "F")],
+        solution: prog([rep(4, "F"), "R", rep(3, "F"), "R", rep(4, "F")]),
       },
     ],
   },
+  ...MORE_BAYS,
 ];
 
-/** The bays that are not built yet: shown on the map as closed doors. */
-export const LOCKED_BAYS = [
-  { id: 4, name: "Лабиринт охраны", emoji: "🛡️", key: { name: "Ключ Выбора", color: "#22c55e" }, trouble: "Двери открываются как попало" },
-  { id: 5, name: "Тёмные шахты", emoji: "🔦", key: { name: "Ключ Терпения", color: "#3b82f6" }, trouble: "Не видно, где кончается туннель" },
-  { id: 6, name: "Мастерская", emoji: "🔧", key: { name: "Ключ Создателя", color: "#a855f7" }, trouble: "Нужно собрать нового помощника" },
-];
+/** The six bays on the station map (the Heart of the Station is drawn separately). */
+export const STATION_BAYS = BAYS.filter((b) => !b.finale);
+export const HEART = BAYS.find((b) => b.finale)!;
 
 export const findLevel = (id: string) => {
   for (const bay of BAYS) {

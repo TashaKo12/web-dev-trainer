@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BookOpen, Lock, Star, X } from "lucide-react";
-import { BAYS, DIARY, LOCKED_BAYS, PROLOGUE } from "./data";
+import { BAYS, DIARY, HEART, PROLOGUE, STATION_BAYS } from "./data";
 import { Dialogue } from "./Dialogue";
 import { PixelFigure } from "../components/PixelBuddy";
 import { bayDone, bayOpen, markPrologue, useQuest } from "./progress";
@@ -60,8 +60,10 @@ export function QuestHome() {
 
   const allLevels = BAYS.flatMap((b) => b.levels);
   const stars = allLevels.reduce((s, l) => s + (save.stars[l.id] ?? 0), 0);
-  const keys = BAYS.filter((b) => bayDone(save, b.id)).length;
-  const bays = [...BAYS, ...LOCKED_BAYS.map((b) => ({ ...b, levels: [] as typeof allLevels }))];
+  const keys = STATION_BAYS.filter((b) => bayDone(save, b.id)).length;
+  const bays = STATION_BAYS;
+  const heartOpen = bayOpen(save, HEART.id);
+  const heartDone = bayDone(save, HEART.id);
 
   const bayCard = (b: (typeof bays)[number]) => {
     const playable = b.levels.length > 0;
@@ -130,20 +132,39 @@ export function QuestHome() {
         {bays.slice(0, 3).map(bayCard)}
 
         {/* the Heart of the Station: opens with all six keys */}
-        <div className="relative overflow-hidden rounded-3xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-950 via-violet-900 to-fuchsia-900 p-5 text-center text-white sm:col-span-3">
+        <Link
+          to={heartOpen ? `/quest/${HEART.id}` : "/quest"}
+          onClick={(e) => !heartOpen && e.preventDefault()}
+          aria-disabled={!heartOpen}
+          className={`relative block overflow-hidden rounded-3xl border-2 border-indigo-300 bg-gradient-to-br from-indigo-950 via-violet-900 to-fuchsia-900 p-5 text-center text-white sm:col-span-3 ${
+            heartOpen ? "cursor-pointer shadow-[0_0_40px_rgb(236_72_153/0.45)] transition hover:-translate-y-1" : "cursor-default"
+          }`}
+        >
           <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_40%,rgb(255_255_255/0.18),transparent_60%)]" />
           <p className="relative text-xs font-extrabold uppercase tracking-[0.2em] text-violet-200">Сердце станции</p>
           <div className="relative my-3 flex items-center justify-center gap-2 sm:gap-3">
-            {[...BAYS, ...LOCKED_BAYS].slice(0, 3).map((b) => (
+            {STATION_BAYS.slice(0, 3).map((b) => (
               <KeySlot key={b.id} color={b.key.color} got={bayDone(save, b.id)} size="h-9 w-9" />
             ))}
-            <span className="mx-1 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-violet-300/60 bg-white/10 text-3xl">🔒</span>
-            {[...BAYS, ...LOCKED_BAYS].slice(3, 6).map((b) => (
+            <span
+              className={`mx-1 flex h-16 w-16 items-center justify-center rounded-2xl border-2 text-3xl ${
+                heartOpen ? "animate-pulse border-pink-300 bg-pink-500/30" : "border-violet-300/60 bg-white/10"
+              }`}
+            >
+              {heartDone ? "💜" : heartOpen ? "🔓" : "🔒"}
+            </span>
+            {STATION_BAYS.slice(3, 6).map((b) => (
               <KeySlot key={b.id} color={b.key.color} got={bayDone(save, b.id)} size="h-9 w-9" />
             ))}
           </div>
-          <p className="relative text-sm text-violet-100">Здесь Создательница спрятала самое важное. Дверь откроют шесть ключей.</p>
-        </div>
+          <p className="relative text-sm text-violet-100">
+            {heartDone
+              ? "Сердце станции открыто! Нажми, чтобы снова увидеть секрет и свой диплом."
+              : heartOpen
+                ? "Все шесть ключей собраны! Нажми — и открой Сердце станции."
+                : "Здесь Создательница спрятала самое важное. Дверь откроют шесть ключей."}
+          </p>
+        </Link>
 
         {bays.slice(3).map(bayCard)}
       </div>
