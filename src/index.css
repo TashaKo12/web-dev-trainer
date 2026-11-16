@@ -633,3 +633,15 @@ code, pre, kbd, samp, textarea, .font-mono { font-variant-ligatures: none; font-
 .quest-banner:hover { transform: translateY(-2px); }
 .pixel-bot.quest-banner-bot { position: relative; height: 5.5rem; flex-shrink: 0; }
 .quest-banner-tag { display: inline-block; margin-bottom: 0.25rem; border-radius: 9999px; background: #fbbf24; padding: 0.1rem 0.6rem; font-size: 0.75rem; font-weight: 800; color: #451a03; }
+
+/* «Тайна станции» in dark mode: the light quest cards get dark backgrounds like the rest of the site */
+html.dark main .bg-white\/95 { background-color: rgb(15 23 42 / 0.9); }
+html.dark main .bg-white\/60,
+html.dark main .bg-white\/50 { background-color: rgb(15 23 42 / 0.55); }
+html.dark main .bg-orange-50 { background-color: rgb(124 45 18 / 0.4); }
+html.dark main .border-orange-200 { border-color: rgb(194 65 12 / 0.6); }
+html.dark main .text-orange-600 { color: #fdba74; }
+html.dark main .bg-amber-200 { background-color: rgb(146 64 14 / 0.7); }
+html.dark main .text-violet-600,
+html.dark main .text-violet-500 { color: #c4b5fd; }
+html.dark main .border-violet-200 { border-color: rgb(109 40 217 / 0.55); }
