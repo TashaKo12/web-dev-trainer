@@ -3,6 +3,8 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import { Star } from "lucide-react";
 import { BAYS, DIARY } from "./data";
 import { Dialogue } from "./Dialogue";
+import { TheoryButton, TheoryCard } from "../components/GameTheory";
+import { BAY_THEORY } from "./theory";
 import { Diploma } from "./Diploma";
 import { bayDone, bayOpen, levelOpen, markIntro, markOutro, useQuest } from "./progress";
 
@@ -16,6 +18,8 @@ export function QuestBay() {
   // the finale: the Creator's secret and the diploma can be opened again
   const [screen, setScreen] = useState<"secret" | "diploma" | null>(null);
   const navigate = useNavigate();
+  // the theory comes after the bay's story, before its first level; later it opens with the «Теория» button
+  const [theory, setTheory] = useState(() => !!bay && bay.levels.every((l) => !(save.stars[l.id] > 0)));
 
   if (!bay) return <p className="text-center text-slate-500">Такого отсека нет. <Link to="/quest" className="font-bold text-violet-600">На карту станции</Link></p>;
   if (!bayOpen(save, bay.id))
@@ -96,9 +100,20 @@ export function QuestBay() {
       </div>
     );
 
+  if (theory && BAY_THEORY[bay.id])
+    return (
+      <div>
+        {heading}
+        <TheoryCard theory={BAY_THEORY[bay.id]} onDone={() => setTheory(false)} doneLabel="Понятно, к уровням!" />
+      </div>
+    );
+
   return (
     <div>
       {heading}
+      <div className="-mt-4 mb-6 flex justify-center">
+        <TheoryButton onClick={() => setTheory(true)} />
+      </div>
       {done && !bay.finale && (
         <p className="mx-auto mb-6 max-w-md rounded-2xl bg-emerald-50 p-3 text-center font-bold text-emerald-700">
           Отсек починен — {bay.key.name} у тебя! Можно перепройти уровни и собрать все звёзды.

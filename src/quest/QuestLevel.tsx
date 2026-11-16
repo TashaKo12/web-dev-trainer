@@ -22,6 +22,8 @@ import {
 } from "./engine";
 import { Board } from "./Board";
 import { BoltFigure } from "./Dialogue";
+import { CodeBox } from "../components/GameTheory";
+import { toPython } from "./theory";
 import { BODY_MAX, ProgramView, TOOL } from "./Program";
 import { finishLevel, levelOpen, useQuest } from "./progress";
 import { emitPixel } from "../lib/pixelBus";
@@ -451,7 +453,7 @@ function LevelScreen() {
 
       {won && (
         <div className="fixed inset-0 z-40 flex items-center justify-center bg-slate-900/50 p-4 backdrop-blur-sm">
-          <div className="animate-fade-in w-full max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl">
+          <div className="animate-fade-in max-h-[92vh] w-full max-w-lg overflow-y-auto rounded-3xl bg-white p-6 text-center shadow-2xl">
             <p className="text-sm font-extrabold uppercase tracking-wide text-emerald-500">Уровень пройден!</p>
             <div className="my-3 flex justify-center gap-2">
               {[1, 2, 3].map((n) => (
@@ -473,6 +475,10 @@ function LevelScreen() {
                 {won.all ? "⭐" : "☆"} Собрал всё: {cellsAll.includes("D") ? "кристаллы и листок" : "все кристаллы"}
               </li>
             </ul>
+            <div className="mb-4">
+              <p className="mb-2 text-left text-sm font-extrabold uppercase tracking-wide text-violet-500">💻 Твоя программа на языке Python</p>
+              <CodeBox code={toPython(program)} />
+            </div>
             {won.fresh > 0 && <p className="mb-3 rounded-2xl bg-sky-50 p-2 font-bold text-sky-700">+{won.fresh} 💎 в копилку</p>}
             {won.diary && DIARY[level.id] && (
               <div className="mb-4 rounded-2xl border border-amber-200 bg-amber-50 p-3 text-left">
