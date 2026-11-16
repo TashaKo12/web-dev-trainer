@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { PixelTricks, TRICKS } from "./PixelTricks";
 
 function polygonPoints(sides: number, r: number, rotateDeg = -90) {
   const rotate = (rotateDeg * Math.PI) / 180;
@@ -46,21 +47,34 @@ const SHAPES: Shape[] = [
   { cx: 60, cy: 740, r: 60, color: "#818cf8", opacity: 0.12, spin: "ccw", duration: "33s" },
 ];
 
+/** Each of Pixel's tricks gets this long on the loading screen. */
+const TRICK_MS = 1000;
+const SHOW_MS = TRICK_MS * TRICKS.length;
+
 export function LoadingScreen({ onDone }: { onDone: () => void }) {
   const [fading, setFading] = useState(false);
 
+  // all of Pixel's tricks play once; a click or any key skips the show
   useEffect(() => {
-    const startFade = setTimeout(() => setFading(true), 1300);
-    const finish = setTimeout(onDone, 1700);
+    const skip = () => setFading(true);
+    const startFade = setTimeout(skip, SHOW_MS);
+    window.addEventListener("keydown", skip);
     return () => {
       clearTimeout(startFade);
-      clearTimeout(finish);
+      window.removeEventListener("keydown", skip);
     };
-  }, [onDone]);
+  }, []);
+
+  useEffect(() => {
+    if (!fading) return;
+    const finish = setTimeout(onDone, 450);
+    return () => clearTimeout(finish);
+  }, [fading, onDone]);
 
   return (
     <div
-      className={`fixed inset-0 z-50 overflow-hidden bg-gradient-to-b from-[#0b0a16] via-[#120f24] to-[#0a0e1a] transition-opacity duration-500 ${
+      onClick={() => setFading(true)}
+      className={`fixed inset-0 z-50 cursor-pointer overflow-hidden bg-gradient-to-b from-[#0b0a16] via-[#120f24] to-[#0a0e1a] transition-opacity duration-500 ${
         fading ? "opacity-0" : "opacity-100"
       }`}
     >
@@ -108,12 +122,16 @@ export function LoadingScreen({ onDone }: { onDone: () => void }) {
       </svg>
 
       <div className="relative flex h-full flex-col items-center justify-center">
+        <div className="loading-tricks">
+          <PixelTricks every={TRICK_MS} />
+        </div>
         <p className="text-lg font-extrabold tracking-wide text-slate-100">Тренажёр веб-разработки</p>
         <p className="mb-6 mt-1 text-sm text-slate-400">Загружаем интерактивные задания…</p>
 
         <div className="h-px w-48 overflow-hidden bg-slate-700/60">
-          <div className="loading-progress-fill h-full w-full bg-indigo-400" />
+          <div className="loading-progress-fill h-full w-full bg-indigo-400" style={{ animationDuration: `${SHOW_MS}ms` }} />
         </div>
+        <p className="mt-6 text-xs text-slate-500">Нажми в любом месте, чтобы пропустить</p>
       </div>
     </div>
   );

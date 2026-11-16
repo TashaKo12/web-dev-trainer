@@ -645,3 +645,11 @@ html.dark main .bg-amber-200 { background-color: rgb(146 64 14 / 0.7); }
 html.dark main .text-violet-600,
 html.dark main .text-violet-500 { color: #c4b5fd; }
 html.dark main .border-violet-200 { border-color: rgb(109 40 217 / 0.55); }
+
+/* ── Pixel's tricks on the loading screen: bigger, quicker, always on a dark background ── */
+.loading-tricks { transform: scale(1.35); transform-origin: 50% 100%; margin-bottom: 1.75rem; }
+.loading-tricks .pixel-tricks-say { color: #e0e7ff; background: rgb(129 140 248 / 0.2); }
+.pixel-tricks.is-quick .trick-flip { animation-duration: 0.85s; animation-delay: 0.05s; }
+.pixel-tricks.is-quick .trick-handstand,
+.pixel-tricks.is-quick .trick-moonwalk { animation-duration: 0.95s; }
+.pixel-tricks.is-quick .trick-spin { animation-duration: 0.45s; }

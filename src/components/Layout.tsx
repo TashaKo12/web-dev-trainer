@@ -8,7 +8,6 @@ import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
 import { SignInGate } from "./SignInGate";
 import { PixelBuddy } from "./PixelBuddy";
-import { PixelTricks } from "./PixelTricks";
 import { GameToast } from "./GameToast";
 import { formatCode, getAdminSession, useAccount } from "../lib/cloud";
 import { ThemeToggle } from "./ThemeToggle";
@@ -59,12 +58,11 @@ export function Layout() {
           </div>
         </div>
       </header>
-      <main className="animate-fade-in relative z-[15] mx-auto max-w-5xl px-5 py-8 sm:py-12">
+      {/* a quest level needs room for a big map */}
+      <main className={`animate-fade-in relative z-[15] mx-auto px-5 py-8 sm:py-12 ${quest?.[2] ? "max-w-7xl" : "max-w-5xl"}`}>
         {locked ? <SignInGate /> : <Outlet />}
       </main>
       <footer className="mx-auto max-w-5xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
-        {/* task pages already have Pixel running alongside; elsewhere he shows tricks here */}
-        {!trainers.some((t) => t.path === pathname) && <PixelTricks />}
         <p>Сделано для тех, кто делает первые шаги в программировании</p>
         <p className="mt-1 text-xs text-slate-400/80 dark:text-slate-600">Автор проекта — Татьяна Кондратюк</p>
         {account ? (

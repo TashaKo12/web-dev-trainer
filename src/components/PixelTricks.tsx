@@ -1,11 +1,11 @@
 import { useEffect, useState } from "react";
 import { PixelFigure } from "./PixelBuddy";
 
-// Pixel at the bottom of the page showing off tricks one after another.
+// Pixel showing off tricks one after another — on the loading screen, at a quick pace.
 
 type Trick = { id: string; say: string; mood: string };
 
-const TRICKS: Trick[] = [
+export const TRICKS: Trick[] = [
   { id: "flip", say: "Сальто назад!", mood: "happy" },
   { id: "juggle", say: "Жонглирую тегами!", mood: "wink" },
   { id: "handstand", say: "Стойка на руках!", mood: "silly" },
@@ -14,19 +14,20 @@ const TRICKS: Trick[] = [
   { id: "spin", say: "Волчок!", mood: "surprised" },
 ];
 
-export function PixelTricks() {
+/** every: how long each trick lasts, in ms. The quick pace also speeds up the animations themselves. */
+export function PixelTricks({ every = 3600 }: { every?: number }) {
   const [i, setI] = useState(0);
 
   useEffect(() => {
     if (matchMedia("(prefers-reduced-motion: reduce)").matches) return;
-    const t = setInterval(() => setI((n) => (n + 1) % TRICKS.length), 3600);
+    const t = setInterval(() => setI((n) => (n + 1) % TRICKS.length), every);
     return () => clearInterval(t);
-  }, []);
+  }, [every]);
 
   const trick = TRICKS[i];
 
   return (
-    <div className="pixel-tricks" aria-hidden="true">
+    <div className={`pixel-tricks ${every < 2000 ? "is-quick" : ""}`} aria-hidden="true">
       <p key={trick.id} className="pixel-tricks-say">
         {trick.say}
       </p>
