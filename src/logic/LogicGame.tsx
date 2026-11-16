@@ -5,6 +5,8 @@ import { createStarStore } from "../lib/gameStars";
 import { emitPixel } from "../lib/pixelBus";
 import { BoltFigure, Dialogue } from "../quest/Dialogue";
 import { ALL_PUZZLES, ISLANDS, LOGIC_INTRO, LOGIC_OUTRO, type ChoicePuzzle, type GridPuzzle, type Island, type Puzzle } from "./data";
+import { CodeBox, TheoryButton, TheoryCard } from "../components/GameTheory";
+import { ISLAND_THEORY, PUZZLE_CODE } from "./theory";
 
 // «Остров загадок»: the island map (main menu) and one island with its six puzzles.
 
@@ -233,6 +235,8 @@ function IslandScreen() {
   const [places, setPlaces] = useState<(number | null)[]>([]);
   const [result, setResult] = useState<"right" | "wrong" | null>(null);
   const [hint, setHint] = useState(false);
+  // the theory comes first on a new island; later it opens with the «Теория» button
+  const [theory, setTheory] = useState(() => !!island && solved(save.stars, island) === 0);
 
   if (!island) return <p className="text-center text-slate-500">Такого острова нет. <Link to="/logic" className="font-bold text-violet-600">На карту</Link></p>;
   if (!islandOpen(save.stars, idx))
@@ -289,6 +293,17 @@ function IslandScreen() {
 
   const gridFull = puzzle.kind === "grid" && gridPlaces.every((x) => x !== null);
   const last = at === island.puzzles.length - 1;
+  const code = PUZZLE_CODE[puzzle.id];
+
+  if (theory)
+    return (
+      <div>
+        <p className="mb-4 text-center text-sm font-extrabold uppercase tracking-wide" style={{ color: island.color }}>
+          {island.emoji} {island.name}
+        </p>
+        <TheoryCard theory={ISLAND_THEORY[island.id]} onDone={() => setTheory(false)} doneLabel="Понятно, к загадкам!" />
+      </div>
+    );
 
   return (
     <div>
@@ -299,7 +314,8 @@ function IslandScreen() {
           </p>
           <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl dark:text-slate-100">{puzzle.q}</h1>
         </div>
-        <div className="flex gap-1.5">
+        <div className="flex flex-wrap items-center gap-1.5">
+          <TheoryButton onClick={() => setTheory(true)} />
           {island.puzzles.map((p, i) => (
             <button
               key={p.id}
@@ -371,6 +387,13 @@ function IslandScreen() {
           )}
         </div>
       </div>
+
+      {right && code && (
+        <div className="mt-5">
+          <p className="mb-2 text-sm font-extrabold uppercase tracking-wide text-violet-500">💻 Как это записал бы программист</p>
+          <CodeBox {...code} />
+        </div>
+      )}
 
       {right && (
         <div className="mt-5 flex justify-center">

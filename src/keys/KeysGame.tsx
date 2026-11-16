@@ -5,6 +5,8 @@ import { createStarStore } from "../lib/gameStars";
 import { emitPixel } from "../lib/pixelBus";
 import { BoltFigure, Dialogue } from "../quest/Dialogue";
 import { CODE_OF, KEY_BY_CODE, KEYS_INTRO, KEYS_LEVELS, ROWS, type Task } from "./data";
+import { CodeBox, TheoryButton, TheoryCard } from "../components/GameTheory";
+import { KEYS_THEORY } from "./theory";
 
 // «Клавиатура Пикселя»: the list of levels and one level — find the keys on the real (or the on-screen) keyboard.
 
@@ -154,6 +156,8 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
   const [said, setSaid] = useState<string | null>(null);
   const [held, setHeld] = useState({ ctrl: false, shift: false }); // modifiers clicked on the screen
   const [finished, setFinished] = useState<number | null>(null);
+  // the theory comes first on a new level; later it opens with the «Теория» button
+  const [theory, setTheory] = useState(() => !!level && !(save.stars[level.id] > 0));
   const busy = useRef(false);
 
   const task = tasks[at];
@@ -224,6 +228,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
 
   // the real keyboard
   useEffect(() => {
+    if (theory) return; // keys type nothing while the theory is open
     const onDown = (e: KeyboardEvent) => {
       if (/^F\d+$/.test(e.code)) return; // F5, F12 and the like stay with the browser
       e.preventDefault();
@@ -232,7 +237,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
     };
     window.addEventListener("keydown", onDown);
     return () => window.removeEventListener("keydown", onDown);
-  }, [press]);
+  }, [press, theory]);
 
   if (!level) return <p className="text-center text-slate-500">Такого уровня нет. <Link to="/keys" className="font-bold text-violet-600">Ко всем уровням</Link></p>;
   if (!levelOpen(save.stars, index))
@@ -271,6 +276,16 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
 
   const nextLevel = KEYS_LEVELS[index + 1];
 
+  if (theory)
+    return (
+      <div>
+        <p className="mb-4 text-center text-sm font-extrabold uppercase tracking-wide text-orange-500">
+          {level.emoji} Уровень {index + 1}: {level.title}
+        </p>
+        <TheoryCard theory={KEYS_THEORY[level.id]} onDone={() => setTheory(false)} doneLabel="Понятно, к клавишам!" />
+      </div>
+    );
+
   return (
     <div>
       <div className="mb-5 flex flex-wrap items-center justify-between gap-3">
@@ -280,7 +295,8 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
           </p>
           <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl dark:text-slate-100">{level.title}</h1>
         </div>
-        <div className="flex items-center gap-3 text-sm font-extrabold text-slate-500">
+        <div className="flex flex-wrap items-center gap-3 text-sm font-extrabold text-slate-500">
+          <TheoryButton onClick={() => setTheory(true)} />
           <span>
             Задание {Math.min(at + 1, tasks.length)} из {tasks.length}
           </span>
@@ -321,6 +337,12 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
 
           <Keyboard glow={glow} flash={flash} held={held} onKey={screenKey} />
           <p className="mt-3 text-center text-sm text-slate-400">Нажимай клавиши на своей клавиатуре — или прямо на экране. Ctrl и Shift на экране «залипают» до следующей клавиши.</p>
+          {task?.dev && (
+            <div className="mx-auto mt-5 max-w-3xl">
+              <p className="mb-2 text-sm font-extrabold uppercase tracking-wide text-violet-500">💻 Программисту на заметку</p>
+              <CodeBox {...task.dev} />
+            </div>
+          )}
         </>
       ) : (
         <div className="mx-auto max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl">
