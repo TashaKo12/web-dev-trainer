@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { ChevronDown, Star } from "lucide-react";
 import { GamePanel, Stars } from "../components/GamePanel";
-import { QuestBanner } from "../quest/QuestHome";
+import { KidsGames } from "./KidsGames";
 import { starsFor, useGame } from "../lib/game";
 import { loadJSON, saveJSON } from "../lib/storage";
 import { LESSONS, trainers, type TrainerMeta } from "../trainers/registry";
@@ -65,6 +65,8 @@ export function Home() {
 
   return (
     <div>
+      <KidsGames />
+
       <div className="mb-10 text-center">
         <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Выбери урок и прокачай веб-разработку</h1>
         <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
@@ -90,8 +92,6 @@ export function Home() {
           ))}
         </div>
       </div>
-
-      <QuestBanner />
 
       <GamePanel />
 

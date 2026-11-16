@@ -21,6 +21,8 @@ export function Layout() {
     setTimeTopic(locked ? null : (trainers.find((t) => t.path === pathname)?.id ?? null));
   }, [pathname, locked]);
   const quest = pathname.match(/^\/quest\/(\d+)(\/\d+)?$/);
+  // a level of the logic or keyboard game: "/logic/2", "/keys/5"
+  const game = pathname.match(/^\/(logic|keys)\/[\w-]+$/);
   const back =
     pathname === "/" || pathname === "" || pathname === "/python"
       ? null
@@ -30,13 +32,17 @@ export function Layout() {
           ? quest[2]
             ? { to: `/quest/${quest[1]}`, label: "Уровни отсека" }
             : { to: "/quest", label: "Карта станции" }
-          : { to: "/", label: "Все тренажёры" };
+          : game
+            ? game[1] === "logic"
+              ? { to: "/logic", label: "Карта острова" }
+              : { to: "/keys", label: "Все уровни" }
+            : { to: "/", label: "Все тренажёры" };
 
   return (
     <div className="min-h-screen text-slate-800 dark:text-slate-100">
       <AnimatedBackground />
       <header className="sticky top-0 z-20 border-b border-white/60 bg-white/70 backdrop-blur-md dark:border-slate-800/80 dark:bg-slate-950/70">
-        <div className="mx-auto flex max-w-5xl items-center justify-between gap-3 px-5 py-4">
+        <div className="mx-auto flex max-w-6xl items-center justify-between gap-3 px-5 py-4">
           <a href="https://tashako12.github.io/my-projects/" className="flex items-center gap-2 font-extrabold text-slate-800 dark:text-slate-100">
             <Blocks className="h-6 w-6 text-indigo-500 dark:text-indigo-400" strokeWidth={1.75} />
             <span className="hidden min-[360px]:inline">Тренажеры</span>
@@ -58,11 +64,11 @@ export function Layout() {
           </div>
         </div>
       </header>
-      {/* a quest level needs room for a big map */}
-      <main className={`animate-fade-in relative z-[15] mx-auto px-5 py-8 sm:py-12 ${quest?.[2] ? "max-w-7xl" : "max-w-5xl"}`}>
+      {/* game levels need room for a big map or the keyboard */}
+      <main className={`animate-fade-in relative z-[15] mx-auto px-5 py-8 sm:py-12 ${quest?.[2] || game ? "max-w-7xl" : "max-w-6xl"}`}>
         {locked ? <SignInGate /> : <Outlet />}
       </main>
-      <footer className="mx-auto max-w-5xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
+      <footer className="mx-auto max-w-6xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
         <p>Сделано для тех, кто делает первые шаги в программировании</p>
         <p className="mt-1 text-xs text-slate-400/80 dark:text-slate-600">Автор проекта — Татьяна Кондратюк</p>
         {account ? (

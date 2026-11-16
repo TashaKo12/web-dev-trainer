@@ -59,6 +59,8 @@ import {
 import { QuestHome } from "./quest/QuestHome";
 import { QuestBay } from "./quest/QuestBay";
 import { QuestLevel } from "./quest/QuestLevel";
+import { LogicHome, LogicIsland } from "./logic/LogicGame";
+import { KeysHome, KeysLevelPage } from "./keys/KeysGame";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 
@@ -138,6 +140,12 @@ function App() {
           <Route path="quest" element={<QuestHome />} />
           <Route path="quest/:bay" element={<QuestBay />} />
           <Route path="quest/:bay/:level" element={<QuestLevel />} />
+
+          {/* «Остров загадок» and «Клавиатура Пикселя»: games for children 7–9 */}
+          <Route path="logic" element={<LogicHome />} />
+          <Route path="logic/:island" element={<LogicIsland />} />
+          <Route path="keys" element={<KeysHome />} />
+          <Route path="keys/:level" element={<KeysLevelPage />} />
 
           <Route path="profile" element={<Profile />} />
           <Route path="admin" element={<Admin />} />
