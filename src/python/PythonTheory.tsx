@@ -178,6 +178,12 @@ const INPUT: Part[] = [
     examples: [
       { code: 'age = input("Возраст? ")\nprint(age + 1)', out: 'TypeError: can only concatenate str (not "int") to str', error: true },
       { code: 'age = int(input("Возраст? "))\nprint(age + 1)', out: "Возраст? 12\n13" },
+      {
+        code: 'age = int(input("Возраст? "))',
+        out: "Возраст? двенадцать\nValueError: invalid literal for int() with base 10: 'двенадцать'",
+        error: true,
+        note: "int() превращает в число только цифры. Слово превратить нельзя — будет ошибка ValueError.",
+      },
     ],
   },
   {

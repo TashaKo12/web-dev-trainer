@@ -10,6 +10,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "tables")!;
 
@@ -383,6 +385,7 @@ export function TablesTrainer() {
         <Theory />
         <TheoryNotes trainerId="tables" />
       </div>
+      {extraTheorySlides(EXTRA_HTML["tables"], 1)}
       <WebMissions trainerId="tables" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, смотри на таблицу и кликай по ячейкам." />
       <div className="mb-10">

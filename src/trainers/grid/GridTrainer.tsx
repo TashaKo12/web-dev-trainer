@@ -8,6 +8,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_CSS } from "../../theory/extraCss";
 
 const meta = trainers.find((t) => t.id === "grid")!;
 
@@ -285,6 +287,7 @@ export function GridTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_CSS["grid"], 1)}
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай и подбирай колонки." />
       <div className="mb-10">
         <Tasks />

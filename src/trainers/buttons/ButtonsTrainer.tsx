@@ -10,6 +10,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "buttons")!;
 
@@ -407,6 +409,7 @@ export function ButtonsTrainer() {
         <Theory />
         <TheoryNotes trainerId="buttons" />
       </div>
+      {extraTheorySlides(EXTRA_HTML["buttons"], 1)}
       <WebMissions trainerId="buttons" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, нажимай и пиши сам." />
       <div className="mb-10">

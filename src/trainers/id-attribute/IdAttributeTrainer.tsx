@@ -10,6 +10,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "id-attribute")!;
 
@@ -328,6 +330,7 @@ export function IdAttributeTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_HTML["id-attribute"], 1)}
       <WebMissions trainerId="id-attribute" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — кликай, выбирай и пиши сам." />
       <div className="mb-10">

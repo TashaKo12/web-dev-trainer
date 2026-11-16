@@ -8,6 +8,8 @@ import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 import { FakePage, computeMatches } from "./FakePage";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_CSS } from "../../theory/extraCss";
 
 const meta = trainers.find((t) => t.id === "selectors")!;
 
@@ -250,6 +252,7 @@ export function SelectorsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_CSS["selectors"], 1)}
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай селектор из списка, потом пиши сам." />
       <div className="mb-10">
         <Tasks />

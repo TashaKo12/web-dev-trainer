@@ -7,6 +7,8 @@ import { LevelShell } from "../../components/LevelShell";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_CSS } from "../../theory/extraCss";
 
 const meta = trainers.find((t) => t.id === "shadows")!;
 
@@ -333,6 +335,7 @@ export function ShadowsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_CSS["shadows"], 1)}
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала выбирай значение, потом пиши сам." />
       <div className="mb-10">
         <Tasks />

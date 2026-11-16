@@ -8,6 +8,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_CSS } from "../../theory/extraCss";
 
 const meta = trainers.find((t) => t.id === "font-weight")!;
 
@@ -307,6 +309,7 @@ export function FontWeightTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_CSS["font-weight"], 1)}
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — подбирай значение, выбирай и пиши сам." />
       <div className="mb-10">
         <Tasks />

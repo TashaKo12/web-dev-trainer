@@ -10,6 +10,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "form-basics")!;
 
@@ -400,6 +402,7 @@ export function FormBasicsTrainer() {
         <Theory />
         <TheoryNotes trainerId="form-basics" />
       </div>
+      {extraTheorySlides(EXTRA_HTML["form-basics"], 1)}
       <WebMissions trainerId="form-basics" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, пробуй вживую и пиши сам." />
       <div className="mb-10">

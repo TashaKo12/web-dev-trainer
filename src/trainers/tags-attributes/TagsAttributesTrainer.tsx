@@ -10,6 +10,8 @@ import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
 import { TagCode, type TagExample } from "./TagCode";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "tags-attributes")!;
 
@@ -368,6 +370,7 @@ export function TagsAttributesTrainer() {
         <Theory />
         <TheoryNotes trainerId="tags-attributes" />
       </div>
+      {extraTheorySlides(EXTRA_HTML["tags-attributes"], 1)}
       <WebMissions trainerId="tags-attributes" />
       <SectionHeading kicker="Практика" title="Закрепим" description="10 уровней — сначала кликай по частям тега, потом собирай тег сам." />
       <div className="mb-10">

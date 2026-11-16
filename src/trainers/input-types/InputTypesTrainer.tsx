@@ -10,6 +10,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "input-types")!;
 
@@ -329,6 +331,7 @@ export function InputTypesTrainer() {
         <Theory />
         <TheoryNotes trainerId="input-types" />
       </div>
+      {extraTheorySlides(EXTRA_HTML["input-types"], 1)}
       <WebMissions trainerId="input-types" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай из списка и пиши сам." />
       <div className="mb-10">

@@ -11,6 +11,8 @@ import { useTaskStepper } from "../../components/useTaskStepper";
 import { McqOptions } from "../../components/McqOptions";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "html-structure")!;
 
@@ -809,6 +811,7 @@ export function HtmlStructureTrainer() {
       <div className="mb-10">
         <MoreTagsTheory />
       </div>
+      {extraTheorySlides(EXTRA_HTML["html-structure"], 3)}
       <WebMissions trainerId="html-structure" />
       <SectionHeading
         kicker="Практика"

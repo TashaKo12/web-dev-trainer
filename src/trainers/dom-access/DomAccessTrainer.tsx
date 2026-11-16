@@ -8,6 +8,8 @@ import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFal
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
 import { MiniPage, type ElKey } from "./MiniPage";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "dom-access")!;
 
@@ -315,6 +317,7 @@ export function DomAccessTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_HTML["dom-access"], 1)}
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сначала кликай по странице, потом пиши код сам." />
       <div className="mb-10">
         <Tasks />

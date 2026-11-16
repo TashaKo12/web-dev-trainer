@@ -10,6 +10,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "images")!;
 
@@ -419,6 +421,7 @@ export function ImagesTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_HTML["images"], 1)}
       <WebMissions trainerId="images" />
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, сравнивай вживую и пиши сам." />
       <div className="mb-10">

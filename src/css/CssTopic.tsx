@@ -78,13 +78,18 @@ export type CssLevel =
       explain: string;
     };
 
-function Theory({ parts }: { parts: TheoryPart[] }) {
+/** bare: without the step number and title on the card (the slide heading already shows them). */
+function Theory({ parts, bare = false }: { parts: TheoryPart[]; bare?: boolean }) {
   return (
     <div className="space-y-5">
       {parts.map((p, i) => (
         <div key={p.title} className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-7 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
-          <p className="mb-1 text-xs font-bold uppercase tracking-wide text-indigo-500">Шаг {i + 1}</p>
-          <h3 className="mb-2 text-lg font-extrabold text-slate-800">{p.title}</h3>
+          {!bare && (
+            <>
+              <p className="mb-1 text-xs font-bold uppercase tracking-wide text-indigo-500">Шаг {i + 1}</p>
+              <h3 className="mb-2 text-lg font-extrabold text-slate-800">{p.title}</h3>
+            </>
+          )}
           <p className="text-sm leading-relaxed text-slate-600">{p.text}</p>
           {p.demo && (
             <div className="mt-4 grid gap-3 md:grid-cols-2">
@@ -292,10 +297,25 @@ export function CssTopicPage({ data }: { data: CssTopicData }) {
   return (
     <TopicSlider>
       <TrainerHero icon={meta.icon} title={meta.title} summary={meta.summary} gradient={meta.gradient} section={meta.section} />
-      <SectionHeading kicker="Теория" title={data.theory.title} description={data.theory.description} />
-      <div className="mb-10">
-        <Theory parts={data.theory.parts} />
-      </div>
+      {/* a flat list: one slide per step — TopicSlider starts a new slide at every SectionHeading among its direct children */}
+      {data.theory.parts.flatMap((p, i) => [
+        <SectionHeading
+          key={`h:${p.title}`}
+          kicker="Теория"
+          title={p.title}
+          description={
+            <>
+              <b className="text-slate-600">
+                Шаг {i + 1} из {data.theory.parts.length} · {data.theory.title}
+              </b>
+              {i === 0 && <> — {data.theory.description}</>}
+            </>
+          }
+        />,
+        <div key={`b:${p.title}`} className="mb-10">
+          <Theory parts={[p]} bare />
+        </div>,
+      ])}
       <SectionHeading kicker="Практика" title="Закрепим" description={`${data.levels.length} уровней — выбирай ответ и пиши код сам, результат сразу видно.`} />
       <div className="mb-10">
         <Tasks id={data.id} levels={data.levels} />

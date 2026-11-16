@@ -8,6 +8,8 @@ import { McqOptions } from "../../components/McqOptions";
 import { TrueFalseDeck, type TrueFalseStatement } from "../../components/TrueFalseDeck";
 import { useTaskStepper } from "../../components/useTaskStepper";
 import { trainers } from "../registry";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_CSS } from "../../theory/extraCss";
 
 const meta = trainers.find((t) => t.id === "transitions")!;
 
@@ -590,6 +592,7 @@ export function TransitionsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_CSS["transitions"], 1)}
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — сравнивай вживую, подвигай, выбирай и пиши сам." />
       <div className="mb-10">
         <Tasks />

@@ -11,6 +11,8 @@ import { trainers } from "../registry";
 import { FileTree } from "./FileTree";
 import { ImagePreview } from "./ImagePreview";
 import { resolvePath } from "./resolvePath";
+import { extraTheorySlides } from "../../components/ExtraTheory";
+import { EXTRA_HTML } from "../../theory/extraHtml";
 
 const meta = trainers.find((t) => t.id === "image-paths")!;
 
@@ -364,6 +366,7 @@ export function ImagePathsTrainer() {
       <div className="mb-10">
         <Theory />
       </div>
+      {extraTheorySlides(EXTRA_HTML["image-paths"], 1)}
       <WebMissions trainerId="image-paths" />
       <SectionHeading
         kicker="Практика"
