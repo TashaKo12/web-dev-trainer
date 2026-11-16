@@ -23,7 +23,7 @@ import {
 import { Board } from "./Board";
 import { BoltFigure } from "./Dialogue";
 import { CodeBox } from "../components/GameTheory";
-import { toPython } from "./theory";
+import { programText } from "./theory";
 import { BODY_MAX, ProgramView, TOOL } from "./Program";
 import { finishLevel, levelOpen, useQuest } from "./progress";
 import { emitPixel } from "../lib/pixelBus";
@@ -476,8 +476,8 @@ function LevelScreen() {
               </li>
             </ul>
             <div className="mb-4">
-              <p className="mb-2 text-left text-sm font-extrabold uppercase tracking-wide text-violet-500">💻 Твоя программа на языке Python</p>
-              <CodeBox code={toPython(program)} />
+              <p className="mb-2 text-left text-sm font-extrabold uppercase tracking-wide text-violet-500">💻 Твоя программа текстом — как пишут программисты</p>
+              <CodeBox code={programText(program)} />
             </div>
             {won.fresh > 0 && <p className="mb-3 rounded-2xl bg-sky-50 p-2 font-bold text-sky-700">+{won.fresh} 💎 в копилку</p>}
             {won.diary && DIARY[level.id] && (

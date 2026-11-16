@@ -86,27 +86,27 @@ const letter = (ch: string): Task => {
   const code = CODE_OF.get(ch)!;
   const latin = KEY_BY_CODE.get(code)?.latin;
   const dev: CodeExample | undefined = /\d/.test(ch)
-    ? { note: "В программе цифры — это числа, с ними можно считать:", code: `print(${ch} + 1)`, out: String(Number(ch) + 1) }
+    ? { note: "В программах с числами считают — например, очки в игре:", code: `${ch} + 1`, out: String(Number(ch) + 1) }
     : latin
-      ? { note: `В английской раскладке на этой клавише «${latin}». Код пишут английскими буквами — переключай раскладку: Alt + Shift или Win + Пробел.` , code: `${ch}  →  ${latin.toLowerCase()}` }
+      ? { note: `В английской раскладке на этой клавише «${latin}». Программисты часто пишут английскими буквами — раскладку переключают Alt + Shift или Win + Пробел.` , code: `${ch}  →  ${latin.toLowerCase()}` }
       : undefined;
   return { kind: "key", codes: [code], say: `Найди ${/\d/.test(ch) ? "цифру" : "букву"} «${ch}»`, name: ch, dev };
 };
 const letters = (set: string, n: number) => () => shuffle([...set, ...set]).slice(0, n).map(letter);
 
 const SPECIAL: Record<string, { codes: string[]; name: string; about: string; dev: CodeExample }> = {
-  space: { codes: ["Space"], name: "Пробел", about: "ставит пробел между словами", dev: { note: "В коде пробелы отделяют слова и делают код понятнее:", code: 'print("Привет, мир")', out: "Привет, мир" } },
-  enter: { codes: ["Enter", "NumpadEnter"], name: "Enter", about: "переносит текст на новую строку или отправляет сообщение", dev: { note: "Каждая команда в Python — на своей строке. Новую строку начинает Enter:", code: 'print("раз")\nprint("два")', out: "раз\nдва" } },
-  backspace: { codes: ["Backspace"], name: "Backspace", about: "стирает букву слева от курсора", dev: { note: "Одна опечатка — и программа не запустится. Backspace её исправит:", code: 'pritn("Привет")   # ошибка!\nprint("Привет")   # верно' } },
-  delete: { codes: ["Delete"], name: "Delete", about: "стирает букву справа от курсора", dev: { note: "Курсор стоит перед лишней буквой? Delete сотрёт её, не трогая то, что слева:", code: 'print("Приввет")  →  print("Привет")' } },
-  shift: { codes: ["ShiftLeft", "ShiftRight"], name: "Shift", about: "пока её держишь, буквы пишутся заглавными", dev: { note: "С Shift цифры превращаются в знаки: Shift + 9 — «(», Shift + 0 — «)». Без скобок команда print не работает:", code: "print(5)", out: "5" } },
-  caps: { codes: ["CapsLock"], name: "Caps Lock", about: "включает заглавные буквы, пока не нажмёшь её ещё раз", dev: { note: "Осторожно в коде: Python различает большие и маленькие буквы!", code: 'print("Привет")   # работает\nPRINT("Привет")   # ошибка' } },
-  tab: { codes: ["Tab"], name: "Tab", about: "делает большой отступ или переходит к следующему полю", dev: { note: "В Python отступ показывает, какие команды повторять. Его делают клавишей Tab:", code: 'for i in range(2):\n    print("Привет")', out: "Привет\nПривет" } },
-  esc: { codes: ["Escape"], name: "Esc", about: "отменяет или закрывает окно, а в играх ставит паузу", dev: { note: "В редакторе кода Esc закрывает всплывающие подсказки. А в своей игре ты сам решаешь, что делает Esc:", code: 'if клавиша == "Escape":\n    пауза()' } },
-  left: { codes: ["ArrowLeft"], name: "Стрелка влево", about: "двигает курсор влево", dev: { note: "В играх программист решает, что делает стрелка:", code: 'if клавиша == "ArrowLeft":\n    герой.x = герой.x - 1' } },
-  right: { codes: ["ArrowRight"], name: "Стрелка вправо", about: "двигает курсор вправо", dev: { note: "Стрелка вправо — герой шагает вправо:", code: 'if клавиша == "ArrowRight":\n    герой.x = герой.x + 1' } },
-  up: { codes: ["ArrowUp"], name: "Стрелка вверх", about: "двигает курсор вверх", dev: { note: "В редакторе стрелка вверх переводит курсор на строку кода выше. А в игре:", code: 'if клавиша == "ArrowUp":\n    герой.прыжок()' } },
-  down: { codes: ["ArrowDown"], name: "Стрелка вниз", about: "двигает курсор вниз", dev: { note: "Стрелка вниз — на строку ниже. А в игре:", code: 'if клавиша == "ArrowDown":\n    герой.присесть()' } },
+  space: { codes: ["Space"], name: "Пробел", about: "ставит пробел между словами", dev: { note: "Без пробелов слова слипаются — ни человек, ни компьютер их не разберёт:", code: "повтори3раза   ← непонятно\nповтори 3 раза ← понятно" } },
+  enter: { codes: ["Enter", "NumpadEnter"], name: "Enter", about: "переносит текст на новую строку или отправляет сообщение", dev: { note: "Обычно каждая команда программы — на своей строке. Новую строку начинает Enter:", code: "вперёд\nналево\nвперёд" } },
+  backspace: { codes: ["Backspace"], name: "Backspace", about: "стирает букву слева от курсора", dev: { note: "Одна опечатка — и компьютер не поймёт команду. Backspace её исправит:", code: "впреёд   ← ошибка\nвперёд   ← верно" } },
+  delete: { codes: ["Delete"], name: "Delete", about: "стирает букву справа от курсора", dev: { note: "Курсор стоит перед лишней буквой? Delete сотрёт её, не трогая то, что слева:", code: "впперёд  →  вперёд" } },
+  shift: { codes: ["ShiftLeft", "ShiftRight"], name: "Shift", about: "пока её держишь, буквы пишутся заглавными", dev: { note: "С Shift цифры превращаются в знаки. В программах они нужны постоянно:", code: "Shift + 9  →  (\nShift + 0  →  )" } },
+  caps: { codes: ["CapsLock"], name: "Caps Lock", about: "включает заглавные буквы, пока не нажмёшь её ещё раз", dev: { note: "Для компьютера большие и маленькие буквы — разные. Поэтому с Caps Lock осторожно:", code: "кот ≠ КОТ" } },
+  tab: { codes: ["Tab"], name: "Tab", about: "делает большой отступ или переходит к следующему полю", dev: { note: "Отступ показывает, какие команды находятся внутри цикла:", code: "повтори 3 раза:\n    вперёд\n    налево" } },
+  esc: { codes: ["Escape"], name: "Esc", about: "отменяет или закрывает окно, а в играх ставит паузу", dev: { note: "Когда ты делаешь свою игру, ты сам решаешь, что делает Esc:", code: "если нажат Esc:\n    пауза" } },
+  left: { codes: ["ArrowLeft"], name: "Стрелка влево", about: "двигает курсор влево", dev: { note: "В играх программист решает, что делает стрелка:", code: "если нажата ←:\n    герой шагает влево" } },
+  right: { codes: ["ArrowRight"], name: "Стрелка вправо", about: "двигает курсор вправо", dev: { note: "Стрелка вправо — герой шагает вправо:", code: "если нажата →:\n    герой шагает вправо" } },
+  up: { codes: ["ArrowUp"], name: "Стрелка вверх", about: "двигает курсор вверх", dev: { note: "В тексте стрелка вверх переводит курсор на строку выше. А в игре:", code: "если нажата ↑:\n    герой прыгает" } },
+  down: { codes: ["ArrowDown"], name: "Стрелка вниз", about: "двигает курсор вниз", dev: { note: "Стрелка вниз — на строку ниже. А в игре:", code: "если нажата ↓:\n    герой приседает" } },
 };
 
 /** Learn: the task names the key and says what it does. */
@@ -115,13 +115,13 @@ const learn = (id: keyof typeof SPECIAL): Task => ({ kind: "key", ...SPECIAL[id]
 const recall = (id: keyof typeof SPECIAL): Task => ({ kind: "key", ...SPECIAL[id], dev: undefined, say: `Какая клавиша ${SPECIAL[id].about}? Нажми её!` });
 
 const COMBOS = {
-  copy: { mod: "ctrl" as const, code: "KeyC", name: "Ctrl + C", about: "копирует выделенное", dev: { note: "Программисты копируют кусочки кода, чтобы не печатать их заново:", code: 'print("Привет")   ← выдели и Ctrl + C' } },
-  paste: { mod: "ctrl" as const, code: "KeyV", name: "Ctrl + V", about: "вставляет то, что скопировали", dev: { note: "Скопировал строку — вставь её ещё раз, и программа выполнит её дважды:", code: 'print("Привет")\nprint("Привет")   ← Ctrl + V', out: "Привет\nПривет" } },
-  cut: { mod: "ctrl" as const, code: "KeyX", name: "Ctrl + X", about: "вырезает выделенное", dev: { note: "Ctrl + X и Ctrl + V переносят строку кода в другое место — порядок команд важен:", code: 'print("два")   ← вырежи\nprint("раз")\nprint("два")   ← вставь сюда' } },
-  undo: { mod: "ctrl" as const, code: "KeyZ", name: "Ctrl + Z", about: "отменяет последнее действие", dev: { note: "Случайно стёр полпрограммы? Ctrl + Z вернёт всё, как было. Главная клавиша программиста!", code: "# стёр код...  Ctrl + Z  ...код вернулся" } },
-  all: { mod: "ctrl" as const, code: "KeyA", name: "Ctrl + A", about: "выделяет всё", dev: { note: "Ctrl + A выделяет весь код в файле — например, чтобы скопировать программу целиком.", code: 'print("раз")\nprint("два")\nprint("три")' } },
-  save: { mod: "ctrl" as const, code: "KeyS", name: "Ctrl + S", about: "сохраняет файл", dev: { note: "Программа записана в файл. Сохрани его перед запуском — иначе запустится старая версия!", code: "game.py  ●  не сохранён\ngame.py  ✓  сохранён" } },
-  capital: { mod: "shift" as const, code: "KeyN", name: "Shift + Т", about: "пишет заглавную букву «Т»", dev: { note: "Внутри кавычек можно писать что угодно — имена пишут с большой буквы:", code: 'print("Таня")', out: "Таня" } },
+  copy: { mod: "ctrl" as const, code: "KeyC", name: "Ctrl + C", about: "копирует выделенное", dev: { note: "Программисты копируют кусочки программы, чтобы не печатать их заново:", code: "выдели текст  →  Ctrl + C" } },
+  paste: { mod: "ctrl" as const, code: "KeyV", name: "Ctrl + V", about: "вставляет то, что скопировали", dev: { note: "Скопировал команды — вставь их ещё раз:", code: "вперёд, налево\nвперёд, налево   ← Ctrl + V" } },
+  cut: { mod: "ctrl" as const, code: "KeyX", name: "Ctrl + X", about: "вырезает выделенное", dev: { note: "Ctrl + X и Ctrl + V переносят команду в другое место — порядок команд важен:", code: "налево   ← вырежи\nвперёд\nналево   ← вставь сюда" } },
+  undo: { mod: "ctrl" as const, code: "KeyZ", name: "Ctrl + Z", about: "отменяет последнее действие", dev: { note: "Случайно стёр полпрограммы? Ctrl + Z вернёт всё, как было. Главное сочетание программиста!", code: "стёр  →  Ctrl + Z  →  всё вернулось" } },
+  all: { mod: "ctrl" as const, code: "KeyA", name: "Ctrl + A", about: "выделяет всё", dev: { note: "Ctrl + A выделяет весь текст сразу — например, чтобы скопировать программу целиком.", code: "Ctrl + A  →  Ctrl + C" } },
+  save: { mod: "ctrl" as const, code: "KeyS", name: "Ctrl + S", about: "сохраняет файл", dev: { note: "Программа хранится в файле. Не сохранишь — изменения пропадут!", code: "игра  ●  не сохранено\nигра  ✓  сохранено" } },
+  capital: { mod: "shift" as const, code: "KeyN", name: "Shift + Т", about: "пишет заглавную букву «Т»", dev: { note: "Имена пишут с большой буквы. Для компьютера «Таня» и «таня» — разные слова.", code: "Таня ≠ таня" } },
 };
 const comboLearn = (id: keyof typeof COMBOS): Task => ({
   kind: "combo",
@@ -137,7 +137,7 @@ const word = (w: string): Task => ({
   kind: "word",
   word: w,
   say: `Напечатай слово «${w}»`,
-  dev: { note: "Программисты всё время печатают слова. Так программа выводит это слово на экран:", code: `print("${w}")`, out: w },
+  dev: { note: "Программисты всё время печатают слова. Так программа показывает слово на экране:", code: `покажи «${w}»`, out: w },
 });
 
 export const KEYS_INTRO: Line[] = [

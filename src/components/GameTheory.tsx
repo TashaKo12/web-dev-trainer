@@ -13,7 +13,7 @@ export function CodeBox({ code, out, note }: CodeExample) {
       <pre className="overflow-x-auto px-4 py-3 font-mono text-[0.95rem] leading-relaxed text-[#a7f3d0]">{code}</pre>
       {out && (
         <div className="border-t border-[#334155] px-4 py-2">
-          <p className="text-xs font-bold uppercase tracking-wide text-[#94a3b8]">Программа напечатает</p>
+          <p className="text-xs font-bold uppercase tracking-wide text-[#94a3b8]">Результат</p>
           <pre className="font-mono text-[0.95rem] leading-relaxed text-[#fde68a]">{out}</pre>
         </div>
       )}
