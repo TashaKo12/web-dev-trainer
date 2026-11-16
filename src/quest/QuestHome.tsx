@@ -169,6 +169,25 @@ export function QuestHome() {
         {bays.slice(3).map(bayCard)}
       </div>
 
+      {/* the second station: commands written as words */}
+      <Link
+        to={heartDone ? "/beacon" : "/quest"}
+        onClick={(e) => !heartDone && e.preventDefault()}
+        aria-disabled={!heartDone}
+        className={`relative mt-6 flex flex-wrap items-center gap-4 overflow-hidden rounded-3xl border-2 border-amber-300/70 bg-gradient-to-br from-[#0b1026] via-[#1e1b4b] to-[#312e81] p-5 text-white ${
+          heartDone ? "cursor-pointer shadow-[0_0_40px_rgb(250_204_21/0.35)] transition hover:-translate-y-1" : "cursor-default opacity-80"
+        }`}
+      >
+        <span className="text-5xl">{heartDone ? "🗼" : "🔒"}</span>
+        <span className="min-w-0 flex-1">
+          <span className="block text-xs font-extrabold uppercase tracking-[0.2em] text-amber-200">Вторая станция</span>
+          <span className="block text-xl font-extrabold">Станция «Маяк»: пишем команды словами</span>
+          <span className="mt-1 block text-sm text-indigo-100">
+            {heartDone ? "Новая история: зажги огни космического маяка. Здесь нет блоков — только код!" : "Откроется, когда ты откроешь Сердце станции."}
+          </span>
+        </span>
+      </Link>
+
       <div className="mt-8 flex justify-center">
         <button type="button" onClick={() => setPrologue(true)} className="inline-flex items-center gap-2 rounded-full px-4 py-2 text-sm font-bold text-slate-400 hover:text-violet-600">
           <span className="pixel-bot quest-bot inline-block h-6" data-mood="wink">

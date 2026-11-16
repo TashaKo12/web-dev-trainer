@@ -10,7 +10,7 @@ const MAX_CELL = 150;
 const FRAME = 20; // the board's border and padding, in px
 
 /** The size of one cell that fits the column width and the window height. */
-function useCellSize(w: number, h: number) {
+export function useCellSize(w: number, h: number) {
   const box = useRef<HTMLDivElement>(null);
   const [cell, setCell] = useState(64);
   useEffect(() => {

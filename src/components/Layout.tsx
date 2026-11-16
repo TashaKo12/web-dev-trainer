@@ -22,7 +22,7 @@ export function Layout() {
   }, [pathname, locked]);
   const quest = pathname.match(/^\/quest\/(\d+)(\/\d+)?$/);
   // a level of the logic or keyboard game: "/logic/2", "/keys/5"
-  const game = pathname.match(/^\/(logic|keys)\/[\w-]+$/);
+  const game = pathname.match(/^\/(logic|keys|beacon)\/[\w-]+$/);
   const back =
     pathname === "/" || pathname === "" || pathname === "/python"
       ? null
@@ -35,8 +35,12 @@ export function Layout() {
           : game
             ? game[1] === "logic"
               ? { to: "/logic", label: "Карта острова" }
-              : { to: "/keys", label: "Все уровни" }
-            : { to: "/", label: "Все тренажёры" };
+              : game[1] === "beacon"
+                ? { to: "/beacon", label: "Карта маяка" }
+                : { to: "/keys", label: "Все уровни" }
+            : pathname === "/beacon"
+              ? { to: "/quest", label: "Первая станция" }
+              : { to: "/", label: "Все тренажёры" };
 
   return (
     <div className="min-h-screen text-slate-800 dark:text-slate-100">
