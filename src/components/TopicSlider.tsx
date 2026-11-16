@@ -6,6 +6,7 @@ import { TrainerHero } from "./TrainerHero";
 import { WebMissions } from "../missions/WebMissions";
 import { emitPixel } from "../lib/pixelBus";
 import { loadItem, saveItem } from "../lib/storage";
+import { isTeacher } from "../lib/teacher";
 
 // A topic page as a slider: theory → game → practice → check. One block on screen at a time.
 // Every theory block must stay open for at least 20 seconds; no theory block can be skipped.
@@ -48,7 +49,8 @@ export function TopicSlider({ children }: { children: ReactNode }) {
   const slideKey = `slide:${pathname}`; // view state only — not part of the progress
   // keyed by the block title, so adding a block to a topic does not shift what was read
   const readKey = (i: number) => `theory-read:${pathname}:${slides[i]?.title || i}`;
-  const isRead = (i: number) => slides[i].kind !== "theory" || loadItem(readKey(i)) === "1";
+  // the teacher has every theory block open at once, without the timer
+  const isRead = (i: number) => slides[i].kind !== "theory" || isTeacher() || loadItem(readKey(i)) === "1";
 
   const fromUrl = window.location.hash.includes("level=") ? slides.findIndex((s) => s.kind === "practice") : -1;
   const [index, setIndex] = useState(() => {
@@ -58,7 +60,7 @@ export function TopicSlider({ children }: { children: ReactNode }) {
   });
   const slide = slides[index];
   const isTheory = slide.kind === "theory";
-  const alreadyRead = isTheory && loadItem(readKey(index)) === "1";
+  const alreadyRead = isTheory && isRead(index);
   const [left, setLeft] = useState(isTheory && !alreadyRead ? THEORY_SECONDS : 0);
   const top = useRef<HTMLDivElement>(null);
 

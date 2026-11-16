@@ -3,6 +3,7 @@ import { logMistake } from "../lib/mistakes";
 import { emitPixel } from "../lib/pixelBus";
 import { Bot, Check, ChevronRight, Lightbulb, Lock, Sparkles, Trophy } from "lucide-react";
 import { loadItem, loadJSON, onProgressReplaced, POINTS, reportPoints, saveItem, saveJSON } from "../lib/storage";
+import { isTeacher } from "../lib/teacher";
 
 export function missionDatesKey(pointsSource: string) {
   return `wdt:mission-dates:${pointsSource}`;
@@ -27,7 +28,10 @@ export function MissionBoard({
   pointsSource: string;
   finishText: string;
 }) {
+  // the teacher sees every mission as passed (and can open any of them); nothing of it is saved
+  const teacher = isTeacher();
   const readDone = () => {
+    if (teacher) return missions.length;
     const n = Number(loadItem(storageKey));
     return Number.isFinite(n) ? Math.min(Math.max(n, 0), missions.length) : 0;
   };
@@ -50,13 +54,15 @@ export function MissionBoard({
   const maxXp = missions.length * POINTS.mission;
 
   useEffect(() => {
+    if (teacher) return;
     saveItem(storageKey, String(done));
     reportPoints(pointsSource, done * POINTS.mission);
-  }, [storageKey, pointsSource, done]);
+  }, [storageKey, pointsSource, done, teacher]);
 
   useEffect(() => {
+    if (teacher) return;
     saveJSON(missionDatesKey(pointsSource), dates);
-  }, [pointsSource, dates]);
+  }, [pointsSource, dates, teacher]);
 
   function complete(i: number) {
     if (i !== done) return;
