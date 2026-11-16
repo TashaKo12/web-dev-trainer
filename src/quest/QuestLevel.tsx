@@ -1,35 +1,39 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
-import { ArrowUp, Droplets, Footprints, Lightbulb, Play, RotateCcw, RotateCw, Star, Trash2, Undo2, X, type LucideIcon } from "lucide-react";
+import { Footprints, Lightbulb, Play, RotateCcw, Star, Trash2, Undo2 } from "lucide-react";
 import { BAYS, DIARY } from "./data";
-import { bestLength, parseMap, run, type Cmd, type RunResult } from "./engine";
+import { bestLength, blockCount, flatten, isLoop, parseMap, run, type Block, type Origin, type RunResult, type Tool } from "./engine";
 import { Board } from "./Board";
 import { BoltFigure } from "./Dialogue";
+import { BLOCK, BODY_MAX, LOOP_STYLE, ProgramView } from "./Program";
 import { finishLevel, levelOpen, useQuest } from "./progress";
 import { emitPixel } from "../lib/pixelBus";
-
-const BLOCK: Record<Cmd, { label: string; icon: LucideIcon; cls: string }> = {
-  F: { label: "Вперёд", icon: ArrowUp, cls: "bg-sky-500 border-sky-700" },
-  L: { label: "Налево", icon: RotateCcw, cls: "bg-violet-500 border-violet-700" },
-  R: { label: "Направо", icon: RotateCw, cls: "bg-fuchsia-500 border-fuchsia-700" },
-  W: { label: "Полить", icon: Droplets, cls: "bg-emerald-500 border-emerald-700" },
-};
 
 const MAX_BLOCKS = 30;
 const STEP_MS = 480;
 
 const PRAISE = ["Ура, получилось!", "Вот это программа!", "Пиксель в восторге!", "Отличная работа, инженер!"];
 
-function boltSays(r: RunResult, program: Cmd[]): string {
+const plural = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "блок" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "блока" : "блоков");
+
+/** Where the mistake happened, in words a child understands. */
+function place(o: Origin | undefined) {
+  if (!o) return "";
+  return o.inner < 0 ? `на ${o.top + 1}-м блоке` : `в повторе (блок ${o.top + 1}), на ${o.round + 1}-м круге`;
+}
+
+function boltSays(r: RunResult, program: Block[], at: Origin[]): string {
   const last = r.frames[r.frames.length - 1];
-  const n = last.step + 1;
+  const where = place(at[last.step]);
   switch (r.outcome) {
     case "bump":
-      return `Бум! На ${n}-м блоке Пиксель врезался в стену. Посмотри, куда он смотрел перед этим шагом.`;
+      return `Бум! Пиксель врезался в стену ${where}. Посмотри, куда он смотрел перед этим шагом.`;
     case "dry":
-      return `Ой, на ${n}-м блоке Пиксель полил пустой пол. Поливать можно только на клетке с ростком.`;
+      return `Ой, Пиксель полил пустой пол ${where}. Поливать можно только на клетке с ростком.`;
     case "unwatered":
       return "Дверь не открывается: ещё не все ростки политы. Вернись и полей их!";
+    case "nogears":
+      return "Дверь не открывается: собраны ещё не все детали ⚙️. Пройди по каждой!";
     case "short":
       return program.length ? "Команды закончились, а Пиксель ещё не у двери. Добавь блоков!" : "Программа пустая. Нажимай на блоки, чтобы добавить команды.";
     default:
@@ -46,20 +50,24 @@ export function QuestLevel() {
   const level = bay?.levels[index];
 
   const grid = useMemo(() => (level ? parseMap(level.map) : null), [level]);
-  const best = useMemo(() => (grid && level ? bestLength(grid, level.dir, level.blocks) : null), [grid, level]);
+  // the goal for the second star: with loops — the checked solution, without — the shortest plain program
+  const best = useMemo(() => (level?.solution ? blockCount(level.solution) : grid && level ? bestLength(grid, level.dir, level.blocks) : null), [grid, level]);
+  // optional finds for the third star: crystals and the diary page (gears are part of the goal)
   const items = useMemo(() => (grid ? grid.cells.flat().filter((c) => c === "*" || c === "D").length : 0), [grid]);
 
-  const [program, setProgram] = useState<Cmd[]>([]);
+  const [program, setProgram] = useState<Block[]>([]);
+  const [into, setInto] = useState<number | null>(null);
   const [result, setResult] = useState<RunResult | null>(null);
   const [shown, setShown] = useState(0); // how many frames of the result are on the board
   const [playing, setPlaying] = useState(false);
   const [hint, setHint] = useState(false);
-  const [won, setWon] = useState<{ stars: number; short: boolean; all: boolean; fresh: number; diary: boolean } | null>(null);
+  const [won, setWon] = useState<{ stars: number; short: boolean; all: boolean; fresh: number; diary: boolean; count: number } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>();
 
   // a new level: start over
   useEffect(() => {
     setProgram([]);
+    setInto(null);
     setResult(null);
     setShown(0);
     setPlaying(false);
@@ -85,13 +93,41 @@ export function QuestLevel() {
   const mood = !result ? "happy" : frame.event === "bump" || frame.event === "dry" ? "sad" : frame.event === "win" ? "love" : done && result.outcome !== "win" ? "thinking" : "happy";
 
   /** Fast taps must not lose blocks: build on the latest program, not on the one from the last render. */
-  function change(update: (p: Cmd[]) => Cmd[]) {
+  function change(update: (p: Block[]) => Block[]) {
     clearTimeout(timer.current);
     setPlaying(false);
     setResult(null);
     setShown(0);
-    setProgram((p) => update(p).slice(0, MAX_BLOCKS));
+    setProgram((p) => {
+      const next = update(p);
+      return blockCount(next) > MAX_BLOCKS ? p : next;
+    });
   }
+
+  /** A palette button: a command goes into the open repeat block (or to the end); "repeat" opens a new one. */
+  function add(t: Tool) {
+    if (t === "loop") {
+      if (into !== null) return; // no loops inside loops for now
+      setInto(program.length);
+      change((p) => [...p, { n: 3, body: [] }]);
+      return;
+    }
+    if (into !== null)
+      change((p) => p.map((b, k) => (k === into && isLoop(b) && b.body.length < BODY_MAX ? { ...b, body: [...b.body, t] } : b)));
+    else change((p) => [...p, t]);
+  }
+
+  function undo() {
+    const open = into !== null ? program[into] : undefined;
+    if (open && isLoop(open) && open.body.length) {
+      change((p) => p.map((b, k) => (k === into && isLoop(b) ? { ...b, body: b.body.slice(0, -1) } : b)));
+      return;
+    }
+    if (into === program.length - 1) setInto(null);
+    change((p) => p.slice(0, -1));
+  }
+
+  const flat = flatten(program);
 
   function finish(r: RunResult) {
     if (r.outcome !== "win") {
@@ -100,14 +136,15 @@ export function QuestLevel() {
     }
     const last = r.frames[r.frames.length - 1];
     const crystals = last.got.filter((k) => grid!.cells[+k.split(",")[1]][+k.split(",")[0]] === "*");
-    const all = last.got.length === items;
-    const short = best !== null && program.length <= best;
+    // the third star counts only the optional finds — gears are part of the goal and are always collected
+    const all = last.got.filter((k) => "*D".includes(grid!.cells[+k.split(",")[1]][+k.split(",")[0]])).length === items;
+    const short = best !== null && blockCount(program) <= best;
     const stars = 1 + (short ? 1 : 0) + (all ? 1 : 0);
     const diaryHere = last.got.some((k) => grid!.cells[+k.split(",")[1]][+k.split(",")[0]] === "D");
     const diaryNew = diaryHere && !save.diary.includes(level!.id);
     const fresh = finishLevel(level!.id, stars, crystals, diaryHere);
     emitPixel("complete");
-    setTimeout(() => setWon({ stars, short, all, fresh, diary: diaryNew }), 700);
+    setTimeout(() => setWon({ stars, short, all, fresh, diary: diaryNew, count: blockCount(program) }), 700);
   }
 
   function play(r: RunResult, from: number) {
@@ -128,7 +165,8 @@ export function QuestLevel() {
 
   function start() {
     clearTimeout(timer.current);
-    const r = run(grid!, level!.dir, program);
+    setInto(null);
+    const r = run(grid!, level!.dir, flat.cmds);
     setResult(r);
     setShown(1);
     play(r, 1);
@@ -138,7 +176,8 @@ export function QuestLevel() {
     clearTimeout(timer.current);
     setPlaying(false);
     if (!result || done) {
-      const r = run(grid!, level!.dir, program);
+      setInto(null);
+      const r = run(grid!, level!.dir, flat.cmds);
       setResult(r);
       setShown(1);
       return;
@@ -155,8 +194,11 @@ export function QuestLevel() {
     setShown(0);
   }
 
-  const currentStep = result && !done ? frame.step : -1;
-  const failedStep = done && result && result.outcome !== "win" && result.outcome !== "short" && result.outcome !== "unwatered" ? frame.step : -1;
+  const activeAt = result && !done && frame.step >= 0 ? (flat.at[frame.step] ?? null) : null;
+  const failedAt = done && result && (result.outcome === "bump" || result.outcome === "dry") ? (flat.at[frame.step] ?? null) : null;
+  const total = blockCount(program);
+  const gears = grid.cells.flat().includes("G");
+  const sprouts = grid.cells.flat().includes("P");
   const nextLevel = index + 1 < bay.levels.length ? `/quest/${bay.id}/${index + 2}` : `/quest/${bay.id}`;
   const gotStars = save.stars[level.id] ?? 0;
 
@@ -181,7 +223,7 @@ export function QuestLevel() {
       <div className="mb-5 flex items-end gap-3">
         <BoltFigure className="w-16 shrink-0 sm:w-20" />
         <div className="relative flex-1 rounded-3xl rounded-bl-md border border-orange-200 bg-orange-50 px-4 py-3 text-base font-semibold text-slate-700 sm:text-lg">
-          {done && result ? boltSays(result, program) : hint ? level.hint : level.intro}
+          {done && result ? boltSays(result, program, flat.at) : hint ? level.hint : level.intro}
         </div>
       </div>
 
@@ -190,8 +232,8 @@ export function QuestLevel() {
           <Board grid={grid} frame={frame} exit={bay.exit} mood={mood} />
           <div className="mt-3 flex flex-wrap justify-center gap-x-4 gap-y-1 text-sm font-bold text-slate-500">
             <span>
-              Цель: {grid.cells.flat().includes("P") ? "полить все 🌱 и дойти до " : "дойти до "}
-              {bay.exit}
+              Цель: {sprouts ? "полить все 🌱 и " : ""}
+              {gears ? "собрать все ⚙️ и " : ""}дойти до {bay.exit}
             </span>
             {items > 0 && <span>Собери: {"💎".repeat(grid.cells.flat().filter((c) => c === "*").length)}{grid.cells.flat().includes("D") ? " 📜" : ""}</span>}
           </div>
@@ -202,14 +244,15 @@ export function QuestLevel() {
             <p className="mb-2 text-sm font-extrabold text-slate-500">Команды — нажимай, чтобы добавить:</p>
             <div className="flex flex-wrap gap-2">
               {level.blocks.map((c) => {
-                const b = BLOCK[c];
+                const b = c === "loop" ? LOOP_STYLE : BLOCK[c];
                 const Icon = b.icon;
                 return (
                   <button
                     key={c}
                     type="button"
-                    disabled={program.length >= MAX_BLOCKS}
-                    onClick={() => change((p) => [...p, c])}
+                    disabled={total >= MAX_BLOCKS || (c === "loop" && into !== null)}
+                    title={c === "loop" && into !== null ? "Сначала нажми «Готово» у открытого повтора" : undefined}
+                    onClick={() => add(c)}
                     className={`flex min-w-[5.5rem] flex-col items-center gap-0.5 rounded-2xl border-b-4 px-3 py-2 text-white shadow transition active:translate-y-0.5 active:border-b-2 disabled:opacity-40 ${b.cls}`}
                   >
                     <Icon className="h-7 w-7" strokeWidth={2.5} />
@@ -223,47 +266,24 @@ export function QuestLevel() {
           <div className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-extrabold text-slate-500">
-                Программа Пикселя: {program.length} {program.length === 1 ? "блок" : program.length >= 2 && program.length <= 4 ? "блока" : "блоков"}
+                Программа Пикселя: {total} {plural(total)}
               </p>
               <div className="flex gap-1">
-                <button type="button" onClick={() => change((p) => p.slice(0, -1))} disabled={!program.length} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30" aria-label="Убрать последний блок" title="Убрать последний">
+                <button type="button" onClick={undo} disabled={!program.length} className="rounded-full p-2 text-slate-400 hover:bg-slate-100 hover:text-slate-600 disabled:opacity-30" aria-label="Убрать последний блок" title="Убрать последний">
                   <Undo2 className="h-5 w-5" strokeWidth={2} />
                 </button>
-                <button type="button" onClick={() => change(() => [])} disabled={!program.length} className="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-30" aria-label="Очистить программу" title="Очистить всё">
+                <button
+                  type="button"
+                  onClick={() => {
+                    setInto(null);
+                    change(() => []);
+                  }}
+                  disabled={!program.length} className="rounded-full p-2 text-slate-400 hover:bg-rose-50 hover:text-rose-500 disabled:opacity-30" aria-label="Очистить программу" title="Очистить всё">
                   <Trash2 className="h-5 w-5" strokeWidth={2} />
                 </button>
               </div>
             </div>
-            <ol className="flex min-h-[4.5rem] flex-wrap gap-1.5 rounded-2xl bg-slate-100 p-2">
-              {program.length === 0 && <li className="self-center px-2 text-sm text-slate-400">Тут пока пусто…</li>}
-              {program.map((c, i) => {
-                const b = BLOCK[c];
-                const Icon = b.icon;
-                const active = i === currentStep;
-                const failed = i === failedStep;
-                return (
-                  <li key={i} className="group relative">
-                    <span
-                      className={`flex h-12 w-12 flex-col items-center justify-center rounded-xl border-b-4 text-white transition ${b.cls} ${
-                        active ? "scale-110 ring-4 ring-amber-300" : ""
-                      } ${failed ? "ring-4 ring-rose-500" : ""}`}
-                      title={b.label}
-                    >
-                      <Icon className="h-6 w-6" strokeWidth={2.5} />
-                      <span className="text-[10px] font-bold leading-none opacity-80">{i + 1}</span>
-                    </span>
-                    <button
-                      type="button"
-                      onClick={() => change((p) => p.filter((_, k) => k !== i))}
-                      className="absolute -right-1.5 -top-1.5 hidden h-5 w-5 items-center justify-center rounded-full bg-slate-700 text-white group-hover:flex"
-                      aria-label={`Убрать блок ${i + 1}`}
-                    >
-                      <X className="h-3 w-3" strokeWidth={3} />
-                    </button>
-                  </li>
-                );
-              })}
-            </ol>
+            <ProgramView program={program} into={into} onInto={setInto} onChange={change} active={activeAt} failed={failedAt} />
             <div className="mt-3 flex flex-wrap items-center gap-2">
               <button
                 type="button"
@@ -290,7 +310,7 @@ export function QuestLevel() {
               </button>
             </div>
           </div>
-          {best !== null && <p className="text-center text-sm font-semibold text-slate-400">Лучшее решение — {best} блоков. Сможешь так же?</p>}
+          {best !== null && <p className="text-center text-sm font-semibold text-slate-400">Лучшее решение — {best} {plural(best)}. Сможешь так же?</p>}
         </div>
       </div>
 
@@ -312,7 +332,7 @@ export function QuestLevel() {
             <ul className="mb-4 space-y-1 text-left text-sm font-semibold text-slate-600">
               <li>⭐ Дошёл до цели</li>
               <li className={won.short ? "" : "text-slate-400"}>
-                {won.short ? "⭐" : "☆"} Программа не длиннее {best} блоков (у тебя {program.length})
+                {won.short ? "⭐" : "☆"} Программа не длиннее {best} {plural(best ?? 0)} (у тебя {won.count})
               </li>
               <li className={won.all ? "" : "text-slate-400"}>
                 {won.all ? "⭐" : "☆"} Собрал всё: {grid.cells.flat().includes("D") ? "кристаллы и листок" : "все кристаллы"}

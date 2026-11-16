@@ -138,8 +138,8 @@ export function QuestHome() {
               <KeySlot key={b.id} color={b.key.color} got={bayDone(save, b.id)} size="h-9 w-9" />
             ))}
             <span className="mx-1 flex h-16 w-16 items-center justify-center rounded-2xl border-2 border-violet-300/60 bg-white/10 text-3xl">🔒</span>
-            {LOCKED_BAYS.slice(1).map((b) => (
-              <KeySlot key={b.id} color={b.key.color} got={false} size="h-9 w-9" />
+            {[...BAYS, ...LOCKED_BAYS].slice(3, 6).map((b) => (
+              <KeySlot key={b.id} color={b.key.color} got={bayDone(save, b.id)} size="h-9 w-9" />
             ))}
           </div>
           <p className="relative text-sm text-violet-100">Здесь Создательница спрятала самое важное. Дверь откроют шесть ключей.</p>

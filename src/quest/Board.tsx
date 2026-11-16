@@ -2,7 +2,7 @@ import { useRef } from "react";
 import { PixelFigure } from "../components/PixelBuddy";
 import { key, type Frame, type Grid } from "./engine";
 
-// The map of a level: floor tiles, walls, crystals, sprouts, a diary page, the exit — and Pixel walking on it.
+// The map of a level: floor tiles, walls, crystals, sprouts, gear parts, a diary page, the exit — and Pixel walking on it.
 
 const ITEM: Record<string, string> = { "*": "💎", D: "📜" };
 
@@ -41,6 +41,7 @@ export function Board({ grid, frame, exit, mood }: { grid: Grid; frame: Frame; e
                 >
                   {c === "F" && <span className="drop-shadow">{exit}</span>}
                   {(c === "*" || c === "D") && !frame.got.includes(k) && <span className="animate-bounce drop-shadow [animation-duration:2s]">{ITEM[c]}</span>}
+                  {c === "G" && !frame.got.includes(k) && <span className="inline-block animate-[spin_6s_linear_infinite] drop-shadow">⚙️</span>}
                   {c === "P" && <span className={frame.watered.includes(k) ? "animate-[quest-bloom_0.6s_ease-out]" : "opacity-90"}>{frame.watered.includes(k) ? "🌷" : "🌱"}</span>}
                 </div>
               </div>
