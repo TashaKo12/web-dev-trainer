@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../../components/TopicSlider";
 import { FileCode } from "lucide-react";
 import { TrainerHero } from "../../components/TrainerHero";
@@ -38,6 +38,16 @@ function Theory() {
         Чтобы браузер применил стили, в &lt;head&gt; страницы ставят{" "}
         <code className="rounded bg-slate-100 px-1">&lt;link rel="stylesheet" href="style.css"&gt;</code>.
       </p>
+      <div className="mb-5 grid gap-2 text-sm sm:grid-cols-2">
+        <p className="rounded-2xl bg-slate-50 p-3 text-slate-600">
+          <code className="rounded bg-violet-100 px-1 font-mono font-bold text-violet-700">rel="stylesheet"</code> — говорит браузеру, что подключается
+          именно файл стилей. Без него стили не применятся.
+        </p>
+        <p className="rounded-2xl bg-slate-50 p-3 text-slate-600">
+          <code className="rounded bg-sky-100 px-1 font-mono font-bold text-sky-700">href="style.css"</code> — где лежит этот файл: путь к нему, как у
+          картинки или ссылки.
+        </p>
+      </div>
 
       <div className="mb-3 flex gap-1 border-b-2 border-slate-100">
         {(["html", "css"] as const).map((t) => (
@@ -100,6 +110,144 @@ function Theory() {
         Переключи цвет в style.css — текст в index.html изменится, хотя сам HTML-код ты не трогал. Вот что значит
         «CSS в отдельном файле»: один файл style.css управляет оформлением сразу ВСЕХ страниц сайта.
       </div>
+    </div>
+  );
+}
+
+// The next theory slides: everything the levels and the cards ask about is explained here first.
+
+const CARD = "rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
+const C = ({ children }: { children: ReactNode }) => <code className="rounded bg-slate-100 px-1 font-mono text-[0.92em] text-violet-700">{children}</code>;
+
+function CodeBox({ file, children, bad }: { file: string; children: string; bad?: boolean }) {
+  return (
+    <div className={`overflow-hidden rounded-2xl border ${bad ? "border-rose-200" : "border-slate-200"}`}>
+      <p className={`px-4 py-1.5 font-mono text-[11px] font-bold ${bad ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>{file}</p>
+      <pre className="whitespace-pre-wrap bg-slate-900 px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100">{children}</pre>
+    </div>
+  );
+}
+
+function Preview({ children }: { children: ReactNode }) {
+  return (
+    <div className="overflow-hidden rounded-2xl border border-slate-200">
+      <p className="bg-slate-100 px-4 py-1.5 text-[11px] font-bold text-slate-500">В браузере</p>
+      <div className="space-y-1 bg-white px-4 py-3">{children}</div>
+    </div>
+  );
+}
+
+function RuleTheory() {
+  const parts = [
+    { t: "p", label: "селектор", note: "кого красим — все абзацы p", cls: "bg-sky-100 text-sky-700" },
+    { t: "{ }", label: "фигурные скобки", note: "внутри — всё оформление", cls: "bg-slate-200 text-slate-700" },
+    { t: "color", label: "свойство", note: "что меняем — цвет текста", cls: "bg-violet-100 text-violet-700" },
+    { t: "blue", label: "значение", note: "каким делаем — синим", cls: "bg-amber-100 text-amber-700" },
+  ];
+  return (
+    <div className={CARD}>
+      <p className="mb-4 text-slate-600">
+        В style.css пишут <b>правила</b>. Каждое правило отвечает на два вопроса: <b>кого</b> оформляем и <b>как</b>. Между свойством и
+        значением — двоеточие, в конце — точка с запятой.
+      </p>
+      <div className="mb-5 rounded-2xl bg-slate-900 px-5 py-4 text-center font-mono text-xl text-slate-100">
+        <span className="rounded px-1 text-sky-300">p</span> {"{"} <span className="text-violet-300">color</span>: <span className="text-amber-200">blue</span>; {"}"}
+      </div>
+      <div className="mb-6 grid gap-2 sm:grid-cols-4">
+        {parts.map((p) => (
+          <div key={p.label} className="rounded-2xl bg-slate-50 p-3 text-sm">
+            <span className={`rounded-md px-1.5 font-mono font-bold ${p.cls}`}>{p.t}</span>
+            <p className="mt-1.5 font-bold text-slate-700">{p.label}</p>
+            <p className="text-xs text-slate-500">{p.note}</p>
+          </div>
+        ))}
+      </div>
+      <p className="mb-3 text-slate-600">
+        Другие свойства пишутся точно так же — меняются только свойство и значение. Например, <C>background-color</C> — цвет фона:
+      </p>
+      <div className="mb-6 grid gap-3 md:grid-cols-2">
+        <CodeBox file="style.css">{"h1 {\n  background-color: black;\n  color: white;\n}"}</CodeBox>
+        <Preview>
+          <p className="rounded bg-black px-2 py-1 text-xl font-extrabold text-white">Привет!</p>
+          <p className="text-xs text-slate-500">В одном правиле может быть несколько свойств — каждое на своей строке.</p>
+        </Preview>
+      </div>
+      <p className="mb-3 text-slate-600">
+        <b>Одно правило красит сразу ВСЕ подходящие теги.</b> Если на странице три абзаца, правило <C>p {"{ color: blue; }"}</C> сделает синими все
+        три — не только первый.
+      </p>
+      <div className="mb-6 grid gap-3 md:grid-cols-2">
+        <CodeBox file="style.css">{"p {\n  color: blue;\n}"}</CodeBox>
+        <Preview>
+          <p className="text-sm font-semibold text-blue-600">Первый абзац</p>
+          <p className="text-sm font-semibold text-blue-600">Второй абзац</p>
+          <p className="text-sm font-semibold text-blue-600">Третий абзац</p>
+        </Preview>
+      </div>
+      <p className="mb-3 text-slate-600">Частая ошибка — забыть фигурные скобки или двоеточие. Такое правило браузер просто не поймёт:</p>
+      <div className="grid gap-3 md:grid-cols-2">
+        <CodeBox file="✗ так не работает" bad>
+          {"h1: color red;"}
+        </CodeBox>
+        <CodeBox file="✓ правильно">{"h1 { color: red; }"}</CodeBox>
+      </div>
+    </div>
+  );
+}
+
+function InlineTheory() {
+  return (
+    <div className={CARD}>
+      <p className="mb-4 text-slate-600">
+        Стиль можно написать и <b>прямо в теге</b> — в атрибуте <C>style</C>. Тогда не нужен ни отдельный файл, ни селектор: внутри кавычек сразу
+        пишут <C>свойство: значение;</C>.
+      </p>
+      <div className="mb-5 grid gap-3 md:grid-cols-2">
+        <CodeBox file="index.html">{'<h1 style="color: red;">Привет!</h1>\n<h1>Пока!</h1>'}</CodeBox>
+        <Preview>
+          <p className="text-xl font-extrabold text-red-600">Привет!</p>
+          <p className="text-xl font-extrabold text-slate-800">Пока!</p>
+        </Preview>
+      </div>
+      <p className="mb-5 text-slate-600">
+        Но такой стиль действует <b>только на этот один тег</b> — второй заголовок остался чёрным. Если заголовков на сайте двадцать, пришлось бы
+        двадцать раз писать одно и то же. Поэтому оформление всего сайта хранят в style.css, а <C>style="..."</C> оставляют для редких мелочей.
+      </p>
+      <div className="grid gap-2 text-sm sm:grid-cols-3">
+        <div className="rounded-2xl bg-violet-50 p-3">
+          <p className="font-mono font-bold text-violet-700">&lt;link&gt; в head</p>
+          <p className="mt-1 text-slate-600">подключает отдельный файл style.css к странице</p>
+        </div>
+        <div className="rounded-2xl bg-amber-50 p-3">
+          <p className="font-mono font-bold text-amber-700">style="..."</p>
+          <p className="mt-1 text-slate-600">стиль прямо в теге, без отдельного файла — только для этого тега</p>
+        </div>
+        <div className="rounded-2xl bg-sky-50 p-3">
+          <p className="font-mono font-bold text-sky-700">@import</p>
+          <p className="mt-1 text-slate-600">пишется в начале файла .css и подтягивает ещё один файл стилей — например, шрифт из интернета</p>
+        </div>
+      </div>
+    </div>
+  );
+}
+
+function OrderTheory() {
+  return (
+    <div className={CARD}>
+      <p className="mb-4 text-slate-600">
+        Бывает, что два правила красят один и тот же тег по-разному. Браузер читает style.css сверху вниз, и <b>побеждает последнее правило</b> —
+        оно перезаписывает то, что было выше.
+      </p>
+      <div className="grid gap-3 md:grid-cols-2">
+        <CodeBox file="style.css">{"h1 {\n  color: green;\n}\n\nh1 {\n  color: purple;\n}"}</CodeBox>
+        <Preview>
+          <p className="text-2xl font-extrabold text-purple-600">Привет!</p>
+          <p className="text-xs text-slate-500">Заголовок фиолетовый: правило с purple стоит ниже.</p>
+        </Preview>
+      </div>
+      <p className="mt-5 rounded-2xl bg-violet-50 p-4 text-sm text-violet-800">
+        Если цвет «не меняется», проверь, нет ли ниже в файле ещё одного правила для того же тега.
+      </p>
     </div>
   );
 }
@@ -463,6 +611,18 @@ export function CssIntroTrainer() {
       />
       <div className="mb-10">
         <Theory />
+      </div>
+      <SectionHeading kicker="Теория" title="Как устроено CSS-правило" description="Селектор, фигурные скобки, свойство и значение — и почему одно правило красит сразу все подходящие теги." />
+      <div className="mb-10">
+        <RuleTheory />
+      </div>
+      <SectionHeading kicker="Теория" title="Стиль прямо в теге: атрибут style" description="Как задать стиль без отдельного файла и почему так оформляют только мелочи." />
+      <div className="mb-10">
+        <InlineTheory />
+      </div>
+      <SectionHeading kicker="Теория" title="Какое правило победит" description="Что будет, если два правила красят один тег в разные цвета." />
+      <div className="mb-10">
+        <OrderTheory />
       </div>
       <SectionHeading kicker="Практика" title="Закрепим" description="9 уровней — выбирай, проверяй вживую и пиши сам." />
       <div className="mb-10">
