@@ -2,7 +2,7 @@ import { useState } from "react";
 import { Link } from "react-router-dom";
 import { BarChart3, ChevronDown, Code2, Layers, Search, Star } from "lucide-react";
 import { GamePanel, Stars } from "../components/GamePanel";
-import { GAMES, GameCard, KidsGames, SectionTitle } from "./KidsGames";
+import { SectionTitle } from "./KidsGames";
 import { CatalogBanner } from "../components/CatalogBanner";
 import { starsFor, useGame } from "../lib/game";
 import { loadJSON, saveJSON } from "../lib/storage";
@@ -99,7 +99,6 @@ export function Home() {
   const [query, setQuery] = useState("");
   const q = query.trim().toLowerCase();
   const foundTopics = q ? trainers.filter((t) => t.title.toLowerCase().includes(q)) : [];
-  const foundGames = q ? GAMES.filter((g) => `${g.title} ${g.about}`.toLowerCase().includes(q)) : [];
 
   return (
     <div>
@@ -132,15 +131,8 @@ export function Home() {
 
       {q ? (
         <section>
-          <SectionTitle color="#8b5cf6">Найдено: {foundTopics.length + foundGames.length}</SectionTitle>
-          {foundTopics.length + foundGames.length === 0 && <p className="text-slate-500">Ничего не нашлось. Попробуй другое слово.</p>}
-          {foundGames.length > 0 && (
-            <div className="mb-4 grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
-              {foundGames.map((g) => (
-                <GameCard key={g.to} g={g} />
-              ))}
-            </div>
-          )}
+          <SectionTitle color="#8b5cf6">Найдено: {foundTopics.length}</SectionTitle>
+          {foundTopics.length === 0 && <p className="text-slate-500">Ничего не нашлось. Попробуй другое слово.</p>}
           <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
             {foundTopics.map((t) => (
               <TopicCard key={t.id} t={t} p={stars[t.id]} />
@@ -149,8 +141,7 @@ export function Home() {
         </section>
       ) : (
       <>
-      <KidsGames />
-
+      {/* the course page shows only its own lessons: the games of «1 ступень» open from the catalog of all courses */}
       <SectionTitle color="#8b5cf6">Веб-разработка (2 ступень)</SectionTitle>
       <div className="mb-6">
         <p className="max-w-3xl text-sm text-slate-500 dark:text-slate-400">
