@@ -13,7 +13,7 @@ export default {
   theme: {
     extend: {
       fontFamily: {
-        sans: ["Nunito", "system-ui", "sans-serif"],
+        sans: ["Montserrat", "Nunito", "system-ui", "sans-serif"],
         mono: ["Fira Code", "monospace"],
       },
     },

@@ -8,7 +8,7 @@ export function GamePanel() {
   const got = achievements.filter((a) => a.done).length;
 
   return (
-    <div className="mb-12 rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-7 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="mb-6 rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-7 dark:border-slate-800">
       <div className="flex flex-wrap items-center gap-5">
         <div className="relative flex h-16 w-16 shrink-0 items-center justify-center">
           <Shield className="h-16 w-16 text-indigo-500 dark:text-indigo-400" strokeWidth={1.5} fill="currentColor" fillOpacity={0.15} />
