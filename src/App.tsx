@@ -50,6 +50,7 @@ import {
   CssUnitsTrainer,
   DesignPaletteTrainer,
   FontStyleTrainer,
+  HoverPictureTrainer,
   ListStyleTrainer,
   MaxSizeTrainer,
   MultiPageTrainer,
@@ -136,6 +137,7 @@ function App() {
           <Route path="max-size" element={<MaxSizeTrainer />} />
           <Route path="list-style" element={<ListStyleTrainer />} />
           <Route path="multi-page" element={<MultiPageTrainer />} />
+          <Route path="hover-picture" element={<HoverPictureTrainer />} />
 
           {/* «Тайна станции»: a block-coding quest for children 7–9 */}
           <Route path="quest" element={<QuestHome />} />

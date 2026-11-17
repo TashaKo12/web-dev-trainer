@@ -53,7 +53,8 @@ export type TrainerId =
   | "design-palette"
   | "max-size"
   | "list-style"
-  | "multi-page";
+  | "multi-page"
+  | "hover-picture";
 
 export type TrainerProgress = {
   score: number;

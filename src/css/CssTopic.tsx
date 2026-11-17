@@ -211,7 +211,13 @@ function WriteLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "wri
           <Preview html={level.html} css={`${level.css ?? ""}\n${code}`} height={level.height ?? 200} onReady={(d) => (doc.current = d)} />
         </div>
       </div>
-      {note && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">Вид верный, но по условию: {note}</p>}
+      {/* a task with no computed-style checks (e.g. a :hover rule) is checked by its code alone: then the look is not «верный» yet */}
+      {note && (
+        <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">
+          {Object.keys(level.expect).length ? "Вид верный, но по условию: " : "Пока не так. "}
+          {note}
+        </p>
+      )}
       {!done && (
         <div className="text-center">
           <button type="button" className={btn} onClick={check} disabled={!code.trim()}>

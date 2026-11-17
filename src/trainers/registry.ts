@@ -641,6 +641,16 @@ export const trainers: TrainerMeta[] = [
     section: "css",
   },
   {
+    id: "hover-picture",
+    path: "/hover-picture",
+    icon: Image,
+    title: "Картина при наведении: background-image",
+    summary: "Фоновая картинка url(…), background-size: cover и смена картинки на :hover и :active — как в «Интерактивных картинах».",
+    taskCount: 8,
+    gradient: "from-amber-500 to-rose-500",
+    section: "css",
+  },
+  {
     id: "multi-page",
     path: "/multi-page",
     icon: Files,
@@ -659,5 +669,5 @@ for (const t of trainers) {
 }
 
 // lesson of every web topic: where its project uses it. Lessons 1–6 are HTML only: styles start with lesson 7 «Лучший дизайн»
-const LESSON_OF: Record<string, number> = {"html-structure":1,"tags-attributes":1,"headings":1,"paragraphs":1,"lists":2,"links":3,"images":3,"image-paths":4,"tables":5,"semantic-tags":5,"form-basics":6,"form-fields":6,"input-types":6,"buttons":6,"css-intro":7,"selectors":7,"text-color":7,"background-color":7,"typography":7,"design-palette":7,"box-model":8,"css-sizes":8,"border":8,"backgrounds":8,"div-classes":8,"shadows":9,"font-weight":9,"max-size":9,"text-align":9,"font-style":9,"opacity":10,"pseudo-classes":10,"transitions":10,"reset-box-sizing":11,"flexbox":12,"text-decoration":11,"position-fixed":11,"list-style":12,"id-attribute":12,"font-size":12,"multi-page":13,"css-units":13,"page-layout":13};
+const LESSON_OF: Record<string, number> = {"html-structure":1,"tags-attributes":1,"headings":1,"paragraphs":1,"lists":2,"links":3,"images":3,"image-paths":4,"tables":5,"semantic-tags":5,"form-basics":6,"form-fields":6,"input-types":6,"buttons":6,"css-intro":7,"selectors":7,"text-color":7,"background-color":7,"typography":7,"design-palette":7,"box-model":8,"css-sizes":8,"border":8,"backgrounds":8,"div-classes":8,"shadows":9,"font-weight":9,"max-size":9,"text-align":9,"font-style":9,"opacity":10,"pseudo-classes":10,"transitions":10,"hover-picture":10,"reset-box-sizing":11,"flexbox":12,"text-decoration":11,"position-fixed":11,"list-style":12,"id-attribute":12,"font-size":12,"multi-page":13,"css-units":13,"page-layout":13};
 for (const t of trainers) if (LESSON_OF[t.id]) t.lesson = LESSON_OF[t.id];
