@@ -7,6 +7,9 @@ const C = Code;
 /** The direct children of body, in order: the three parts must go one after another. */
 const bodyOrder = (doc: Document) => Array.from(doc.body.children).map((el) => el.tagName.toLowerCase());
 
+/** The reset every example shares: applied, but not shown in the editor. */
+const RESET = "* { margin: 0; box-sizing: border-box; font-family: Arial, sans-serif; }";
+
 const PAGE_CSS =
   "* { margin: 0; box-sizing: border-box; font-family: Arial, sans-serif; } header { background: #2c3e50; color: #fff; padding: 12px; text-align: center; } main { padding: 14px; } footer { background: #34495e; color: #fff; padding: 12px; text-align: center; }";
 
@@ -34,7 +37,7 @@ export const PAGE_PARTS: CssTopicData = {
             <C>header</C> стоит в самом верху. В нём название сайта или логотип, а часто и меню. Он повторяется на каждой странице сайта.
           </>
         ),
-        demo: { html: "<header><h1>Мой простой сайт</h1></header>", css: PAGE_CSS, height: 80 },
+        demo: { html: "<header><h1>Мой простой сайт</h1></header>", base: RESET, css: "header { background: #2c3e50; color: white; padding: 12px; text-align: center; }", height: 80 },
       },
       {
         title: "main — главное содержимое",
@@ -44,7 +47,7 @@ export const PAGE_PARTS: CssTopicData = {
             подвалом в него не кладут.
           </>
         ),
-        demo: { html: "<main><h2>Добро пожаловать</h2><p>Это сайт про котёнка Мусю.</p></main>", css: PAGE_CSS, height: 100 },
+        demo: { html: "<main><h2>Добро пожаловать</h2><p>Это сайт про котёнка Мусю.</p></main>", base: RESET, css: "main { padding: 14px; }", height: 100 },
       },
       {
         title: "footer — подвал",
@@ -56,7 +59,8 @@ export const PAGE_PARTS: CssTopicData = {
         ),
         demo: {
           html: '<footer><p><a href="#">Главная</a> · <a href="#">О нас</a> · <a href="#">Контакты</a></p><p>&copy; 2026 Онлайн-школа «Лидер»</p></footer>',
-          css: `${PAGE_CSS} footer a { color: #f39c12; text-decoration: none; } footer p + p { margin-top: 8px; color: #bdc3c7; font-size: 0.8em; }`,
+          base: RESET,
+          css: "footer { background: #34495e; color: white; padding: 12px; text-align: center; } footer a { color: #f39c12; text-decoration: none; } footer p + p { margin-top: 8px; color: #bdc3c7; font-size: 0.8em; }",
           height: 100,
         },
       },
@@ -70,7 +74,8 @@ export const PAGE_PARTS: CssTopicData = {
         ),
         demo: {
           html: "<header>header — шапка</header><main>main — главное содержимое</main><footer>footer — подвал</footer>",
-          css: PAGE_CSS,
+          base: PAGE_CSS,
+          css: "",
           height: 130,
         },
         code: "<body>\n  <header>\n    <h1>Мой простой сайт</h1>\n  </header>\n\n  <main>\n    <h2>Добро пожаловать</h2>\n    <p>…</p>\n  </main>\n\n  <footer>\n    <p>&copy; 2026 Онлайн-школа «Лидер»</p>\n  </footer>\n</body>",
@@ -86,7 +91,8 @@ export const PAGE_PARTS: CssTopicData = {
         ),
         demo: {
           html: "<header>Шапка</header><main>Текста мало…</main><footer>Подвал — внизу экрана</footer>",
-          css: `${PAGE_CSS} body { display: flex; flex-direction: column; min-height: 100vh; } main { flex: 1; }`,
+          base: PAGE_CSS,
+          css: "body { display: flex; flex-direction: column; min-height: 100vh; } main { flex: 1; }",
           height: 200,
         },
         code: "body {\n  display: flex;\n  flex-direction: column;\n  min-height: 100vh;\n}\n\nmain {\n  flex: 1;\n}",

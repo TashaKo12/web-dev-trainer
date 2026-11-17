@@ -1,5 +1,6 @@
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Eye } from "lucide-react";
+import { LiveDemo } from "./LiveDemo";
 import { TopicSlider } from "../components/TopicSlider";
 import { TrainerHero } from "../components/TrainerHero";
 import { SectionHeading } from "../components/SectionHeading";
@@ -44,7 +45,8 @@ function Preview({ html, css, height = 180, onReady }: { html: string; css: stri
   );
 }
 
-export type Demo = { html: string; css: string; height?: number };
+/** `base` — styles that are applied but not shown in the editor (the frame of the example). */
+export type Demo = { html: string; css: string; base?: string; height?: number };
 export type TheoryPart = { title: string; text: ReactNode; demo?: Demo; code?: string };
 
 export type CssLevel =
@@ -92,19 +94,8 @@ function Theory({ parts, bare = false }: { parts: TheoryPart[]; bare?: boolean }
           )}
           <p className="text-sm leading-relaxed text-slate-600">{p.text}</p>
           {p.demo && (
-            <div className="mt-4 grid gap-3 md:grid-cols-2">
-              <pre className="overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[13px] leading-relaxed text-slate-100">
-                {p.demo.css.trim() ? `/* style.css */\n${p.demo.css.trim()}\n\n` : ""}
-                {`<!-- index.html -->\n${p.demo.html.trim()}`}
-              </pre>
-              <div>
-                <p className="mb-1.5 flex items-center gap-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">
-                  <Eye className="h-3.5 w-3.5" strokeWidth={2} />
-                  Так видит браузер
-                </p>
-                <Preview html={p.demo.html} css={p.demo.css} height={p.demo.height} />
-              </div>
-            </div>
+            <LiveDemo html={p.demo.html} css={p.demo.css} height={p.demo.height} render={(html, css, height) => <Preview html={html} css={`${p.demo!.base ?? ""}
+${css}`} height={height} />} />
           )}
           {p.code && <pre className="mt-4 overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[13px] leading-relaxed text-slate-100">{p.code}</pre>}
         </div>

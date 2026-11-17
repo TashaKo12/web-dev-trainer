@@ -35,7 +35,7 @@ export const HOVER_PICTURE: CssTopicData = {
             <C>src</C> у тега <C>img</C>: <C>url(images/rye.jpeg)</C>. Текст блока остаётся поверх картинки.
           </>
         ),
-        demo: { html: '<div class="card">Текст поверх картинки</div>', css: `.card { ${CARD} background-image: url(pictures/forest.svg); }`, height: 180 },
+        demo: { html: '<div class="card">Текст поверх картинки</div>', base: `.card { ${CARD} }`, css: ".card { background-image: url(pictures/forest.svg); }", height: 180 },
       },
       {
         title: "img или background-image?",
@@ -57,7 +57,8 @@ export const HOVER_PICTURE: CssTopicData = {
         ),
         demo: {
           html: '<div class="row"><div class="card cover">cover</div><div class="card contain">contain</div></div>',
-          css: `.row { display: flex; gap: 10px; } .card { ${CARD} width: 150px; height: 140px; background-image: url(pictures/rye.svg); background-repeat: no-repeat; color: #fff; font-weight: bold; } .cover { background-size: cover; } .contain { background-size: contain; background-color: #e5e7eb; }`,
+          base: `.row { display: flex; gap: 10px; } .card { ${CARD} width: 150px; height: 140px; background-repeat: no-repeat; color: #fff; font-weight: bold; } .contain { background-color: #e5e7eb; }`,
+          css: ".card { background-image: url(pictures/rye.svg); } .cover { background-size: cover; } .contain { background-size: contain; }",
           height: 170,
         },
       },
@@ -72,7 +73,8 @@ export const HOVER_PICTURE: CssTopicData = {
         ),
         demo: {
           html: '<div class="card"><p>«Утро в лесу»<br>Наведи на меня</p></div>',
-          css: `.card { ${CARD} } .card:hover { background-image: url(pictures/forest.svg); background-size: cover; } .card:hover p { opacity: 0; }`,
+          base: `.card { ${CARD} }`,
+          css: ".card:hover { background-image: url(pictures/forest.svg); background-size: cover; } .card:hover p { opacity: 0; }",
           height: 180,
         },
       },
@@ -87,7 +89,8 @@ export const HOVER_PICTURE: CssTopicData = {
         ),
         demo: {
           html: '<div class="card"><p>«Рожь»<br>Наведи, потом нажми и держи</p></div>',
-          css: `.card { ${CARD} } .card:hover { background-image: url(pictures/rye.svg); background-size: cover; } .card:hover p { opacity: 0; } .card:active { background-image: url(pictures/rye-sketch.svg); }`,
+          base: `.card { ${CARD} }`,
+          css: ".card:hover { background-image: url(pictures/rye.svg); background-size: cover; } .card:hover p { opacity: 0; } .card:active { background-image: url(pictures/rye-sketch.svg); }",
           height: 180,
         },
         code: ".card:hover {\n  background-image: url(images/Rye.jpeg);\n  background-size: cover;\n}\n\n.card:hover p {\n  opacity: 0;\n}\n\n.card:active {\n  background-image: url(images/Sketch_Rye.jpeg);\n}",
