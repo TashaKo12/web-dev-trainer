@@ -54,7 +54,8 @@ export type TrainerId =
   | "max-size"
   | "list-style"
   | "multi-page"
-  | "hover-picture";
+  | "hover-picture"
+  | "page-parts";
 
 export type TrainerProgress = {
   score: number;
