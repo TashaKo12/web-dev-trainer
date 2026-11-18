@@ -2,6 +2,7 @@ import { Link } from "react-router-dom";
 import { Braces, CircleCheck, FileCode, List, type LucideIcon } from "lucide-react";
 import { trainers } from "../trainers/registry";
 import { getAllProgress } from "../lib/progress";
+import { CatalogBanner } from "../components/CatalogBanner";
 
 const UPCOMING: { title: string; summary: string; icon: LucideIcon }[] = [
   { title: "Списки", summary: "Храним много значений в одной переменной и перебираем их циклом.", icon: List },
@@ -9,7 +10,7 @@ const UPCOMING: { title: string; summary: string; icon: LucideIcon }[] = [
 ];
 
 const CARD =
-  "relative overflow-hidden rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
+  "relative overflow-hidden rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm dark:border-slate-800";
 
 export function PythonHome() {
   const progress = getAllProgress();
@@ -17,16 +18,13 @@ export function PythonHome() {
 
   return (
     <div>
-      <div className="mb-10 text-center">
-        <span className="mb-4 inline-flex items-center gap-1.5 rounded-full border-2 border-emerald-200 bg-emerald-50 px-3 py-1 font-mono text-xs font-bold text-emerald-700 dark:brightness-125">
-          <FileCode className="h-3.5 w-3.5" strokeWidth={2} />
-          main.py
-        </span>
-        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Тренажёр по Python</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
-          Учимся писать настоящие программы. В каждой теме — игра с живым терминалом, где сразу видно, что
-          напечатает твой код, а потом практика с заданиями.
-        </p>
+      <div className="mb-8">
+        <CatalogBanner
+          icon={<FileCode className="h-8 w-8" strokeWidth={2} />}
+          kicker="main.py — файл с программой на Python"
+          title="Тренажёр по Python"
+          note="Учимся писать настоящие программы. В каждой теме — игра с живым терминалом, где сразу видно, что напечатает твой код, а потом практика с заданиями."
+        />
       </div>
 
       <div className="grid gap-5 sm:grid-cols-2">

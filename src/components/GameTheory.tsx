@@ -23,7 +23,7 @@ export function CodeBox({ code, out, note }: CodeExample) {
 
 export function TheoryCard({ theory, onDone, doneLabel = "Понятно, к заданиям!" }: { theory: GameTheory; onDone: () => void; doneLabel?: string }) {
   return (
-    <div className="mx-auto max-w-3xl rounded-3xl border border-white/70 bg-white/95 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+    <div className="mx-auto max-w-3xl rounded-xl border border-[#e6e7ee] bg-white p-5 shadow-sm sm:p-8">
       <p className="mb-1 inline-flex items-center gap-1.5 text-sm font-extrabold uppercase tracking-wide text-violet-500">
         <BookOpen className="h-4 w-4" strokeWidth={2.4} /> Теория программиста
       </p>
@@ -39,7 +39,7 @@ export function TheoryCard({ theory, onDone, doneLabel = "Понятно, к з�
         ))}
       </div>
       <div className="mt-6 flex justify-center">
-        <button type="button" onClick={onDone} className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-8 py-3 text-lg font-extrabold text-white shadow">
+        <button type="button" onClick={onDone} className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-8 py-3 text-lg font-extrabold text-white shadow">
           {doneLabel}
         </button>
       </div>

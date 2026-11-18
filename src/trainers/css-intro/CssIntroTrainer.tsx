@@ -32,7 +32,7 @@ function Theory() {
   const [color, setColor] = useState<(typeof COLORS)[number]>("#ec4899");
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <p className="mb-5 text-slate-600">
         HTML и CSS — это ДВА РАЗНЫХ файла. index.html описывает содержимое страницы, а style.css — её оформление.
         Чтобы браузер применил стили, в &lt;head&gt; страницы ставят{" "}
@@ -116,7 +116,7 @@ function Theory() {
 
 // The next theory slides: everything the levels and the cards ask about is explained here first.
 
-const CARD = "rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
+const CARD = "rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800";
 const C = ({ children }: { children: ReactNode }) => <code className="rounded bg-slate-100 px-1 font-mono text-[0.92em] text-violet-700">{children}</code>;
 
 function CodeBox({ file, children, bad }: { file: string; children: string; bad?: boolean }) {

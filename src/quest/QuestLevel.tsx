@@ -351,7 +351,7 @@ function LevelScreen() {
         </div>
 
         <div className="space-y-4">
-          <div className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
             <p className="mb-2 text-sm font-extrabold text-slate-500">Команды — нажимай, чтобы добавить:</p>
             <div className="flex flex-wrap gap-2">
               {level.blocks.map((t) => {
@@ -375,7 +375,7 @@ function LevelScreen() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/70 bg-white/90 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
             <div className="mb-2 flex items-center justify-between gap-2">
               <p className="text-sm font-extrabold text-slate-500">
                 Программа Пикселя: {total} {plural(total)}
@@ -497,7 +497,7 @@ function LevelScreen() {
               >
                 Ещё раз
               </button>
-              <button type="button" onClick={() => navigate(nextLevel)} className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-2.5 font-extrabold text-white shadow">
+              <button type="button" onClick={() => navigate(nextLevel)} className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 font-extrabold text-white shadow">
                 {index + 1 < bay.levels.length ? "Следующий уровень →" : bay.finale ? "Открыть Сердце! →" : "Чиним отсек! →"}
               </button>
             </div>

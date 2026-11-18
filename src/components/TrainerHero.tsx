@@ -1,5 +1,6 @@
 import { FileCode } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
+import { BannerFrame } from "./CatalogBanner";
 
 const SECTION_TAB: Record<string, { file: string; label: string; cls: string }> = {
   html: { file: "index.html", label: "HTML", cls: "border-sky-200 bg-sky-50 text-sky-700" },
@@ -30,24 +31,25 @@ export function TrainerHero({
 }) {
   const tab = section ? SECTION_TAB[section] : undefined;
 
+  // the same sky banner as the catalog: the topic's own icon in the round badge, its file and title on the right
   return (
-    <div className="mb-10 text-center">
-      <div
-        className={`mx-auto mb-4 flex h-16 w-16 items-center justify-center rounded-2xl bg-gradient-to-br ${gradient} shadow-lg`}
-      >
-        <Icon className="h-8 w-8 text-white" strokeWidth={1.75} />
-      </div>
-      {tab && (
-        <div className={`mx-auto mb-3 inline-flex items-center gap-1.5 rounded-full border-2 px-3 py-1 font-mono text-xs font-bold dark:brightness-125 ${tab.cls}`}>
-          <FileCode className="h-3.5 w-3.5" strokeWidth={2} />
-          {tab.file}
-          <span className="opacity-60">— это файл с {FILE_ROLE[tab.label]}</span>
+    <BannerFrame className="mb-8">
+      <div className="flex min-h-[170px] items-end gap-4 p-6 sm:p-7">
+        <span className={`flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-gradient-to-br ${gradient} ring-2 ring-white/50 sm:h-[68px] sm:w-[68px]`}>
+          <Icon className="h-8 w-8 text-white" strokeWidth={1.9} />
+        </span>
+        <div className="min-w-0 pb-1">
+          {tab && (
+            <span className="mb-1.5 inline-flex items-center gap-1.5 rounded-md bg-white/15 px-2 py-0.5 font-mono text-[11px] font-semibold text-white/90 sm:text-xs">
+              <FileCode className="h-3.5 w-3.5" strokeWidth={2} />
+              {tab.file}
+              <span className="font-sans opacity-75">— это файл с {FILE_ROLE[tab.label]}</span>
+            </span>
+          )}
+          <h1 className="text-xl font-bold text-white sm:text-2xl">{title}</h1>
+          <p className="mt-1 max-w-2xl text-sm text-white/80">{summary}</p>
         </div>
-      )}
-      <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl dark:text-slate-100">
-        {title}
-      </h1>
-      <p className="mx-auto mt-2 max-w-xl text-slate-500 dark:text-slate-400">{summary}</p>
-    </div>
+      </div>
+    </BannerFrame>
   );
 }

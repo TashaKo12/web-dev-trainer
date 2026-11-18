@@ -85,7 +85,7 @@ function Theory({ parts, bare = false }: { parts: TheoryPart[]; bare?: boolean }
   return (
     <div className="space-y-5">
       {parts.map((p, i) => (
-        <div key={p.title} className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-7 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+        <div key={p.title} className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-7 dark:border-slate-800">
           {!bare && (
             <>
               <p className="mb-1 text-xs font-bold uppercase tracking-wide text-indigo-500">Шаг {i + 1}</p>
@@ -104,7 +104,7 @@ ${css}`} height={height} />} />
   );
 }
 
-const btn = "rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40";
+const btn = "rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40";
 
 function ChoiceLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "choice" }>; onResult: (ok: boolean) => void }) {
   const [picked, setPicked] = useState<number | null>(null);

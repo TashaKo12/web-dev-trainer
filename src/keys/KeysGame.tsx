@@ -7,6 +7,7 @@ import { BoltFigure, Dialogue } from "../quest/Dialogue";
 import { CODE_OF, KEY_BY_CODE, KEYS_INTRO, KEYS_LEVELS, ROWS, type Task } from "./data";
 import { CodeBox, TheoryButton, TheoryCard } from "../components/GameTheory";
 import { KEYS_THEORY } from "./theory";
+import { CatalogBanner } from "../components/CatalogBanner";
 
 // «Клавиатура Пикселя»: the list of levels and one level — find the keys on the real (or the on-screen) keyboard.
 
@@ -45,10 +46,9 @@ export function KeysHome() {
   const total = KEYS_LEVELS.reduce((s, l) => s + (save.stars[l.id] ?? 0), 0);
   return (
     <div>
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Клавиатура Пикселя</h1>
-        <p className="mx-auto mt-2 max-w-xl text-slate-500 dark:text-slate-400">Находи клавиши на настоящей клавиатуре и узнавай, что они умеют.</p>
-        <p className="mt-3 inline-flex items-center gap-1 rounded-full bg-white/90 px-4 py-2 text-sm font-extrabold text-slate-700 shadow-sm">
+      <CatalogBanner icon="⌨️" kicker="Программирование (1 ступень) · 7–9 лет" title="Клавиатура Пикселя" note="Находи клавиши на настоящей клавиатуре и узнавай, что они умеют." />
+      <div className="mb-6">
+        <p className="inline-flex items-center gap-1 rounded-full bg-white/90 px-4 py-2 text-sm font-extrabold text-slate-700 shadow-sm">
           <Star className="h-4 w-4 text-amber-400" fill="currentColor" strokeWidth={1.5} /> {total} из {KEYS_LEVELS.length * 3}
         </p>
       </div>
@@ -68,7 +68,7 @@ export function KeysHome() {
             </>
           );
           return open ? (
-            <Link key={l.id} to={`/keys/${l.id}`} className="rounded-3xl border-2 border-white/70 bg-white/95 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition hover:-translate-y-1">
+            <Link key={l.id} to={`/keys/${l.id}`} className="rounded-xl border border-[#e6e7ee] bg-white p-5 shadow-sm transition hover:-translate-y-1">
               {inner}
             </Link>
           ) : (
@@ -306,7 +306,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
 
       {finished === null ? (
         <>
-          <div className="mb-5 rounded-3xl border border-white/70 bg-white/95 p-5 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-7">
+          <div className="mb-5 rounded-xl border border-[#e6e7ee] bg-white p-5 text-center shadow-sm sm:p-7">
             <p className="text-2xl font-extrabold text-slate-800 sm:text-3xl">{task?.say}</p>
             {task?.kind === "word" && (
               <p className="mt-4 font-mono text-5xl font-black tracking-[0.3em]">

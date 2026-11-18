@@ -11,9 +11,9 @@ import { trainers } from "../trainers/registry";
 // Author-only page: progress of every participant. The data comes from the server only for the admin code.
 
 const CARD =
-  "rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
+  "rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800";
 const BTN_MAIN =
-  "inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-4 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-4 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
 const BTN_SECOND =
   "inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 disabled:opacity-40";
 
@@ -543,7 +543,10 @@ function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefre
     <div className="space-y-8">
       <div className="flex flex-wrap items-end justify-between gap-3">
         <div>
-          <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Кабинет педагога</h1>
+          <h1 className="flex items-center gap-3 text-2xl font-bold text-slate-800 sm:text-3xl dark:text-slate-100">
+            <span className="h-3.5 w-3.5 rounded-full bg-[#3b82f6]" aria-hidden="true" />
+            Кабинет педагога
+          </h1>
           <p className="mt-2 flex flex-wrap items-center gap-1.5 text-slate-500 dark:text-slate-400">
             <Crown className="h-4 w-4 text-amber-400" strokeWidth={2} aria-label="Админ" />
             <span className="font-bold text-slate-700 dark:text-slate-200">{data.admin}</span> · прогресс всех участников

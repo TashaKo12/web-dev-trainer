@@ -188,7 +188,7 @@ export function TheoryNotes({ trainerId }: { trainerId: string }) {
   const notes = NOTES[trainerId];
   if (!notes) return null;
   return (
-    <div className="mt-6 rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="mt-6 rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <p className="mb-4 flex items-center gap-2 text-xs font-bold uppercase tracking-wide text-indigo-500">
         <BookOpen className="h-4 w-4" strokeWidth={2} />
         Важно перед практикой

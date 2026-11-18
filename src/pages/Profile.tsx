@@ -8,9 +8,10 @@ import { type TrainerMeta } from "../trainers/registry";
 import { loadItem, useConsent, useTotalPoints } from "../lib/storage";
 import { buildActivity, formatDate, formatDuration, readReports, type Activity, type TopicReport } from "../lib/reports";
 import { applyRestoreCode, makeRestoreCode } from "../lib/backup";
+import { CatalogBanner } from "../components/CatalogBanner";
 
 const CARD =
-  "rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]";
+  "rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800";
 
 const SECTION_TITLES: Record<TrainerMeta["section"], string> = {
   html: "HTML",
@@ -32,7 +33,7 @@ function StatCard({ icon: Icon, label, value }: { icon: typeof Star; label: stri
 }
 
 const BTN_MAIN =
-  "inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
 
 function ParticipantCode() {
   const account = useAccount();
@@ -176,7 +177,7 @@ function RestoreCode() {
           <button
             type="button"
             onClick={copy}
-            className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-bold text-white shadow"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow"
           >
             {copied ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Copy className="h-4 w-4" strokeWidth={2} />}
             {copied ? "Скопировано" : "Скопировать код"}
@@ -186,7 +187,7 @@ function RestoreCode() {
         <button
           type="button"
           onClick={show}
-          className="rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-bold text-white shadow"
+          className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow"
         >
           Показать мой код
         </button>
@@ -217,7 +218,7 @@ function RestoreCode() {
               <button
                 type="button"
                 onClick={restore}
-                className="rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-5 py-2 text-sm font-bold text-white shadow"
+                className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow"
               >
                 Да, восстановить
               </button>
@@ -332,11 +333,8 @@ export function Profile() {
 
   return (
     <div className="space-y-8">
-      <div className="text-center">
-        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Мой прогресс</h1>
-        <p className="mx-auto mt-3 max-w-2xl text-slate-500 dark:text-slate-400">
-          Здесь видно, какие темы ты проходишь, сколько уровней решено и когда.
-        </p>
+      <div>
+        <CatalogBanner icon="📊" kicker="Личный кабинет" title="Мой прогресс" note="Здесь видно, какие темы ты проходишь, сколько уровней решено и когда." />
         {consent !== "granted" && (
           <p className="mx-auto mt-3 max-w-2xl rounded-2xl bg-amber-50 p-3 text-sm text-amber-800">
             Сохранение в браузере выключено: прогресс пропадёт после перезагрузки страницы. Включить его можно внизу

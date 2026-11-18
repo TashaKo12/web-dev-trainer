@@ -76,7 +76,7 @@ function Theory() {
   const [target, setTarget] = useState(false);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <p className="mb-5 text-slate-600">
         Тег <code className="rounded bg-slate-100 px-1">a</code> превращает текст в ссылку. Атрибут{" "}
         <code className="rounded bg-slate-100 px-1">href</code> говорит, КУДА она ведёт — и от его значения

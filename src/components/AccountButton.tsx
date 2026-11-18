@@ -33,7 +33,7 @@ export function AccountButton() {
   return (
     <a
       href={`${HUB_URL}#login`}
-      className={`${PILL} border-transparent bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow hover:opacity-90`}
+      className={`${PILL} border-transparent bg-[#4f1fd1] hover:bg-[#4318b8] text-white shadow hover:opacity-90`}
     >
       <LogIn className="h-4 w-4" strokeWidth={2} />
       <span className="hidden sm:inline">Войти</span>

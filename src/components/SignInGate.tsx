@@ -4,7 +4,7 @@ import { HUB_URL } from "../lib/cloudConfig";
 /** Shown instead of a trainer until the visitor signs in on the course page. */
 export function SignInGate() {
   return (
-    <div className="mx-auto max-w-xl rounded-3xl border border-white/70 bg-white/90 p-8 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-10 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="mx-auto max-w-xl rounded-xl border border-[#e6e7ee] bg-white p-8 text-center shadow-sm sm:p-10 dark:border-slate-800">
       <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-gradient-to-br from-indigo-500 to-violet-500 text-white shadow-lg">
         <LockKeyhole className="h-7 w-7" strokeWidth={1.75} />
       </div>
@@ -16,7 +16,7 @@ export function SignInGate() {
       <div className="flex flex-wrap justify-center gap-3">
         <a
           href={`${HUB_URL}#login`}
-          className="inline-flex items-center gap-2 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-2.5 text-sm font-bold text-white shadow hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 text-sm font-bold text-white shadow hover:opacity-90"
         >
           <LogIn className="h-4 w-4" strokeWidth={2} />
           Войти или создать аккаунт

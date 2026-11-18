@@ -13,7 +13,7 @@ export function LevelShell({
   explain,
   onJump,
   onNext,
-  nextClassName = "bg-gradient-to-r from-indigo-500 to-violet-500",
+  nextClassName = "bg-[#4f1fd1] hover:bg-[#4318b8]",
   children,
 }: {
   total: number;
@@ -31,7 +31,7 @@ export function LevelShell({
   const answered = status !== "idle";
 
   return (
-    <div data-practice className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] backdrop-blur-md sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div data-practice className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm backdrop-blur-md sm:p-8 dark:border-slate-800">
       <div className="flex flex-col gap-5 sm:flex-row">
         <LevelSidebar total={total} current={index} statuses={statuses} onJump={onJump} />
 

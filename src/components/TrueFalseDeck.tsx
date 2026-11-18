@@ -83,7 +83,7 @@ export function TrueFalseDeck({
           : { Icon: Target, title: "Неплохо — можно пролистать ещё раз." };
 
     return (
-      <div data-deck className="rounded-3xl border border-white/70 bg-white/90 p-6 text-center shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+      <div data-deck className="rounded-xl border border-[#e6e7ee] bg-white p-6 text-center shadow-sm sm:p-8 dark:border-slate-800">
         <div className="mx-auto mb-3 flex h-14 w-14 items-center justify-center rounded-2xl bg-indigo-100 text-indigo-600 dark:bg-indigo-900/40 dark:text-indigo-300">
           <Icon className="h-7 w-7" strokeWidth={1.75} />
         </div>
@@ -103,7 +103,7 @@ export function TrueFalseDeck({
   }
 
   return (
-    <div data-deck className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div data-deck className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <div className="mb-4 flex items-center justify-between gap-3">
         <span className="whitespace-nowrap text-xs font-bold uppercase tracking-wide text-slate-400">
           Карточка {index + 1} из {total}

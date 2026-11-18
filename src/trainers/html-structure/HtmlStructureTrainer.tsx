@@ -69,7 +69,7 @@ function Theory() {
   const allFilled = SLOTS.every((s) => placed[s.id]);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <p className="mb-5 text-slate-600">
         Собери скелет веб-страницы: выбери тег-карточку снизу, а затем нажми на
         нужный раздел макета, чтобы поставить тег туда. Не все теги здесь
@@ -214,7 +214,7 @@ function PageZonesTheory() {
   );
 
   return (
-    <div className="mb-6 rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="mb-6 rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <p className="mb-5 text-slate-600">
         Почти любой сайт состоит из четырёх крупных частей: шапки, меню, основы и подвала. Для каждой в HTML есть свой тег.
         Нажимай на кнопки — соответствующий кусок примера страницы подсветится.
@@ -310,7 +310,7 @@ function MoreTagsTheory() {
   }
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <p className="mb-5 text-slate-600">
         Кроме header, nav, main и footer на странице часто встречаются ещё несколько тегов. Нажимай на кнопки —
         соответствующий кусок примера страницы подсветится.

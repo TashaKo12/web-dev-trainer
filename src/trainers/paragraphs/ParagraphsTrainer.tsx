@@ -24,7 +24,7 @@ function Theory() {
   const [wrapped, setWrapped] = useState(true);
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <p className="mb-5 text-slate-600">
         Тег <code className="rounded bg-slate-100 px-1">p</code> — это абзац. У него есть отступ сверху и снизу
         от других элементов. А ещё браузер «склеивает» лишние пробелы и переносы строк в один пробел — HTML не

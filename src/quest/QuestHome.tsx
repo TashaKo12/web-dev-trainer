@@ -5,6 +5,7 @@ import { BAYS, DIARY, HEART, PROLOGUE, STATION_BAYS } from "./data";
 import { Dialogue } from "./Dialogue";
 import { PixelFigure } from "../components/PixelBuddy";
 import { bayDone, bayOpen, markPrologue, useQuest } from "./progress";
+import { CatalogBanner } from "../components/CatalogBanner";
 
 // «Тайна станции»: the station map is the main menu of the quest.
 
@@ -97,7 +98,7 @@ export function QuestHome() {
       </>
     );
     return open ? (
-      <Link key={b.id} to={`/quest/${b.id}`} className={`${CARD} border-violet-200 bg-white/95 shadow-[0_8px_30px_rgb(0,0,0,0.06)] hover:-translate-y-1 hover:border-violet-400`}>
+      <Link key={b.id} to={`/quest/${b.id}`} className={`${CARD} border-violet-200 bg-white/95 shadow-sm hover:-translate-y-1 hover:border-violet-400`}>
         {!done && passed === 0 && <span className="absolute right-3 top-14 rounded-full bg-amber-400 px-2 py-0.5 text-xs font-extrabold text-white">Новое!</span>}
         {inner}
       </Link>
@@ -110,12 +111,12 @@ export function QuestHome() {
 
   return (
     <div>
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Тайна станции</h1>
-        <p className="mx-auto mt-2 max-w-xl text-slate-500 dark:text-slate-400">
-          Помоги Пикселю починить станцию, собрать шесть Ключей-Кристаллов и узнать, что спрятала Создательница.
-        </p>
-      </div>
+      <CatalogBanner
+        icon="🛰️"
+        kicker="Программирование (1 ступень) · 7–9 лет"
+        title="Тайна станции"
+        note="Помоги Пикселю починить станцию, собрать шесть Ключей-Кристаллов и узнать, что спрятала Создательница."
+      />
 
       <div className="mb-6 flex flex-wrap justify-center gap-2 text-sm font-extrabold">
         <span className="rounded-full bg-white/90 px-4 py-2 text-slate-700 shadow-sm">🔑 Ключи: {keys} из 6</span>

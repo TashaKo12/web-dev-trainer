@@ -36,7 +36,7 @@ export function ArgsPlayground() {
   const output = `${plain(b)} × ${plain(a)}`;
 
   return (
-    <div className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-7 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]">
+    <div className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-7 dark:border-slate-800">
       <p className="mb-1 text-xs font-bold uppercase tracking-wide text-amber-500">Попробуй сам</p>
       <h3 className="mb-2 text-lg font-extrabold text-slate-800">Куда попадают аргументы</h3>
       <p className="mb-4 text-sm leading-relaxed text-slate-600">

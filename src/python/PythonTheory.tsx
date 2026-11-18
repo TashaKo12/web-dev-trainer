@@ -31,7 +31,7 @@ export function PyTheory({ parts, startAt = 1, bare = false }: { parts: Part[]; 
       {parts.map((p, i) => (
         <div
           key={p.title}
-          className="rounded-3xl border border-white/70 bg-white/90 p-6 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-7 dark:shadow-[0_8px_30px_rgb(0,0,0,0.35)]"
+          className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-7 dark:border-slate-800"
         >
           {!bare && (
             <>

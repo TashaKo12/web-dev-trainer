@@ -7,6 +7,7 @@ import { BoltFigure, Dialogue } from "../quest/Dialogue";
 import { ALL_PUZZLES, ISLANDS, LOGIC_INTRO, LOGIC_OUTRO, type ChoicePuzzle, type GridPuzzle, type Island, type Puzzle } from "./data";
 import { CodeBox, TheoryButton, TheoryCard } from "../components/GameTheory";
 import { ISLAND_THEORY, PUZZLE_CODE } from "./theory";
+import { CatalogBanner } from "../components/CatalogBanner";
 
 // «Остров загадок»: the island map (main menu) and one island with its six puzzles.
 
@@ -53,10 +54,7 @@ export function LogicHome() {
 
   return (
     <div>
-      <div className="mb-6 text-center">
-        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Остров загадок</h1>
-        <p className="mx-auto mt-2 max-w-xl text-slate-500 dark:text-slate-400">Разгадай загадки всех пяти островов — и открой сундук с сокровищем.</p>
-      </div>
+      <CatalogBanner icon="💡" kicker="Программирование (1 ступень) · 7–9 лет" title="Остров загадок" note="Разгадай загадки всех пяти островов — и открой сундук с сокровищем." />
 
       <div className="mb-6 flex flex-wrap justify-center gap-2 text-sm font-extrabold">
         <span className="inline-flex items-center gap-1 rounded-full bg-white/90 px-4 py-2 text-slate-700 shadow-sm">
@@ -114,7 +112,7 @@ export function LogicHome() {
             </>
           );
           return open ? (
-            <Link key={island.id} to={`/logic/${island.id}`} className="rounded-3xl border-2 border-white/70 bg-white/95 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] transition hover:-translate-y-1">
+            <Link key={island.id} to={`/logic/${island.id}`} className="rounded-xl border border-[#e6e7ee] bg-white p-5 shadow-sm transition hover:-translate-y-1">
               {inner}
             </Link>
           ) : (
@@ -332,7 +330,7 @@ function IslandScreen() {
         </div>
       </div>
 
-      <div className="rounded-3xl border border-white/70 bg-white/95 p-5 shadow-[0_8px_30px_rgb(0,0,0,0.06)] sm:p-8">
+      <div className="rounded-xl border border-[#e6e7ee] bg-white p-5 shadow-sm sm:p-8">
         {puzzle.kind === "choice" ? (
           <ChoiceView
             p={puzzle}
@@ -353,7 +351,7 @@ function IslandScreen() {
               type="button"
               disabled={!gridFull}
               onClick={() => judge(gridPlaces.every((w, k) => w === puzzle.answer[k]))}
-              className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-8 py-3 text-lg font-extrabold text-white shadow disabled:opacity-40"
+              className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-8 py-3 text-lg font-extrabold text-white shadow disabled:opacity-40"
             >
               Проверить
             </button>
@@ -400,7 +398,7 @@ function IslandScreen() {
           <button
             type="button"
             onClick={() => (last ? navigate("/logic") : go(at + 1))}
-            className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-8 py-3 text-lg font-extrabold text-white shadow"
+            className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-8 py-3 text-lg font-extrabold text-white shadow"
           >
             {last ? "Замок открыт! На карту →" : "Следующая загадка →"}
           </button>

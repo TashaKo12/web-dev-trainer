@@ -119,12 +119,12 @@ export function TopicSlider({ children }: { children: ReactNode }) {
                 disabled={blocked}
                 title={blocked ? "Сначала изучи теорию перед этой частью" : undefined}
                 aria-current={active ? "step" : undefined}
-                className={`inline-flex items-center gap-1.5 rounded-full border-2 px-3.5 py-1.5 text-sm font-bold transition ${
+                className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-semibold transition ${
                   active
-                    ? "border-transparent bg-gradient-to-r from-indigo-500 to-violet-500 text-white shadow"
+                    ? "border-transparent bg-[#4f1fd1] text-white shadow-sm"
                     : blocked
-                      ? "cursor-not-allowed border-slate-200 text-slate-300"
-                      : "border-slate-200 text-slate-500 hover:border-indigo-200 hover:text-indigo-600"
+                      ? "cursor-not-allowed border-[#e6e7ee] bg-white/60 text-slate-300 dark:border-slate-800"
+                      : "border-[#e6e7ee] bg-white text-slate-600 shadow-sm hover:text-indigo-600 dark:border-slate-800"
                 }`}
               >
                 {blocked ? <Lock className="h-3.5 w-3.5" strokeWidth={2.2} /> : <Icon className="h-4 w-4" strokeWidth={2} />}
@@ -144,7 +144,7 @@ export function TopicSlider({ children }: { children: ReactNode }) {
             type="button"
             onClick={() => go(index - 1)}
             disabled={index === 0}
-            className="inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 px-5 py-2.5 text-sm font-bold text-slate-600 hover:border-indigo-200 hover:text-indigo-600 disabled:invisible"
+            className="inline-flex items-center gap-1.5 rounded-lg border border-[#e6e7ee] bg-white px-5 py-2.5 text-sm font-semibold text-slate-600 shadow-sm dark:border-slate-800 hover:border-indigo-200 hover:text-indigo-600 disabled:invisible"
           >
             <ArrowLeft className="h-4 w-4" strokeWidth={2.2} />
             Назад
@@ -167,7 +167,7 @@ export function TopicSlider({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => go(index + 1)}
               disabled={locked}
-              className="inline-flex items-center gap-1.5 rounded-full bg-gradient-to-r from-indigo-500 to-violet-500 px-6 py-2.5 text-sm font-bold text-white shadow transition disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 text-sm font-bold text-white shadow transition disabled:cursor-not-allowed disabled:opacity-40"
             >
               {LABEL[slides[index + 1].kind]}
               <ArrowRight className="h-4 w-4" strokeWidth={2.2} />

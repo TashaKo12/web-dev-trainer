@@ -9,6 +9,7 @@ import { bayDone, useQuest } from "../quest/progress";
 import { BeaconBoard } from "./BeaconBoard";
 import { ALL_LEVELS, BEACON_INTRO, BEACON_OUTRO, DECKS, LANGUAGE_THEORY, type Deck } from "./data";
 import { initial, parse, parseGrid, run, type RunResult } from "./engine";
+import { CatalogBanner } from "../components/CatalogBanner";
 
 // Станция «Маяк»: the station map (decks of levels) and one level — write the code, run it, watch Pixel.
 
@@ -119,11 +120,12 @@ export function BeaconHome() {
   const finaleDone = deckDone(save.stars, DECKS[DECKS.length - 1]);
   return (
     <div>
-      <div className="mb-6 text-center">
-        <p className="text-sm font-extrabold uppercase tracking-wide text-violet-500">Тайна станции · вторая станция</p>
-        <h1 className="text-3xl font-extrabold text-slate-800 sm:text-4xl dark:text-slate-100">Станция «Маяк»</h1>
-        <p className="mx-auto mt-2 max-w-xl text-slate-500 dark:text-slate-400">Здесь нет блоков: пиши команды словами, зажигай лампы и носи батарейки. Почини все палубы — и маяк засветится.</p>
-      </div>
+      <CatalogBanner
+        icon="🗼"
+        kicker="Тайна станции · вторая станция"
+        title="Станция «Маяк»"
+        note="Здесь нет блоков: пиши команды словами, зажигай лампы и носи батарейки. Почини все палубы — и маяк засветится."
+      />
 
       <div className="mb-8 grid items-center gap-6 md:grid-cols-[auto_1fr]">
         <Tower stars={save.stars} />
@@ -153,7 +155,7 @@ export function BeaconHome() {
           const open = levelOpen(save.stars, firstIndex);
           const done = deckDone(save.stars, deck);
           return (
-            <section key={deck.id} className={`rounded-3xl border-2 p-5 ${open ? "border-white/70 bg-white/95 shadow-[0_8px_30px_rgb(0,0,0,0.06)]" : "border-slate-200 bg-white/60 opacity-70"}`}>
+            <section key={deck.id} className={`rounded-3xl border-2 p-5 ${open ? "border-white/70 bg-white/95 shadow-sm" : "border-slate-200 bg-white/60 opacity-70"}`}>
               <div className="mb-3 flex flex-wrap items-center gap-3">
                 <span className="flex h-12 w-12 items-center justify-center rounded-2xl bg-indigo-100 text-2xl">{deck.emoji}</span>
                 <div className="min-w-0 flex-1">
@@ -444,7 +446,7 @@ function LevelScreen() {
         </div>
 
         <div className="flex flex-col gap-4">
-          <div className="rounded-3xl border border-white/70 bg-white/95 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
             <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-extrabold uppercase tracking-wide text-slate-500">Код Пикселя</p>
               <p className="text-sm font-bold text-slate-400">
@@ -470,7 +472,7 @@ function LevelScreen() {
             </div>
           </div>
 
-          <div className="rounded-3xl border border-white/70 bg-white/95 p-4 shadow-[0_8px_30px_rgb(0,0,0,0.06)]">
+          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
             <p className="mb-2 text-sm font-extrabold uppercase tracking-wide text-slate-500">Шпаргалка</p>
             <ul className="grid gap-1.5 sm:grid-cols-2">
               {known.map((w) => (
@@ -518,7 +520,7 @@ function LevelScreen() {
               <button
                 type="button"
                 onClick={() => (next ? navigate(`/beacon/${next.id}`) : navigate("/beacon", { state: { outro: true } }))}
-                className="rounded-full bg-gradient-to-r from-violet-500 to-fuchsia-500 px-6 py-2.5 font-extrabold text-white shadow"
+                className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 font-extrabold text-white shadow"
               >
                 {next ? "Следующий уровень →" : "Маяк горит! →"}
               </button>
