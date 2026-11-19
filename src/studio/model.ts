@@ -26,7 +26,8 @@ export type Condition =
   | { k: "count"; obj: string; op: Op; value: number }
   | { k: "var"; name: string; op: Op; value: number }
   | { k: "timer"; seconds: number }
-  | { k: "outside"; obj: string };
+  | { k: "outside"; obj: string }
+  | { k: "pos"; obj: string; axis: "x" | "y"; op: Op; value: number };
 
 export type Action =
   | { k: "delete"; obj: string }
@@ -37,7 +38,9 @@ export type Action =
   | { k: "stop"; text: string }
   | { k: "scene"; scene: string }
   | { k: "restartScene" }
-  | { k: "restartGame" };
+  | { k: "restartGame" }
+  /** The camera keeps the object in the middle of the screen from now on (the scene itself has no edges). */
+  | { k: "camera"; obj: string; smooth: boolean };
 
 export type GameEvent = { id: string; conditions: Condition[]; actions: Action[] };
 export type Scene = { id: string; name: string; bg: string; w: number; h: number; instances: Instance[]; events: GameEvent[] };
@@ -59,7 +62,7 @@ export const BEHAVIOR_INFO: Record<Behavior["kind"], { title: string; about: str
   solid: { title: "Твёрдое препятствие", about: "Сквозь него не пройти: стены, пол, платформы.", make: () => ({ kind: "solid" }) },
   patrol: { title: "Ходит туда-обратно", about: "Сам двигается по линии и разворачивается.", make: () => ({ kind: "patrol", axis: "x", distance: 160, speed: 90 }) },
   chase: { title: "Преследует", about: "Двигается к другому объекту.", make: (objects) => ({ kind: "chase", target: objects[0]?.id ?? "", speed: 70 }) },
-  bounds: { title: "Не уходит за край", about: "Объект не может выйти за края сцены.", make: () => ({ kind: "bounds" }) },
+  bounds: { title: "Не уходит за край экрана", about: "Объект не может выйти за края того, что видно на экране.", make: () => ({ kind: "bounds" }) },
 };
 
 export const KEY_LABEL: Record<KeyName, string> = { ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓", Space: "Пробел", Enter: "Enter" };
@@ -73,7 +76,8 @@ export const CONDITION_INFO: Record<Condition["k"], { title: string; make: (p: P
   count: { title: "Сколько объектов на сцене", make: (p) => ({ k: "count", obj: p.objects[0]?.id ?? "", op: "=", value: 0 }) },
   var: { title: "Значение переменной", make: (p) => ({ k: "var", name: p.variables[0]?.name ?? "", op: "≥", value: 10 }) },
   timer: { title: "Каждые N секунд", make: () => ({ k: "timer", seconds: 2 }) },
-  outside: { title: "Объект ушёл за край сцены", make: (p) => ({ k: "outside", obj: p.objects[0]?.id ?? "" }) },
+  outside: { title: "Объект ушёл за край экрана", make: (p) => ({ k: "outside", obj: p.objects[0]?.id ?? "" }) },
+  pos: { title: "Координата объекта (X или Y)", make: (p) => ({ k: "pos", obj: p.objects[0]?.id ?? "", axis: "y", op: ">", value: 700 }) },
 };
 
 export const ACTION_INFO: Record<Action["k"], { title: string; make: (p: Project) => Action }> = {
@@ -86,6 +90,7 @@ export const ACTION_INFO: Record<Action["k"], { title: string; make: (p: Project
   scene: { title: "Перейти на сцену", make: (p) => ({ k: "scene", scene: p.scenes[0]?.id ?? "" }) },
   restartScene: { title: "Начать сцену заново", make: () => ({ k: "restartScene" }) },
   restartGame: { title: "Начать игру заново", make: () => ({ k: "restartGame" }) },
+  camera: { title: "Камера следит за объектом", make: (p) => ({ k: "camera", obj: p.objects[0]?.id ?? "", smooth: true }) },
 };
 
 export function emptyProject(name = "Моя игра"): Project {
@@ -134,27 +139,29 @@ export function coinsTemplate(): Project {
 
 /** «Прыгун»: a small platformer. */
 export function platformerTemplate(): Project {
-  const player: ObjectKind = { id: uid(), name: "Кот", look: "🐱", w: 40, h: 40, behaviors: [{ kind: "platformer", speed: 220, jump: 640, gravity: 1500 }, { kind: "bounds" }] };
+  const player: ObjectKind = { id: uid(), name: "Кот", look: "🐱", w: 40, h: 40, behaviors: [{ kind: "platformer", speed: 220, jump: 640, gravity: 1500 }] };
   const ground: ObjectKind = { id: uid(), name: "Платформа", look: "#16a34a", w: 80, h: 24, behaviors: [{ kind: "solid" }] };
   const star: ObjectKind = { id: uid(), name: "Звезда", look: "⭐", w: 30, h: 30, behaviors: [] };
   const flag: ObjectKind = { id: uid(), name: "Флаг", look: "🏁", w: 40, h: 40, behaviors: [] };
   const inst = (k: ObjectKind, x: number, y: number): Instance => ({ id: uid(), kind: k.id, x, y });
-  const floor = [0, 1, 2, 3, 6, 7, 8, 9].map((i) => inst(ground, i * 80, 456));
-  const steps = [inst(ground, 240, 360), inst(ground, 400, 290), inst(ground, 560, 220), inst(ground, 680, 150)];
-  const stars = [[270, 320], [430, 250], [590, 180], [130, 400]].map(([x, y]) => inst(star, x, y));
+  // a long level: the floor has three holes, the camera follows the cat to the flag far on the right
+  const holes = new Set([4, 5, 12, 13, 20, 21]);
+  const floor = Array.from({ length: 30 }, (_, i) => i).filter((i) => !holes.has(i)).map((i) => inst(ground, i * 80, 456));
+  const steps = [inst(ground, 240, 360), inst(ground, 400, 290), inst(ground, 560, 220), inst(ground, 1440, 340), inst(ground, 1840, 360)];
+  const stars = [[270, 320], [430, 250], [590, 180], [1100, 400], [1470, 300], [2000, 400]].map(([x, y]) => inst(star, x, y));
   const scene: Scene = {
     id: uid(),
     name: "Уровень",
     bg: "#e0f2fe",
     w: 800,
     h: 480,
-    instances: [inst(player, 30, 400), ...floor, ...steps, ...stars, inst(flag, 700, 108)],
+    instances: [inst(player, 30, 400), ...floor, ...steps, ...stars, inst(flag, 2300, 416)],
     events: [
-      { id: uid(), conditions: [{ k: "start" }], actions: [{ k: "var", name: "Звёзды", mode: "set", value: 0 }] },
-      { id: uid(), conditions: [{ k: "collide", a: player.id, b: star.id }], actions: [{ k: "delete", obj: star.id }, { k: "var", name: "Звёзды", mode: "add", value: 1 }] },
-      { id: uid(), conditions: [{ k: "collide", a: player.id, b: flag.id }, { k: "var", name: "Звёзды", op: "≥", value: 4 }], actions: [{ k: "stop", text: "Уровень пройден! ⭐" }] },
-      { id: uid(), conditions: [{ k: "collide", a: player.id, b: flag.id }, { k: "var", name: "Звёзды", op: "<", value: 4 }], actions: [{ k: "text", text: "Сначала собери все звёзды!" }] },
-      { id: uid(), conditions: [{ k: "outside", obj: player.id }], actions: [{ k: "restartScene" }] },
+      { id: uid(), conditions: [{ k: "start" }], actions: [{ k: "var", name: "Звёзды", mode: "set", value: 0 }, { k: "camera", obj: player.id, smooth: true }, { k: "text", text: "Собери 6 звёзд и добеги до флага →" }] },
+      { id: uid(), conditions: [{ k: "collide", a: player.id, b: star.id }], actions: [{ k: "delete", obj: star.id }, { k: "var", name: "Звёзды", mode: "add", value: 1 }, { k: "text", text: "Звёзды: {Звёзды} из 6" }] },
+      { id: uid(), conditions: [{ k: "collide", a: player.id, b: flag.id }, { k: "var", name: "Звёзды", op: "≥", value: 6 }], actions: [{ k: "stop", text: "Уровень пройден! ⭐" }] },
+      { id: uid(), conditions: [{ k: "collide", a: player.id, b: flag.id }, { k: "var", name: "Звёзды", op: "<", value: 6 }], actions: [{ k: "text", text: "Сначала собери все звёзды!" }] },
+      { id: uid(), conditions: [{ k: "pos", obj: player.id, axis: "y", op: ">", value: 700 }], actions: [{ k: "restartScene" }] },
     ],
   };
   return { id: uid(), name: "Прыгун", updated: Date.now(), objects: [player, ground, star, flag], scenes: [scene], variables: [{ name: "Звёзды", value: 0 }] };

@@ -41,6 +41,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
   const [playing, setPlaying] = useState(false);
   const [zoom, setZoom] = useState(1);
   const [grid, setGrid] = useState(true);
+  const [resetView, setResetView] = useState(0);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [saved, setSaved] = useState<"saved" | "saving" | "error">("saved");
 
@@ -212,7 +213,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
             <ToolButton title="Уменьшить" onClick={() => setZoom(ZOOMS[Math.max(0, zi - 1)])} disabled={zi <= 0}>
               <ZoomOut className="h-5 w-5" />
             </ToolButton>
-            <button type="button" onClick={() => setZoom(1)} title="Вписать сцену" className="w-12 rounded-md py-1.5 text-xs font-semibold text-[#d1d5db] hover:bg-[#2a2c36]">
+            <button type="button" onClick={() => (setZoom(1), setResetView((v) => v + 1))} title="Вернуться к экрану игры" className="w-12 rounded-md py-1.5 text-xs font-semibold text-[#d1d5db] hover:bg-[#2a2c36]">
               {Math.round(zoom * 100)}%
             </button>
             <ToolButton title="Увеличить" onClick={() => setZoom(ZOOMS[Math.min(ZOOMS.length - 1, zi + 1)])} disabled={zi >= ZOOMS.length - 1}>
@@ -248,6 +249,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
               selected={instanceId}
               zoom={zoom}
               grid={grid}
+              resetView={resetView}
               onCursor={setCursor}
               onSelect={(iid, kid) => {
                 setInstanceId(iid);

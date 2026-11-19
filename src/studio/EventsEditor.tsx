@@ -114,7 +114,19 @@ function ConditionRow({ c, project, onChange }: { c: Condition; project: Project
     case "outside":
       return (
         <>
-          <Obj project={project} value={c.obj} onChange={(obj) => onChange({ ...c, obj })} /> ушёл за край сцены
+          <Obj project={project} value={c.obj} onChange={(obj) => onChange({ ...c, obj })} /> ушёл за край экрана
+        </>
+      );
+    case "pos":
+      return (
+        <>
+          у <Obj project={project} value={c.obj} onChange={(obj) => onChange({ ...c, obj })} /> координата
+          <select value={c.axis} onChange={(e) => onChange({ ...c, axis: e.target.value as "x" | "y" })} className={`${field} font-semibold`}>
+            <option value="x">X (вправо)</option>
+            <option value="y">Y (вниз)</option>
+          </select>
+          <OpPick value={c.op} onChange={(op) => onChange({ ...c, op })} />
+          <NumIn value={c.value} onChange={(value) => onChange({ ...c, value })} />
         </>
       );
   }
@@ -184,6 +196,16 @@ function ActionRow({ a, project, onChange }: { a: Action; project: Project; onCh
       return <span>начать сцену заново</span>;
     case "restartGame":
       return <span>начать всю игру заново</span>;
+    case "camera":
+      return (
+        <>
+          🎥 камера следит за <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} />
+          <label className="inline-flex items-center gap-1.5 text-[#d1d5db]">
+            <input type="checkbox" checked={a.smooth} onChange={(e) => onChange({ ...a, smooth: e.target.checked })} className="h-4 w-4 accent-[#7046ec]" />
+            плавно
+          </label>
+        </>
+      );
   }
 }
 

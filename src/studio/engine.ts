@@ -1,6 +1,7 @@
 import { isColor, isImage, type Action, type Condition, type KeyName, type ObjectKind, type Op, type Project, type Scene } from "./model";
 
 // The game that runs: objects move by their behaviors, then every event of the scene is checked from top to bottom.
+// The scene has no edges: the screen is a camera over the world (it starts at 0,0 and can follow an object).
 // Like in GDevelop, a condition «Игрок касается Монеты» remembers WHICH coins were touched,
 // and the action «Удалить Монету» in the same event removes only those.
 
@@ -60,6 +61,9 @@ export class Game {
   private onStatus: (s: GameStatus) => void;
   private firedEvent: string | null = null;
   private lastStatus = "";
+  /** The top-left corner of what the screen shows, in world coordinates. */
+  private camera = { x: 0, y: 0 };
+  private follow: { obj: string; smooth: boolean } | null = null;
 
   constructor(project: Project, canvas: HTMLCanvasElement, onStatus: (s: GameStatus) => void) {
     this.project = project;
@@ -101,7 +105,7 @@ export class Game {
   private onBlur = () => this.keys.clear();
   private onPointer = (e: PointerEvent) => {
     const r = this.canvas.getBoundingClientRect();
-    this.clicks.push({ x: ((e.clientX - r.left) / r.width) * this.scene.w, y: ((e.clientY - r.top) / r.height) * this.scene.h });
+    this.clicks.push({ x: ((e.clientX - r.left) / r.width) * this.scene.w + this.camera.x, y: ((e.clientY - r.top) / r.height) * this.scene.h + this.camera.y });
   };
 
   private kindOf = (id: string) => this.project.objects.find((o) => o.id === id);
@@ -124,6 +128,8 @@ export class Game {
     this.frame = 0;
     this.time = 0;
     this.timers.clear();
+    this.camera = { x: 0, y: 0 };
+    this.follow = null;
   }
 
   private loop = (now: number) => {
@@ -207,10 +213,11 @@ export class Game {
       }
     }
     if (has("bounds")) {
-      b.x = Math.max(0, Math.min(this.scene.w - b.w, b.x));
+      const c = this.camera;
+      b.x = Math.max(c.x, Math.min(c.x + this.scene.w - b.w, b.x));
       // a platformer hero may fall down through the bottom edge — «ушёл за край» catches it
-      if (b.y < 0) b.y = 0;
-      if (!has("platformer") && b.y > this.scene.h - b.h) b.y = this.scene.h - b.h;
+      if (b.y < c.y) b.y = c.y;
+      if (!has("platformer") && b.y > c.y + this.scene.h - b.h) b.y = c.y + this.scene.h - b.h;
     }
   }
 
@@ -255,9 +262,16 @@ export class Game {
         return false;
       }
       case "outside": {
-        const out = new Set(this.alive(c.obj).filter((b) => b.x + b.w < 0 || b.x > this.scene.w || b.y + b.h < 0 || b.y > this.scene.h));
+        const { x, y } = this.camera;
+        const out = new Set(this.alive(c.obj).filter((b) => b.x + b.w < x || b.x > x + this.scene.w || b.y + b.h < y || b.y > y + this.scene.h));
         if (!out.size) return false;
         picked.set(c.obj, out);
+        return true;
+      }
+      case "pos": {
+        const ok = new Set(this.alive(c.obj).filter((b) => compare(Math.round(c.axis === "x" ? b.x : b.y), c.op, c.value)));
+        if (!ok.size) return false;
+        picked.set(c.obj, ok);
         return true;
       }
     }
@@ -296,11 +310,28 @@ export class Game {
       case "restartScene":
         this.pendingScene = this.scene.id;
         break;
+      case "camera":
+        this.follow = { obj: a.obj, smooth: a.smooth };
+        this.aim(false);
+        break;
       case "restartGame":
         this.vars = Object.fromEntries(this.project.variables.map((v) => [v.name, v.value]));
         this.pendingScene = this.project.scenes[0].id;
         break;
     }
+  }
+
+  /** Puts the followed object in the middle of the screen; smoothly — a bit closer every frame. */
+  private aim(smooth: boolean, dt = 0) {
+    const f = this.follow;
+    if (!f) return;
+    const t = this.alive(f.obj)[0];
+    if (!t) return;
+    const x = t.x + t.w / 2 - this.scene.w / 2;
+    const y = t.y + t.h / 2 - this.scene.h / 2;
+    const k = smooth && f.smooth ? Math.min(1, dt * 6) : 1;
+    this.camera.x += (x - this.camera.x) * k;
+    this.camera.y += (y - this.camera.y) * k;
   }
 
   /** «Очки: {Очки}» → «Очки: 3». */
@@ -321,6 +352,7 @@ export class Game {
       if (this.pendingScene || this.stopped) break;
     }
     this.bodies = this.bodies.filter((b) => !b.dead);
+    this.aim(true, dt);
     this.clicks = [];
     this.frame++;
     if (this.pendingScene) {
@@ -336,7 +368,11 @@ export class Game {
     const { ctx, scene } = this;
     ctx.fillStyle = scene.bg;
     ctx.fillRect(0, 0, scene.w, scene.h);
+    ctx.save();
+    ctx.translate(-Math.round(this.camera.x), -Math.round(this.camera.y));
     for (const b of this.bodies) {
+      // only what is on the screen is drawn
+      if (b.x + b.w < this.camera.x || b.x > this.camera.x + scene.w || b.y + b.h < this.camera.y || b.y > this.camera.y + scene.h) continue;
       const look = b.kind.look;
       if (isColor(look)) {
         ctx.fillStyle = look;
@@ -353,5 +389,6 @@ export class Game {
         ctx.fillText(look, b.x + b.w / 2, b.y + b.h / 2 + 2);
       }
     }
+    ctx.restore();
   }
 }
