@@ -64,6 +64,7 @@ import { QuestLevel } from "./quest/QuestLevel";
 import { LogicHome, LogicIsland } from "./logic/LogicGame";
 import { KeysHome, KeysLevelPage } from "./keys/KeysGame";
 import { BeaconHome, BeaconLevelPage } from "./beacon/BeaconGame";
+import { StudioEditorPage, StudioHome } from "./studio/StudioPages";
 import { Profile } from "./pages/Profile";
 import { Admin } from "./pages/Admin";
 
@@ -147,6 +148,10 @@ function App() {
           <Route path="quest/:bay/:level" element={<QuestLevel />} />
           <Route path="beacon" element={<BeaconHome />} />
           <Route path="beacon/:level" element={<BeaconLevelPage />} />
+
+          {/* «Конструктор игр»: objects, behaviors and events, like a small GDevelop */}
+          <Route path="studio" element={<StudioHome />} />
+          <Route path="studio/:id" element={<StudioEditorPage />} />
 
           {/* «Остров загадок» and «Клавиатура Пикселя»: games for children 7–9 */}
           <Route path="logic" element={<LogicHome />} />

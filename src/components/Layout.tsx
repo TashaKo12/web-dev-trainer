@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { trainers } from "../trainers/registry";
 import { setTimeTopic } from "../lib/timeTracker";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Blocks, Code2, Layers, Rocket, UserRound, type LucideIcon } from "lucide-react";
+import { Blocks, Code2, Gamepad2, Layers, Rocket, UserRound, type LucideIcon } from "lucide-react";
 import { AnimatedBackground } from "./AnimatedBackground";
 import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
@@ -17,6 +17,7 @@ const RAIL: { to: string; label: string; icon: LucideIcon; match: (p: string) =>
   { to: "/", label: "Курсы", icon: Layers, match: (p) => p === "/" || p === "" },
   { to: "/quest", label: "Тайна станции", icon: Rocket, match: (p) => /^\/(quest|beacon|logic|keys)/.test(p) },
   { to: "/python", label: "Python", icon: Code2, match: (p) => p.startsWith("/python") },
+  { to: "/studio", label: "Конструктор игр", icon: Gamepad2, match: (p) => p.startsWith("/studio") },
   { to: "/profile", label: "Мой прогресс", icon: UserRound, match: (p) => p.startsWith("/profile") },
 ];
 
@@ -54,7 +55,7 @@ export function Layout() {
   }, [pathname, locked]);
   const quest = pathname.match(/^\/quest\/(\d+)(\/\d+)?$/);
   // a level of the logic or keyboard game: "/logic/2", "/keys/5"
-  const game = pathname.match(/^\/(logic|keys|beacon)\/[\w-]+$/);
+  const game = pathname.match(/^\/(logic|keys|beacon|studio)\/[\w-]+$/);
   const back =
     pathname === "/" || pathname === "" || pathname === "/python"
       ? null
@@ -69,6 +70,8 @@ export function Layout() {
               ? { to: "/logic", label: "Карта острова" }
               : game[1] === "beacon"
                 ? { to: "/beacon", label: "Карта маяка" }
+                : game[1] === "studio"
+                  ? { to: "/studio", label: "Мои игры" }
                 : { to: "/keys", label: "Все уровни" }
             : pathname === "/beacon"
               ? { to: "/quest", label: "Первая станция" }
