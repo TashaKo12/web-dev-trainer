@@ -9,6 +9,7 @@ import {
   type Action,
   type Condition,
   type GameEvent,
+  type ObjectKind,
   type KeyName,
   type Op,
   type Project,
@@ -22,11 +23,12 @@ import { LookView } from "./Player";
 const field = "rounded-md border border-[#383b47] bg-[#2a2c36] px-2 py-1 text-sm text-[#e5e7eb] outline-none focus:border-[#7046ec]";
 const panel = "rounded-lg border border-[#2e3039] bg-[#1f2028] p-3 text-[#e5e7eb]";
 
-function Obj({ project, value, onChange }: { project: Project; value: string; onChange: (v: string) => void }) {
+function Obj({ project, value, onChange, only }: { project: Project; value: string; onChange: (v: string) => void; only?: (o: ObjectKind) => boolean }) {
+  const list = only ? project.objects.filter(only) : project.objects;
   return (
     <select value={value} onChange={(e) => onChange(e.target.value)} className={`${field} font-semibold`}>
-      {!project.objects.some((o) => o.id === value) && <option value={value}>— выбери —</option>}
-      {project.objects.map((o) => (
+      {!list.some((o) => o.id === value) && <option value={value}>— выбери —</option>}
+      {list.map((o) => (
         <option key={o.id} value={o.id}>
           {o.name}
         </option>
@@ -196,6 +198,34 @@ function ActionRow({ a, project, onChange }: { a: Action; project: Project; onCh
       return <span>начать сцену заново</span>;
     case "restartGame":
       return <span>начать всю игру заново</span>;
+    case "settext": {
+      const isText = (o: ObjectKind) => o.type === "text" || o.type === "button";
+      return (
+        <>
+          написать на <Obj project={project} value={a.obj} only={isText} onChange={(obj) => onChange({ ...a, obj })} />
+          <input value={a.text} onChange={(e) => onChange({ ...a, text: e.target.value })} placeholder="Очки: {Очки}" className={`${field} min-w-[10rem] flex-1`} />
+        </>
+      );
+    }
+    case "anim": {
+      const o = project.objects.find((x) => x.id === a.obj);
+      const names = (o?.animations ?? []).map((x) => x.name);
+      return (
+        <>
+          🎞️ у <Obj project={project} value={a.obj} only={(x) => !!x.animations?.length} onChange={(obj) => onChange({ ...a, obj, name: project.objects.find((x) => x.id === obj)?.animations?.[0]?.name ?? "" })} /> включить анимацию
+          {names.length ? (
+            <select value={a.name} onChange={(e) => onChange({ ...a, name: e.target.value })} className={`${field} font-semibold`}>
+              {!names.includes(a.name) && <option value={a.name}>— выбери —</option>}
+              {names.map((n) => (
+                <option key={n}>{n}</option>
+              ))}
+            </select>
+          ) : (
+            <span className="text-xs text-[#fbbf24]">у объекта пока нет анимаций — добавь их в окне объекта</span>
+          )}
+        </>
+      );
+    }
     case "camera":
       return (
         <>

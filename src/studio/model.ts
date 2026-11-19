@@ -12,8 +12,67 @@ export type Behavior =
   | { kind: "chase"; target: string; speed: number }
   | { kind: "bounds" };
 
-export type ObjectKind = { id: string; name: string; look: Look; w: number; h: number; behaviors: Behavior[] };
-export type Instance = { id: string; kind: string; x: number; y: number };
+/** What an object is: a picture, a picture repeated like tiles, a text, or a button. Old games have no type — a sprite. */
+export type KindType = "sprite" | "tiled" | "text" | "button";
+
+export type ObjectKind = {
+  id: string;
+  name: string;
+  /** sprite — the picture; tiled — the picture of one tile */
+  look: Look;
+  /** sprite, button — the size; tiled — the size of one tile; text — the box clicks and touches use */
+  w: number;
+  h: number;
+  behaviors: Behavior[];
+  type?: KindType;
+  /** text and button: what is written (it can show variables: «Очки: {Очки}») */
+  text?: string;
+  fontSize?: number;
+  /** text colour; for a button — the colour of its label */
+  color?: string;
+  /** button colour */
+  bg?: string;
+  /** text and button: stays in its place on the screen when the camera moves */
+  fixed?: boolean;
+  /** sprite: frame-by-frame animations; the first one plays from the start */
+  animations?: Animation[];
+};
+
+/** A frame-by-frame animation: pictures shown one after another, fps per second, again and again if loop. */
+export type Animation = { name: string; frames: Look[]; fps: number; loop: boolean };
+
+/** What a sprite looks like at the start: the first frame of its first animation, or its picture. */
+export const firstLook = (k: ObjectKind): Look => (kindType(k) === "sprite" && k.animations?.[0]?.frames[0]) || k.look;
+/** A copy of an object on the scene. z — which is on top (bigger z is drawn over); w, h — the size of a tiled sprite. */
+export type Instance = { id: string; kind: string; x: number; y: number; z?: number; w?: number; h?: number };
+
+export const kindType = (k: ObjectKind): KindType => k.type ?? "sprite";
+
+export const KIND_TYPES: Record<KindType, { title: string; about: string; icon: string }> = {
+  sprite: { title: "Спрайт", about: "Картинка: герой, монета, враг.", icon: "🖼️" },
+  tiled: { title: "Тайловый спрайт", about: "Растягивается, а рисунок повторяется: пол, стены, трава.", icon: "🧱" },
+  text: { title: "Текст", about: "Надпись на экране. Может показывать переменные: Очки: {Очки}.", icon: "🔤" },
+  button: { title: "Кнопка", about: "На неё можно нажать — событие «Кликнули по объекту».", icon: "🔘" },
+};
+
+/** A new object of the chosen type with sensible defaults. */
+export function makeKind(type: KindType, n: number): ObjectKind {
+  const base = { id: uid(), behaviors: [] as Behavior[], type };
+  switch (type) {
+    case "tiled":
+      return { ...base, name: `Плитка ${n}`, look: "🧱", w: 32, h: 32 };
+    case "text":
+      return { ...base, name: `Текст ${n}`, look: "", w: 220, h: 36, text: "Очки: {Очки}", fontSize: 26, color: "#1e293b", fixed: true };
+    case "button":
+      return { ...base, name: `Кнопка ${n}`, look: "", w: 160, h: 52, text: "Старт", fontSize: 22, color: "#ffffff", bg: "#4d16c9", fixed: true };
+    default:
+      return { ...base, name: `Объект ${n}`, look: "⭐", w: 40, h: 40 };
+  }
+}
+
+/** The size of a copy on the scene: a tiled sprite has its own, the others take the object's size. */
+export const instSize = (k: ObjectKind, i: { w?: number; h?: number }) =>
+  kindType(k) === "tiled" ? { w: i.w ?? k.w * 5, h: i.h ?? k.h } : { w: k.w, h: k.h };
 
 export type Op = "=" | "≠" | ">" | "<" | "≥" | "≤";
 export type KeyName = "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown" | "Space" | "Enter";
@@ -40,7 +99,11 @@ export type Action =
   | { k: "restartScene" }
   | { k: "restartGame" }
   /** The camera keeps the object in the middle of the screen from now on (the scene itself has no edges). */
-  | { k: "camera"; obj: string; smooth: boolean };
+  | { k: "camera"; obj: string; smooth: boolean }
+  /** a text or a button gets new words (they can show variables) */
+  | { k: "settext"; obj: string; text: string }
+  /** a sprite switches to another animation (by its name) */
+  | { k: "anim"; obj: string; name: string };
 
 export type GameEvent = { id: string; conditions: Condition[]; actions: Action[] };
 export type Scene = { id: string; name: string; bg: string; w: number; h: number; instances: Instance[]; events: GameEvent[] };
@@ -91,6 +154,17 @@ export const ACTION_INFO: Record<Action["k"], { title: string; make: (p: Project
   restartScene: { title: "Начать сцену заново", make: () => ({ k: "restartScene" }) },
   restartGame: { title: "Начать игру заново", make: () => ({ k: "restartGame" }) },
   camera: { title: "Камера следит за объектом", make: (p) => ({ k: "camera", obj: p.objects[0]?.id ?? "", smooth: true }) },
+  anim: {
+    title: "Включить анимацию",
+    make: (p) => {
+      const o = p.objects.find((x) => x.animations?.length) ?? p.objects[0];
+      return { k: "anim", obj: o?.id ?? "", name: o?.animations?.[0]?.name ?? "" };
+    },
+  },
+  settext: {
+    title: "Изменить текст объекта",
+    make: (p) => ({ k: "settext", obj: (p.objects.find((o) => o.type === "text" || o.type === "button") ?? p.objects[0])?.id ?? "", text: "Очки: {Очки}" }),
+  },
 };
 
 export function emptyProject(name = "Моя игра"): Project {

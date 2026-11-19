@@ -235,7 +235,7 @@ export function PixelEditor({ look, onSave, onClose }: { look?: Look; onSave: (d
   );
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
+    <div data-pixel-editor className="fixed inset-0 z-50 flex items-center justify-center bg-black/70 p-3">
       <div className="max-h-[96vh] w-full max-w-4xl overflow-y-auto rounded-xl border border-[#2e3039] bg-[#1f2028] text-[#e5e7eb] shadow-2xl">
         <div className="flex items-center justify-between border-b border-[#2e3039] px-4 py-3">
           <p className="font-bold">🎨 Нарисуй своего персонажа</p>

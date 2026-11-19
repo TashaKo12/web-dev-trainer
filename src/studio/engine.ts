@@ -1,4 +1,4 @@
-import { isColor, isImage, type Action, type Condition, type KeyName, type ObjectKind, type Op, type Project, type Scene } from "./model";
+import { instSize, isColor, isImage, kindType, type Action, type Condition, type Instance, type KeyName, type ObjectKind, type Op, type Project, type Scene } from "./model";
 
 // The game that runs: objects move by their behaviors, then every event of the scene is checked from top to bottom.
 // The scene has no edges: the screen is a camera over the world (it starts at 0,0 and can follow an object).
@@ -18,6 +18,15 @@ type Body = {
   home: { x: number; y: number };
   dir: 1 | -1;
   dead: boolean;
+  /** drawn over the ones with a smaller z */
+  z: number;
+  /** text and button: the words now (the action «Изменить текст» changes them) */
+  text: string;
+  /** stays on the screen when the camera moves: x, y are screen coordinates */
+  fixed: boolean;
+  /** which animation plays and for how long */
+  anim: number;
+  animTime: number;
 };
 
 type Picked = Map<string, Set<Body>>;
@@ -48,7 +57,10 @@ export class Game {
   private bodies: Body[] = [];
   private nextId = 1;
   private keys = new Set<string>();
+  /** clicks in screen coordinates (objects fixed on the screen use them as they are, the others add the camera) */
   private clicks: { x: number; y: number }[] = [];
+  /** tiled sprites: one tile, ready to be repeated */
+  private tiles = new Map<string, CanvasPattern | null>();
   private vars: Record<string, number> = {};
   private message: string | null = null;
   private stopped: string | null = null;
@@ -70,12 +82,14 @@ export class Game {
     this.canvas = canvas;
     this.ctx = canvas.getContext("2d")!;
     this.onStatus = onStatus;
+    // every picture the game can show — the object's own and every animation frame — loaded once
     for (const o of project.objects)
-      if (isImage(o.look)) {
-        const img = new Image();
-        img.src = o.look;
-        this.images.set(o.id, img);
-      }
+      for (const look of [o.look, ...(o.animations ?? []).flatMap((a) => a.frames)])
+        if (isImage(look) && !this.images.has(look)) {
+          const img = new Image();
+          img.src = look;
+          this.images.set(look, img);
+        }
   }
 
   start(sceneId?: string) {
@@ -105,15 +119,34 @@ export class Game {
   private onBlur = () => this.keys.clear();
   private onPointer = (e: PointerEvent) => {
     const r = this.canvas.getBoundingClientRect();
-    this.clicks.push({ x: ((e.clientX - r.left) / r.width) * this.scene.w + this.camera.x, y: ((e.clientY - r.top) / r.height) * this.scene.h + this.camera.y });
+    this.clicks.push({ x: ((e.clientX - r.left) / r.width) * this.scene.w, y: ((e.clientY - r.top) / r.height) * this.scene.h });
   };
 
   private kindOf = (id: string) => this.project.objects.find((o) => o.id === id);
 
-  private spawn(kindId: string, x: number, y: number) {
+  private spawn(kindId: string, x: number, y: number, inst?: Instance) {
     const kind = this.kindOf(kindId);
     if (!kind) return;
-    this.bodies.push({ id: this.nextId++, kind, x, y, w: kind.w, h: kind.h, vy: 0, onGround: false, home: { x, y }, dir: 1, dead: false });
+    const { w, h } = instSize(kind, inst ?? {});
+    const t = kindType(kind);
+    this.bodies.push({
+      id: this.nextId++,
+      kind,
+      x,
+      y,
+      w,
+      h,
+      vy: 0,
+      onGround: false,
+      home: { x, y },
+      dir: 1,
+      dead: false,
+      z: inst?.z ?? 0,
+      text: kind.text ?? "",
+      fixed: (t === "text" || t === "button") && !!kind.fixed,
+      anim: 0,
+      animTime: 0,
+    });
   }
 
   private loadScene(id: string) {
@@ -122,7 +155,7 @@ export class Game {
     this.canvas.width = scene.w;
     this.canvas.height = scene.h;
     this.bodies = [];
-    for (const i of scene.instances) this.spawn(i.kind, i.x, i.y);
+    for (const i of scene.instances) this.spawn(i.kind, i.x, i.y, i);
     this.message = null;
     this.stopped = null;
     this.frame = 0;
@@ -150,7 +183,7 @@ export class Game {
   // ── movement ──
 
   private down = (k: KeyName) => KEY_CODES[k].some((c) => this.keys.has(c));
-  private solids = (self: Body) => this.bodies.filter((b) => b !== self && !b.dead && b.kind.behaviors.some((x) => x.kind === "solid"));
+  private solids = (self: Body) => this.bodies.filter((b) => b !== self && !b.dead && !b.fixed && b.kind.behaviors.some((x) => x.kind === "solid"));
 
   /** Moves along one axis and stops at solid objects. Returns true when it bumped into something. */
   private move(b: Body, dx: number, dy: number) {
@@ -232,8 +265,9 @@ export class Game {
       case "key":
         return this.down(c.key);
       case "collide": {
-        const as = picked.get(c.a) ? [...picked.get(c.a)!] : this.alive(c.a);
-        const bs = picked.get(c.b) ? [...picked.get(c.b)!] : this.alive(c.b);
+        // things fixed on the screen (texts, buttons) are not in the world and touch nothing
+        const as = (picked.get(c.a) ? [...picked.get(c.a)!] : this.alive(c.a)).filter((b) => !b.fixed);
+        const bs = (picked.get(c.b) ? [...picked.get(c.b)!] : this.alive(c.b)).filter((b) => !b.fixed);
         const pa = new Set<Body>();
         const pb = new Set<Body>();
         for (const a of as) for (const b of bs) if (a !== b && touching(a, b)) (pa.add(a), pb.add(b));
@@ -243,7 +277,15 @@ export class Game {
         return true;
       }
       case "click": {
-        const hit = new Set(this.alive(c.obj).filter((b) => this.clicks.some((p) => p.x >= b.x && p.x <= b.x + b.w && p.y >= b.y && p.y <= b.y + b.h)));
+        const hit = new Set(
+          this.alive(c.obj).filter((b) =>
+            this.clicks.some((p) => {
+              const x = b.fixed ? p.x : p.x + this.camera.x;
+              const y = b.fixed ? p.y : p.y + this.camera.y;
+              return x >= b.x && x <= b.x + b.w && y >= b.y && y <= b.y + b.h;
+            }),
+          ),
+        );
         if (!hit.size) return false;
         picked.set(c.obj, hit);
         return true;
@@ -263,7 +305,7 @@ export class Game {
       }
       case "outside": {
         const { x, y } = this.camera;
-        const out = new Set(this.alive(c.obj).filter((b) => b.x + b.w < x || b.x > x + this.scene.w || b.y + b.h < y || b.y > y + this.scene.h));
+        const out = new Set(this.alive(c.obj).filter((b) => !b.fixed && (b.x + b.w < x || b.x > x + this.scene.w || b.y + b.h < y || b.y > y + this.scene.h)));
         if (!out.size) return false;
         picked.set(c.obj, out);
         return true;
@@ -314,6 +356,19 @@ export class Game {
         this.follow = { obj: a.obj, smooth: a.smooth };
         this.aim(false);
         break;
+      case "anim":
+        targets(a.obj).forEach((b) => {
+          const i = (b.kind.animations ?? []).findIndex((x) => x.name === a.name);
+          // switching to the animation that already plays does not restart it
+          if (i >= 0 && i !== b.anim) {
+            b.anim = i;
+            b.animTime = 0;
+          }
+        });
+        break;
+      case "settext":
+        targets(a.obj).forEach((b) => (b.text = a.text));
+        break;
       case "restartGame":
         this.vars = Object.fromEntries(this.project.variables.map((v) => [v.name, v.value]));
         this.pendingScene = this.project.scenes[0].id;
@@ -338,7 +393,11 @@ export class Game {
   private fill = (text: string) => text.replace(/\{([^}]+)\}/g, (_, name: string) => String(this.vars[name.trim()] ?? 0));
 
   private step(dt: number) {
-    for (const b of this.bodies) if (!b.dead) this.behave(b, dt);
+    for (const b of this.bodies)
+      if (!b.dead) {
+        this.behave(b, dt);
+        b.animTime += dt;
+      }
     this.time += dt;
     this.firedEvent = null;
     for (const ev of this.scene.events) {
@@ -368,27 +427,98 @@ export class Game {
     const { ctx, scene } = this;
     ctx.fillStyle = scene.bg;
     ctx.fillRect(0, 0, scene.w, scene.h);
-    ctx.save();
-    ctx.translate(-Math.round(this.camera.x), -Math.round(this.camera.y));
-    for (const b of this.bodies) {
+    // smaller z first, so bigger z ends up on top; the world first, then what is fixed on the screen
+    const order = [...this.bodies].sort((a, b) => Number(a.fixed) - Number(b.fixed) || a.z - b.z);
+    for (const b of order) {
+      const cx = b.fixed ? 0 : Math.round(this.camera.x);
+      const cy = b.fixed ? 0 : Math.round(this.camera.y);
       // only what is on the screen is drawn
-      if (b.x + b.w < this.camera.x || b.x > this.camera.x + scene.w || b.y + b.h < this.camera.y || b.y > this.camera.y + scene.h) continue;
-      const look = b.kind.look;
-      if (isColor(look)) {
-        ctx.fillStyle = look;
-        ctx.beginPath();
-        ctx.roundRect(b.x, b.y, b.w, b.h, 6);
-        ctx.fill();
-      } else if (isImage(look)) {
-        const img = this.images.get(b.kind.id);
-        if (img?.complete) ctx.drawImage(img, b.x, b.y, b.w, b.h);
-      } else {
-        ctx.font = `${Math.round(Math.min(b.w, b.h) * 0.9)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
-        ctx.textAlign = "center";
-        ctx.textBaseline = "middle";
-        ctx.fillText(look, b.x + b.w / 2, b.y + b.h / 2 + 2);
-      }
+      if (b.x + b.w < cx || b.x > cx + scene.w || b.y + b.h < cy || b.y > cy + scene.h) continue;
+      ctx.save();
+      ctx.translate(-cx, -cy);
+      this.drawBody(b);
+      ctx.restore();
     }
-    ctx.restore();
+  }
+
+  private drawBody(b: Body) {
+    const { ctx } = this;
+    const t = kindType(b.kind);
+    if (t === "text") {
+      const size = b.kind.fontSize ?? 24;
+      ctx.font = `700 ${size}px "Nunito Sans", "Segoe UI Emoji", sans-serif`;
+      ctx.fillStyle = b.kind.color ?? "#1e293b";
+      ctx.textAlign = "left";
+      ctx.textBaseline = "top";
+      this.fill(b.text).split("\n").forEach((line, i) => ctx.fillText(line, b.x, b.y + i * size * 1.2));
+      return;
+    }
+    if (t === "button") {
+      ctx.fillStyle = b.kind.bg ?? "#4d16c9";
+      ctx.beginPath();
+      ctx.roundRect(b.x, b.y, b.w, b.h, 12);
+      ctx.fill();
+      ctx.font = `700 ${b.kind.fontSize ?? 22}px "Nunito Sans", "Segoe UI Emoji", sans-serif`;
+      ctx.fillStyle = b.kind.color ?? "#ffffff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(this.fill(b.text), b.x + b.w / 2, b.y + b.h / 2 + 1);
+      return;
+    }
+    if (t === "tiled") {
+      const pattern = this.tile(b.kind);
+      if (!pattern) return;
+      ctx.translate(b.x, b.y);
+      ctx.fillStyle = pattern;
+      ctx.fillRect(0, 0, b.w, b.h);
+      return;
+    }
+    const look = this.lookOf(b);
+    if (isColor(look)) {
+      ctx.fillStyle = look;
+      ctx.beginPath();
+      ctx.roundRect(b.x, b.y, b.w, b.h, 6);
+      ctx.fill();
+    } else if (isImage(look)) {
+      const img = this.images.get(look);
+      if (img?.complete) ctx.drawImage(img, b.x, b.y, b.w, b.h);
+    } else {
+      ctx.font = `${Math.round(Math.min(b.w, b.h) * 0.9)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+      ctx.textAlign = "center";
+      ctx.textBaseline = "middle";
+      ctx.fillText(look, b.x + b.w / 2, b.y + b.h / 2 + 2);
+    }
+  }
+
+  /** The picture of a sprite right now: the current frame of its animation, or its picture. */
+  private lookOf(b: Body) {
+    const a = b.kind.animations?.[b.anim];
+    if (!a || !a.frames.length) return b.kind.look;
+    const n = Math.floor(b.animTime * Math.max(0.1, a.fps));
+    return a.frames[a.loop ? n % a.frames.length : Math.min(n, a.frames.length - 1)];
+  }
+
+  /** One tile of a tiled sprite drawn once (picture, emoji or colour) and turned into a repeating pattern. */
+  private tile(kind: ObjectKind): CanvasPattern | null {
+    if (this.tiles.has(kind.id)) return this.tiles.get(kind.id)!;
+    const img = this.images.get(kind.look);
+    if (isImage(kind.look) && !img?.complete) return null; // the picture is still loading
+    const c = document.createElement("canvas");
+    c.width = Math.max(1, Math.round(kind.w));
+    c.height = Math.max(1, Math.round(kind.h));
+    const g = c.getContext("2d")!;
+    if (isColor(kind.look)) {
+      g.fillStyle = kind.look;
+      g.fillRect(0, 0, c.width, c.height);
+    } else if (img) g.drawImage(img, 0, 0, c.width, c.height);
+    else {
+      g.font = `${Math.round(Math.min(c.width, c.height) * 0.9)}px "Segoe UI Emoji","Apple Color Emoji","Noto Color Emoji",sans-serif`;
+      g.textAlign = "center";
+      g.textBaseline = "middle";
+      g.fillText(kind.look, c.width / 2, c.height / 2 + 1);
+    }
+    const p = this.ctx.createPattern(c, "repeat");
+    this.tiles.set(kind.id, p);
+    return p;
   }
 }

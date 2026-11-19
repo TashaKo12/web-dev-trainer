@@ -1,13 +1,31 @@
 import { useRef, useState, type ReactNode } from "react";
-import { Brush, ChevronDown, ChevronRight, ImagePlus, Plus, Search, Trash2, X } from "lucide-react";
-import { BEHAVIOR_INFO, COLOR_LOOKS, EMOJI_LOOKS, isColor, isImage, uid, type Behavior, type Instance, type ObjectKind, type Project, type Scene, type Variable } from "./model";
+import { Brush, ChevronDown, ChevronRight, ImagePlus, Pencil, Plus, Search, Trash2, X } from "lucide-react";
+import {
+  BEHAVIOR_INFO,
+  COLOR_LOOKS,
+  EMOJI_LOOKS,
+  KIND_TYPES,
+  SIZES,
+  firstLook,
+  isColor,
+  isImage,
+  kindType,
+  type Behavior,
+  type Instance,
+  type KindType,
+  type Look,
+  type ObjectKind,
+  type Project,
+  type Scene,
+  type Variable,
+} from "./model";
 import { PixelEditor } from "./PixelEditor";
 import { LookView } from "./Player";
 import { readPicture } from "./store";
-import { SIZES } from "./model";
 
 // The two side panels of the editor, in its dark workspace style:
-// right — «Объекты» (search, add, drag onto the scene); left — «Свойства» of the scene or of the chosen object.
+// right — «Объекты» (search, add by type, drag onto the scene, open the object window);
+// left — «Свойства» of the scene, or where the chosen copy stands (X, Y, Z, size of a tiled sprite).
 
 export const ui = {
   panel: "bg-[#1f2028] text-[#e5e7eb]",
@@ -18,8 +36,8 @@ export const ui = {
   soft: "bg-[#2a2c36] text-[#d1d5db] hover:bg-[#343744]",
 };
 
-/** A part of the properties panel that folds, like «Свойства», «Поведения», «Переменные». */
-function Section({ title, children, extra, open: start = true }: { title: string; children: ReactNode; extra?: ReactNode; open?: boolean }) {
+/** A part of a panel that folds, like «Свойства», «Поведения», «Переменные». */
+export function Section({ title, children, extra, open: start = true }: { title: string; children: ReactNode; extra?: ReactNode; open?: boolean }) {
   const [open, setOpen] = useState(start);
   return (
     <div className="border-b border-[#2e3039]">
@@ -37,17 +55,39 @@ function Section({ title, children, extra, open: start = true }: { title: string
   );
 }
 
-function Field({ label, children }: { label: string; children: ReactNode }) {
+export function Field({ label, children }: { label: string; children: ReactNode }) {
   return (
-    <label className="grid grid-cols-[90px_minmax(0,1fr)] items-center gap-2 text-sm">
+    <label className="grid grid-cols-[110px_minmax(0,1fr)] items-center gap-2 text-sm">
       <span className={ui.muted}>{label}</span>
       {children}
     </label>
   );
 }
 
-function Num({ value, onChange, min = 0, max = 5000 }: { value: number; onChange: (v: number) => void; min?: number; max?: number }) {
+export function Num({ value, onChange, min = 0, max = 5000 }: { value: number; onChange: (v: number) => void; min?: number; max?: number }) {
   return <input type="number" value={value} min={min} max={max} onChange={(e) => onChange(Math.max(min, Math.min(max, Number(e.target.value) || 0)))} className={ui.input} />;
+}
+
+/** CSS background that repeats one tile (picture, emoji or colour) — for the scene and the previews. */
+export function tileBackground(look: Look, tw: number, th: number): string {
+  if (isColor(look)) return look;
+  if (isImage(look)) return `url("${look}") 0 0 / ${tw}px ${th}px repeat`;
+  const svg = `<svg xmlns='http://www.w3.org/2000/svg' width='64' height='64'><text x='32' y='36' font-size='54' text-anchor='middle' dominant-baseline='middle'>${look}</text></svg>`;
+  return `url("data:image/svg+xml;utf8,${encodeURIComponent(svg)}") 0 0 / ${tw}px ${th}px repeat`;
+}
+
+/** A small picture of an object for lists and headers: a sprite, a strip of tiles, «Aa» for a text, a mini button. */
+export function KindPreview({ kind, className = "h-8 w-8 text-2xl" }: { kind: ObjectKind; className?: string }) {
+  const t = kindType(kind);
+  if (t === "tiled") return <span className={`block rounded ${className}`} style={{ background: tileBackground(kind.look, 12, 12) }} />;
+  if (t === "text") return <span className={`flex items-center justify-center rounded bg-[#2a2c36] font-heading text-sm font-extrabold ${className}`} style={{ color: kind.color === "#1e293b" ? "#e5e7eb" : kind.color }}>Aa</span>;
+  if (t === "button")
+    return (
+      <span className={`flex items-center justify-center ${className}`}>
+        <span className="block h-[55%] w-full rounded-md" style={{ background: kind.bg ?? "#4d16c9" }} />
+      </span>
+    );
+  return <LookView look={firstLook(kind)} className={className} />;
 }
 
 // ── right: objects ──
@@ -59,13 +99,16 @@ export function ObjectsPanel({
   selected,
   onSelect,
   onAdd,
+  onEdit,
 }: {
   project: Project;
   selected: string | null;
   onSelect: (id: string) => void;
-  onAdd: () => void;
+  onAdd: (type: KindType) => void;
+  onEdit: (id: string) => void;
 }) {
   const [q, setQ] = useState("");
+  const [menu, setMenu] = useState(false);
   const list = project.objects.filter((o) => o.name.toLowerCase().includes(q.trim().toLowerCase()));
   return (
     <div className={`${ui.panel} flex h-full flex-col`}>
@@ -76,15 +119,37 @@ export function ObjectsPanel({
           <input value={q} onChange={(e) => setQ(e.target.value)} placeholder="Поиск объектов" className="h-9 w-full bg-transparent text-sm outline-none placeholder:text-[#6b7280]" />
         </label>
       </div>
-      <div className="flex items-center justify-between px-3 pb-2">
+      <div className="relative flex items-center justify-between px-3 pb-2">
         <span className="text-sm font-bold">Объекты игры</span>
-        <button type="button" onClick={onAdd} className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-bold ${ui.accent}`}>
+        <button type="button" onClick={() => setMenu((m) => !m)} className={`inline-flex shrink-0 items-center gap-1 whitespace-nowrap rounded-md px-2.5 py-1.5 text-xs font-bold ${ui.accent}`}>
           <Plus className="h-3.5 w-3.5" strokeWidth={2.6} /> Добавить объект
         </button>
+        {menu && (
+          <div className="absolute right-3 top-9 z-20 w-64 overflow-hidden rounded-lg border border-[#383b47] bg-[#262832] shadow-2xl">
+            <p className={`px-3 pt-2.5 text-xs font-bold uppercase tracking-wide ${ui.muted}`}>Какой объект?</p>
+            {(Object.keys(KIND_TYPES) as KindType[]).map((t) => (
+              <button
+                key={t}
+                type="button"
+                onClick={() => {
+                  setMenu(false);
+                  onAdd(t);
+                }}
+                className="flex w-full items-start gap-2.5 px-3 py-2 text-left hover:bg-[#343744]"
+              >
+                <span className="text-xl leading-none">{KIND_TYPES[t].icon}</span>
+                <span>
+                  <span className="block text-sm font-bold">{KIND_TYPES[t].title}</span>
+                  <span className={`block text-xs ${ui.muted}`}>{KIND_TYPES[t].about}</span>
+                </span>
+              </button>
+            ))}
+          </div>
+        )}
       </div>
       <ul className="flex-1 space-y-0.5 overflow-y-auto px-2 pb-3">
         {list.map((o) => (
-          <li key={o.id}>
+          <li key={o.id} className={`group flex items-center rounded-md ${selected === o.id ? "bg-[#7046ec]/30 ring-1 ring-[#7046ec]" : "hover:bg-[#2a2c36]"}`}>
             <button
               type="button"
               draggable
@@ -93,27 +158,34 @@ export function ObjectsPanel({
                 e.dataTransfer.effectAllowed = "copy";
               }}
               onClick={() => onSelect(o.id)}
-              title="Перетащи на сцену"
-              className={`flex w-full cursor-grab items-center gap-2.5 rounded-md px-2 py-1.5 text-left text-sm active:cursor-grabbing ${selected === o.id ? "bg-[#7046ec]/30 ring-1 ring-[#7046ec]" : "hover:bg-[#2a2c36]"}`}
+              onDoubleClick={() => onEdit(o.id)}
+              title="Перетащи на сцену · двойной клик — изменить"
+              className="flex min-w-0 flex-1 cursor-grab items-center gap-2.5 px-2 py-1.5 text-left text-sm active:cursor-grabbing"
             >
-              <LookView look={o.look} className="h-8 w-8 shrink-0 text-2xl" />
-              <span className="min-w-0 flex-1 truncate font-semibold">{o.name}</span>
+              <KindPreview kind={o} />
+              <span className="min-w-0 flex-1">
+                <span className="block truncate font-semibold">{o.name}</span>
+                <span className={`block text-[11px] ${ui.muted}`}>{KIND_TYPES[kindType(o)].title}</span>
+              </span>
+            </button>
+            <button type="button" onClick={() => onEdit(o.id)} aria-label={`Изменить ${o.name}`} title="Изменить объект" className="mr-1 rounded p-1.5 text-[#9ca3af] hover:bg-[#343744] hover:text-white">
+              <Pencil className="h-3.5 w-3.5" />
             </button>
           </li>
         ))}
         {!project.objects.length && <li className={`px-2 py-4 text-center text-sm ${ui.muted}`}>Начни с добавления нового объекта.</li>}
       </ul>
-      <p className={`border-t border-[#2e3039] p-3 text-xs ${ui.muted}`}>Перетащи объект мышкой на сцену — он появится там, где отпустишь.</p>
+      <p className={`border-t border-[#2e3039] p-3 text-xs ${ui.muted}`}>Перетащи объект мышкой на сцену. Двойной клик или ✏️ — открыть его свойства.</p>
     </div>
   );
 }
 
-// ── left: properties ──
+// ── pieces of the object window ──
 
-function BehaviorCard({ b, project, onChange, onRemove }: { b: Behavior; project: Project; onChange: (b: Behavior) => void; onRemove: () => void }) {
+export function BehaviorCard({ b, project, onChange, onRemove }: { b: Behavior; project: Project; onChange: (b: Behavior) => void; onRemove: () => void }) {
   const info = BEHAVIOR_INFO[b.kind];
   return (
-    <div className="rounded-md border border-[#383b47] bg-[#262832] p-2.5">
+    <div className="rounded-md border border-[#383b47] bg-[#262832] p-3">
       <div className="mb-1 flex items-start justify-between gap-2">
         <p className="text-sm font-bold">{info.title}</p>
         <button type="button" onClick={onRemove} aria-label="Убрать поведение" className="text-[#9ca3af] hover:text-[#fb7185]">
@@ -121,7 +193,7 @@ function BehaviorCard({ b, project, onChange, onRemove }: { b: Behavior; project
         </button>
       </div>
       <p className={`mb-2 text-xs ${ui.muted}`}>{info.about}</p>
-      <div className="space-y-1.5">
+      <div className="grid gap-1.5 sm:grid-cols-2">
         {b.kind === "topdown" && (
           <Field label="Скорость">
             <Num value={b.speed} onChange={(speed) => onChange({ ...b, speed })} />
@@ -177,8 +249,41 @@ function BehaviorCard({ b, project, onChange, onRemove }: { b: Behavior; project
   );
 }
 
-function LookPicker({ kind, onChange }: { kind: ObjectKind; onChange: (k: ObjectKind) => void }) {
-  const [tab, setTab] = useState<"emoji" | "color">(isColor(kind.look) ? "color" : "emoji");
+export function BehaviorsEditor({ kind, project, onChange }: { kind: ObjectKind; project: Project; onChange: (k: ObjectKind) => void }) {
+  const missing = (Object.keys(BEHAVIOR_INFO) as Behavior["kind"][]).filter((k) => !kind.behaviors.some((b) => b.kind === k));
+  return (
+    <div className="space-y-2">
+      {kind.behaviors.map((b, i) => (
+        <BehaviorCard
+          key={b.kind}
+          b={b}
+          project={project}
+          onChange={(nb) => onChange({ ...kind, behaviors: kind.behaviors.map((x, j) => (j === i ? nb : x)) })}
+          onRemove={() => onChange({ ...kind, behaviors: kind.behaviors.filter((_, j) => j !== i) })}
+        />
+      ))}
+      {!kind.behaviors.length && <p className={`text-sm ${ui.muted}`}>Пока никаких поведений — объект просто стоит на месте.</p>}
+      {missing.length > 0 && (
+        <select
+          value=""
+          onChange={(e) => e.target.value && onChange({ ...kind, behaviors: [...kind.behaviors, BEHAVIOR_INFO[e.target.value as Behavior["kind"]].make(project.objects)] })}
+          className={`${ui.input} font-semibold text-[#c4b5fd]`}
+        >
+          <option value="">+ Добавить поведение…</option>
+          {missing.map((k) => (
+            <option key={k} value={k}>
+              {BEHAVIOR_INFO[k].title}
+            </option>
+          ))}
+        </select>
+      )}
+    </div>
+  );
+}
+
+/** Choose a picture: draw it, upload it, take a ready one or a colour block. */
+export function LookPicker({ look, onChange, drawLabel = "Нарисовать" }: { look: Look; onChange: (look: Look) => void; drawLabel?: string }) {
+  const [tab, setTab] = useState<"emoji" | "color">(isColor(look) ? "color" : "emoji");
   const [drawing, setDrawing] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const file = useRef<HTMLInputElement>(null);
@@ -187,7 +292,7 @@ function LookPicker({ kind, onChange }: { kind: ObjectKind; onChange: (k: Object
     if (!f) return;
     setError(null);
     try {
-      onChange({ ...kind, look: await readPicture(f) });
+      onChange(await readPicture(f));
     } catch {
       setError("Не получилось открыть картинку. Попробуй файл PNG или JPG.");
     }
@@ -197,7 +302,7 @@ function LookPicker({ kind, onChange }: { kind: ObjectKind; onChange: (k: Object
     <div className="space-y-2">
       <div className="grid grid-cols-2 gap-1.5">
         <button type="button" onClick={() => setDrawing(true)} className={`inline-flex items-center justify-center gap-1.5 rounded-md py-2 text-sm font-bold ${ui.accent}`}>
-          <Brush className="h-4 w-4" strokeWidth={2.2} /> Нарисовать
+          <Brush className="h-4 w-4" strokeWidth={2.2} /> {drawLabel}
         </button>
         <button type="button" onClick={() => file.current?.click()} className={`inline-flex items-center justify-center gap-1.5 rounded-md py-2 text-sm font-bold ${ui.soft}`}>
           <ImagePlus className="h-4 w-4" strokeWidth={2.2} /> Загрузить
@@ -218,9 +323,9 @@ function LookPicker({ kind, onChange }: { kind: ObjectKind; onChange: (k: Object
         ))}
       </div>
       {tab === "emoji" ? (
-        <div className="grid grid-cols-7 gap-0.5">
+        <div className="grid grid-cols-7 gap-0.5 sm:grid-cols-10">
           {EMOJI_LOOKS.map((e) => (
-            <button key={e} type="button" onClick={() => onChange({ ...kind, look: e })} className={`rounded p-1 text-lg hover:bg-[#343744] ${kind.look === e ? "bg-[#7046ec]/40" : ""}`}>
+            <button key={e} type="button" onClick={() => onChange(e)} className={`rounded p-1 text-lg hover:bg-[#343744] ${look === e ? "bg-[#7046ec]/40" : ""}`}>
               {e}
             </button>
           ))}
@@ -228,17 +333,17 @@ function LookPicker({ kind, onChange }: { kind: ObjectKind; onChange: (k: Object
       ) : (
         <div className="flex flex-wrap items-center gap-1.5">
           {COLOR_LOOKS.map((c) => (
-            <button key={c} type="button" aria-label={`Цвет ${c}`} onClick={() => onChange({ ...kind, look: c })} className={`h-7 w-7 rounded ${kind.look === c ? "ring-2 ring-white" : ""}`} style={{ background: c }} />
+            <button key={c} type="button" aria-label={`Цвет ${c}`} onClick={() => onChange(c)} className={`h-7 w-7 rounded ${look === c ? "ring-2 ring-white" : ""}`} style={{ background: c }} />
           ))}
-          <input type="color" value={isColor(kind.look) ? kind.look : "#64748b"} onChange={(e) => onChange({ ...kind, look: e.target.value })} className="h-7 w-10 cursor-pointer rounded border border-[#383b47] bg-transparent" aria-label="Свой цвет" />
+          <input type="color" value={isColor(look) ? look : "#64748b"} onChange={(e) => onChange(e.target.value)} className="h-7 w-10 cursor-pointer rounded border border-[#383b47] bg-transparent" aria-label="Свой цвет" />
         </div>
       )}
       {drawing && (
         <PixelEditor
-          look={kind.look}
+          look={look}
           onClose={() => setDrawing(false)}
-          onSave={(look) => {
-            onChange({ ...kind, look });
+          onSave={(l) => {
+            onChange(l);
             setDrawing(false);
           }}
         />
@@ -247,12 +352,14 @@ function LookPicker({ kind, onChange }: { kind: ObjectKind; onChange: (k: Object
   );
 }
 
+// ── left: the scene, or where the chosen copy stands ──
+
 export function PropertiesPanel({
   project,
   scene,
   kind,
   instance,
-  onKind,
+  onEditKind,
   onDeleteKind,
   onScene,
   onInstance,
@@ -262,67 +369,55 @@ export function PropertiesPanel({
   scene: Scene;
   kind: ObjectKind | null;
   instance: Instance | null;
-  onKind: (k: ObjectKind) => void;
+  onEditKind: (id: string) => void;
   onDeleteKind: (id: string) => void;
   onScene: (s: Scene) => void;
   onInstance: (i: Instance) => void;
   onVariables: (v: Variable[]) => void;
 }) {
-  const missing = kind ? (Object.keys(BEHAVIOR_INFO) as Behavior["kind"][]).filter((k) => !kind.behaviors.some((b) => b.kind === k)) : [];
   return (
     <div className={`${ui.panel} flex h-full flex-col overflow-y-auto`}>
       <div className={ui.head}>Свойства</div>
       {kind ? (
         <>
           <div className="flex items-center gap-3 border-b border-[#2e3039] px-3 py-3">
-            <LookView look={kind.look} className={`h-12 w-12 shrink-0 text-4xl ${isImage(kind.look) ? "rounded bg-[#2a2c36]" : ""}`} />
-            <input value={kind.name} onChange={(e) => onKind({ ...kind, name: e.target.value })} aria-label="Имя объекта" className={`${ui.input} font-bold`} />
+            <KindPreview kind={kind} className="h-12 w-12 shrink-0 text-4xl" />
+            <div className="min-w-0 flex-1">
+              <p className="truncate font-bold">{kind.name}</p>
+              <p className={`text-xs ${ui.muted}`}>{KIND_TYPES[kindType(kind)].title}</p>
+            </div>
+          </div>
+          <div className="p-3">
+            <button type="button" onClick={() => onEditKind(kind.id)} className={`inline-flex w-full items-center justify-center gap-2 rounded-md py-2.5 text-sm font-bold ${ui.accent}`}>
+              <Pencil className="h-4 w-4" /> Изменить объект…
+            </button>
+            <p className={`mt-1.5 text-xs ${ui.muted}`}>Картинка, анимации, текст и поведения — в окне объекта.</p>
           </div>
           {instance && (
             <Section title="На сцене">
               <Field label="X">
-                <Num value={instance.x} min={-2000} onChange={(x) => onInstance({ ...instance, x })} />
+                <Num value={instance.x} min={-100000} max={100000} onChange={(x) => onInstance({ ...instance, x })} />
               </Field>
               <Field label="Y">
-                <Num value={instance.y} min={-2000} onChange={(y) => onInstance({ ...instance, y })} />
+                <Num value={instance.y} min={-100000} max={100000} onChange={(y) => onInstance({ ...instance, y })} />
               </Field>
+              <Field label="Z (слой)">
+                <Num value={instance.z ?? 0} min={-999} max={999} onChange={(z) => onInstance({ ...instance, z })} />
+              </Field>
+              <p className={`text-xs ${ui.muted}`}>Чем больше Z, тем выше объект: он рисуется поверх тех, у кого Z меньше.</p>
+              {kindType(kind) === "tiled" && (
+                <>
+                  <Field label="Ширина">
+                    <Num value={instance.w ?? kind.w * 5} min={8} max={20000} onChange={(w) => onInstance({ ...instance, w })} />
+                  </Field>
+                  <Field label="Высота">
+                    <Num value={instance.h ?? kind.h} min={8} max={20000} onChange={(h) => onInstance({ ...instance, h })} />
+                  </Field>
+                  <p className={`text-xs ${ui.muted}`}>Или тяни за уголок на сцене — рисунок повторится плиткой.</p>
+                </>
+              )}
             </Section>
           )}
-          <Section title="Внешний вид">
-            <LookPicker kind={kind} onChange={onKind} />
-            <Field label="Ширина">
-              <Num value={kind.w} min={8} max={800} onChange={(w) => onKind({ ...kind, w })} />
-            </Field>
-            <Field label="Высота">
-              <Num value={kind.h} min={8} max={800} onChange={(h) => onKind({ ...kind, h })} />
-            </Field>
-          </Section>
-          <Section title="Поведения">
-            {kind.behaviors.map((b, i) => (
-              <BehaviorCard
-                key={b.kind}
-                b={b}
-                project={project}
-                onChange={(nb) => onKind({ ...kind, behaviors: kind.behaviors.map((x, j) => (j === i ? nb : x)) })}
-                onRemove={() => onKind({ ...kind, behaviors: kind.behaviors.filter((_, j) => j !== i) })}
-              />
-            ))}
-            {!kind.behaviors.length && <p className={`text-xs ${ui.muted}`}>Пока никаких — объект просто стоит на месте.</p>}
-            {missing.length > 0 && (
-              <select
-                value=""
-                onChange={(e) => e.target.value && onKind({ ...kind, behaviors: [...kind.behaviors, BEHAVIOR_INFO[e.target.value as Behavior["kind"]].make(project.objects)] })}
-                className={`${ui.input} font-semibold text-[#c4b5fd]`}
-              >
-                <option value="">+ Добавить поведение…</option>
-                {missing.map((k) => (
-                  <option key={k} value={k}>
-                    {BEHAVIOR_INFO[k].title}
-                  </option>
-                ))}
-              </select>
-            )}
-          </Section>
           <div className="p-3">
             <button type="button" onClick={() => onDeleteKind(kind.id)} className={`inline-flex items-center gap-1.5 text-xs font-semibold ${ui.muted} hover:text-[#fb7185]`}>
               <Trash2 className="h-3.5 w-3.5" /> Удалить объект из игры
@@ -342,7 +437,7 @@ export function PropertiesPanel({
                 <input type="color" value={scene.bg} onChange={(e) => onScene({ ...scene, bg: e.target.value })} className="h-8 w-9 shrink-0 cursor-pointer rounded border border-[#383b47] bg-transparent" />
               </span>
             </Field>
-            <Field label="Размер">
+            <Field label="Экран">
               <select
                 value={`${scene.w}x${scene.h}`}
                 onChange={(e) => {
@@ -367,7 +462,7 @@ export function PropertiesPanel({
               </button>
             }
           >
-            <p className={`text-xs ${ui.muted}`}>Числа, которые игра помнит: очки, жизни, ключи. Во время игры видны в углу.</p>
+            <p className={`text-xs ${ui.muted}`}>Числа, которые игра помнит: очки, жизни, ключи. Их можно показать текстом: Очки: {"{Очки}"}.</p>
             {project.variables.map((v, i) => (
               <div key={i} className="flex items-center gap-1.5">
                 <input value={v.name} onChange={(e) => onVariables(project.variables.map((x, j) => (j === i ? { ...x, name: e.target.value } : x)))} aria-label="Имя переменной" className={`${ui.input} min-w-0 flex-1 font-semibold`} />
@@ -378,9 +473,6 @@ export function PropertiesPanel({
                 </button>
               </div>
             ))}
-            <p className="rounded bg-[#2a2c36] p-2 text-xs text-[#9ca3af]">
-              В надписи можно показать значение: <code className="text-[#c4b5fd]">Очки: {"{Очки}"}</code>
-            </p>
           </Section>
           <p className={`p-4 text-center text-sm ${ui.muted}`}>Щёлкни по объекту на сцене или в списке справа, чтобы увидеть его свойства.</p>
         </>
@@ -388,5 +480,3 @@ export function PropertiesPanel({
     </div>
   );
 }
-
-export const newObject = (n: number): ObjectKind => ({ id: uid(), name: `Объект ${n}`, look: "⭐", w: 40, h: 40, behaviors: [] });

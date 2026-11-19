@@ -1,8 +1,9 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
 import { Clapperboard, Grid3x3, ListChecks, Play, Redo2, Trash2, Undo2, ZoomIn, ZoomOut } from "lucide-react";
-import { uid, type Instance, type ObjectKind, type Project, type Scene } from "./model";
+import { makeKind, uid, type Instance, type KindType, type ObjectKind, type Project, type Scene } from "./model";
 import { EventsEditor } from "./EventsEditor";
-import { newObject, ObjectsPanel, PropertiesPanel } from "./ObjectPanel";
+import { ObjectsPanel, PropertiesPanel } from "./ObjectPanel";
+import { ObjectDialog } from "./ObjectDialog";
 import { Player } from "./Player";
 import { SceneEditor } from "./SceneEditor";
 import { lastSaveError, saveProject } from "./store";
@@ -44,6 +45,8 @@ export function StudioEditor({ initial }: { initial: Project }) {
   const [resetView, setResetView] = useState(0);
   const [cursor, setCursor] = useState<{ x: number; y: number } | null>(null);
   const [saved, setSaved] = useState<"saved" | "saving" | "error">("saved");
+  // the object window «Изменить …»: which object, or a new one not yet in the game
+  const [editing, setEditing] = useState<{ kind: ObjectKind; isNew: boolean } | null>(null);
 
   const scene = project.scenes.find((s) => s.id === sceneId) ?? project.scenes[0];
   const kind = project.objects.find((o) => o.id === kindId) ?? null;
@@ -86,7 +89,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
   // Ctrl+Z / Ctrl+Y (not while typing in a field — there the browser undoes the text)
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
-      if (playing || /input|textarea|select/i.test((e.target as HTMLElement).tagName) || !(e.ctrlKey || e.metaKey)) return;
+      if (playing || editing || /input|textarea|select/i.test((e.target as HTMLElement).tagName) || !(e.ctrlKey || e.metaKey)) return;
       if (e.code === "KeyZ" && !e.shiftKey) (e.preventDefault(), undo());
       else if (e.code === "KeyY" || (e.code === "KeyZ" && e.shiftKey)) (e.preventDefault(), redo());
     };
@@ -108,11 +111,22 @@ export function StudioEditor({ initial }: { initial: Project }) {
   const setKind = (k: ObjectKind) => change((p) => ({ ...p, objects: p.objects.map((x) => (x.id === k.id ? k : x)) }));
   const setInstance = (i: Instance) => setScene({ ...scene, instances: scene.instances.map((x) => (x.id === i.id ? i : x)) });
 
-  function addObject() {
-    const o = newObject(project.objects.length + 1);
-    change((p) => ({ ...p, objects: [...p.objects, o] }));
-    setKindId(o.id);
+  function addObject(type: KindType) {
+    const n = project.objects.filter((o) => (o.type ?? "sprite") === type).length + 1;
+    setEditing({ kind: makeKind(type, n), isNew: true });
+  }
+
+  function editKind(id: string) {
+    const o = project.objects.find((x) => x.id === id);
+    if (o) setEditing({ kind: o, isNew: false });
+  }
+
+  function applyKind(k: ObjectKind) {
+    if (editing?.isNew) change((p) => ({ ...p, objects: [...p.objects, k] }));
+    else setKind(k);
+    setKindId(k.id);
     setInstanceId(null);
+    setEditing(null);
   }
 
   function deleteKind(id: string) {
@@ -235,7 +249,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
               scene={scene}
               kind={kind}
               instance={instance}
-              onKind={setKind}
+              onEditKind={editKind}
               onDeleteKind={deleteKind}
               onScene={setScene}
               onInstance={setInstance}
@@ -256,6 +270,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
                 setKindId(kid ?? null);
               }}
               onChange={setScene}
+              onEdit={editKind}
             />
             {cursor && (
               <span className="pointer-events-none absolute bottom-2 right-3 rounded bg-black/60 px-2 py-0.5 font-mono text-xs text-white">
@@ -272,6 +287,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
                 setInstanceId(null);
               }}
               onAdd={addObject}
+              onEdit={editKind}
             />
           </div>
         </div>
@@ -287,7 +303,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
               scene={scene}
               kind={null}
               instance={null}
-              onKind={setKind}
+              onEditKind={editKind}
               onDeleteKind={deleteKind}
               onScene={setScene}
               onInstance={setInstance}
@@ -297,6 +313,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
         </div>
       )}
 
+      {editing && <ObjectDialog key={editing.kind.id} kind={editing.kind} project={project} onApply={applyKind} onClose={() => setEditing(null)} />}
       {playing && <Player project={project} sceneId={scene.id} onClose={() => setPlaying(false)} />}
     </div>
   );

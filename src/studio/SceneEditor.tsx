@@ -1,6 +1,6 @@
 import { useEffect, useLayoutEffect, useRef, useState, type DragEvent, type PointerEvent } from "react";
-import { uid, type Instance, type Project, type Scene } from "./model";
-import { DRAG_TYPE } from "./ObjectPanel";
+import { firstLook, instSize, kindType, uid, type Instance, type ObjectKind, type Project, type Scene } from "./model";
+import { DRAG_TYPE, tileBackground } from "./ObjectPanel";
 import { LookView } from "./Player";
 
 // The scene in the middle of the editor. The world has no edges: drag the empty space (or scroll) to move around.
@@ -8,6 +8,28 @@ import { LookView } from "./Player";
 
 const GRID = 8;
 const snap = (v: number) => Math.round(v / GRID) * GRID;
+
+/** How an object looks on the scene: a sprite's picture, repeated tiles, a text or a button. */
+function InstanceView({ kind, w, h, scale }: { kind: ObjectKind; w: number; h: number; scale: number }) {
+  const t = kindType(kind);
+  if (t === "tiled") return <div className="pointer-events-none h-full w-full" style={{ background: tileBackground(kind.look, kind.w * scale, kind.h * scale) }} />;
+  if (t === "text")
+    return (
+      <div className="pointer-events-none h-full w-full overflow-hidden whitespace-pre-wrap font-bold leading-tight" style={{ fontSize: (kind.fontSize ?? 24) * scale, color: kind.color }}>
+        {kind.text}
+      </div>
+    );
+  if (t === "button")
+    return (
+      <div
+        className="pointer-events-none flex h-full w-full items-center justify-center overflow-hidden text-center font-bold leading-tight"
+        style={{ background: kind.bg, color: kind.color, fontSize: (kind.fontSize ?? 22) * scale, borderRadius: Math.min(w, h) * 0.25 * scale }}
+      >
+        {kind.text}
+      </div>
+    );
+  return <LookView look={firstLook(kind)} className="pointer-events-none h-full w-full" />;
+}
 
 export function SceneEditor({
   project,
@@ -19,6 +41,7 @@ export function SceneEditor({
   onSelect,
   onChange,
   onCursor,
+  onEdit,
 }: {
   project: Project;
   scene: Scene;
@@ -30,12 +53,14 @@ export function SceneEditor({
   onSelect: (instanceId: string | null, kindId?: string) => void;
   onChange: (s: Scene) => void;
   onCursor: (p: { x: number; y: number } | null) => void;
+  /** double click on an object opens its window */
+  onEdit?: (kindId: string) => void;
 }) {
   const work = useRef<HTMLDivElement>(null);
   const [fit, setFit] = useState(1);
   const [pan, setPan] = useState({ x: 32, y: 32 });
   const panning = useRef<{ sx: number; sy: number; px: number; py: number; moved: boolean } | null>(null);
-  const drag = useRef<{ id: string; dx: number; dy: number } | null>(null);
+  const drag = useRef<{ id: string; dx: number; dy: number; resize?: boolean } | null>(null);
   /** The world point in the middle of the workspace: kept when zooming. */
   const center = useRef<{ x: number; y: number } | null>(null);
   const kinds = new Map(project.objects.map((o) => [o.id, o]));
@@ -94,7 +119,7 @@ export function SceneEditor({
   useEffect(() => {
     const key = (e: KeyboardEvent) => {
       const t = e.target as HTMLElement;
-      if (!selected || /input|textarea|select/i.test(t.tagName)) return;
+      if (!selected || /input|textarea|select/i.test(t.tagName) || document.querySelector("[data-object-dialog]")) return;
       if (e.key === "Delete" || e.key === "Backspace") {
         e.preventDefault();
         onChange({ ...scene, instances: scene.instances.filter((i) => i.id !== selected) });
@@ -110,7 +135,10 @@ export function SceneEditor({
     if (!kind) return;
     e.preventDefault();
     const p = toWorld(e.clientX, e.clientY);
-    const inst: Instance = { id: uid(), kind: kind.id, x: snap(p.x - kind.w / 2), y: snap(p.y - kind.h / 2) };
+    const size = instSize(kind, {});
+    // a new copy goes above everything already on the scene
+    const z = Math.max(0, ...scene.instances.map((i) => i.z ?? 0)) + (scene.instances.length ? 1 : 0);
+    const inst: Instance = { id: uid(), kind: kind.id, x: snap(p.x - size.w / 2), y: snap(p.y - size.h / 2), z };
     onChange({ ...scene, instances: [...scene.instances, inst] });
     onSelect(inst.id, inst.kind);
   }
@@ -123,10 +151,20 @@ export function SceneEditor({
     onSelect(inst.id, inst.kind);
   }
 
+  function downOnHandle(e: PointerEvent, inst: Instance) {
+    e.stopPropagation();
+    (e.target as HTMLElement).setPointerCapture(e.pointerId);
+    drag.current = { id: inst.id, dx: inst.x, dy: inst.y, resize: true };
+  }
+
   function moveObject(e: PointerEvent) {
     const d = drag.current;
     if (!d) return;
     const p = toWorld(e.clientX, e.clientY);
+    if (d.resize) {
+      onChange({ ...scene, instances: scene.instances.map((i) => (i.id === d.id ? { ...i, w: Math.max(GRID, snap(p.x - d.dx)), h: Math.max(GRID, snap(p.y - d.dy)) } : i)) });
+      return;
+    }
     onChange({ ...scene, instances: scene.instances.map((i) => (i.id === d.id ? { ...i, x: snap(p.x - d.dx), y: snap(p.y - d.dy) } : i)) });
   }
 
@@ -185,20 +223,35 @@ export function SceneEditor({
         {scene.instances.map((inst) => {
           const k = kinds.get(inst.kind);
           if (!k) return null;
+          const { w, h } = instSize(k, inst);
+          const tiled = kindType(k) === "tiled";
           return (
             <div
               key={inst.id}
+              onDoubleClick={() => onEdit?.(k.id)}
               onPointerDown={(e) => downOnObject(e, inst)}
               onPointerMove={moveObject}
               onPointerUp={(e) => {
                 e.stopPropagation();
                 drag.current = null;
               }}
-              title={k.name}
+              title={`${k.name} — двойной клик откроет свойства`}
               className={`absolute cursor-move touch-none select-none ${inst.id === selected ? "outline outline-2 outline-offset-1 outline-[#7046ec]" : "hover:outline hover:outline-1 hover:outline-[#7046ec]/60"}`}
-              style={{ left: inst.x * scale, top: inst.y * scale, width: k.w * scale, height: k.h * scale, fontSize: Math.min(k.w, k.h) * scale * 0.9 }}
+              style={{ left: inst.x * scale, top: inst.y * scale, width: w * scale, height: h * scale, fontSize: Math.min(w, h) * scale * 0.9, zIndex: (inst.z ?? 0) + 1 + (k.fixed ? 100000 : 0) }}
             >
-              <LookView look={k.look} className="pointer-events-none h-full w-full" />
+              <InstanceView kind={k} w={w} h={h} scale={scale} />
+              {tiled && inst.id === selected && (
+                <span
+                  onPointerDown={(e) => downOnHandle(e, inst)}
+                  onPointerMove={moveObject}
+                  onPointerUp={(e) => {
+                    e.stopPropagation();
+                    drag.current = null;
+                  }}
+                  title="Потяни, чтобы растянуть"
+                  className="absolute -bottom-2 -right-2 h-4 w-4 cursor-nwse-resize rounded-sm border-2 border-white bg-[#7046ec] shadow"
+                />
+              )}
             </div>
           );
         })}
