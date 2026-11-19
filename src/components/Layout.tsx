@@ -34,7 +34,7 @@ function SideRail({ pathname }: { pathname: string }) {
             aria-label={label}
             aria-current={on ? "page" : undefined}
             className={`flex h-12 w-12 items-center justify-center rounded-xl transition ${
-              on ? "bg-[#ece6fd] text-[#4f1fd1] dark:bg-violet-500/20 dark:text-violet-300" : "text-slate-400 hover:bg-slate-100 hover:text-[#4f1fd1] dark:hover:bg-slate-800"
+              on ? "bg-[#ece6fd] text-[#4d16c9] dark:bg-violet-500/20 dark:text-violet-300" : "text-slate-400 hover:bg-slate-100 hover:text-[#4d16c9] dark:hover:bg-slate-800"
             }`}
           >
             <Icon className="h-6 w-6" strokeWidth={2} />
@@ -91,7 +91,7 @@ export function Layout() {
               <Blocks className="h-5 w-5" strokeWidth={2.2} />
             </span>
             <span className="hidden leading-none min-[360px]:block">
-              <span className="block text-lg font-extrabold uppercase tracking-wide text-[#4f1fd1] dark:text-violet-300">Тренажёры</span>
+              <span className="block text-lg font-extrabold uppercase tracking-wide text-[#4d16c9] dark:text-violet-300">Тренажёры</span>
               <span className="block text-[10px] font-semibold text-[#7c5cf0] dark:text-violet-400">программирование для детей</span>
             </span>
           </a>

@@ -351,7 +351,7 @@ function IslandScreen() {
               type="button"
               disabled={!gridFull}
               onClick={() => judge(gridPlaces.every((w, k) => w === puzzle.answer[k]))}
-              className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-8 py-3 text-lg font-extrabold text-white shadow disabled:opacity-40"
+              className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-8 py-3 text-lg font-extrabold text-white shadow disabled:opacity-40"
             >
               Проверить
             </button>
@@ -398,7 +398,7 @@ function IslandScreen() {
           <button
             type="button"
             onClick={() => (last ? navigate("/logic") : go(at + 1))}
-            className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-8 py-3 text-lg font-extrabold text-white shadow"
+            className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-8 py-3 text-lg font-extrabold text-white shadow"
           >
             {last ? "Замок открыт! На карту →" : "Следующая загадка →"}
           </button>

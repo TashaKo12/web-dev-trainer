@@ -326,12 +326,12 @@ export function VariablesPanel({ project, onChange }: { project: Project; onChan
       <button
         type="button"
         onClick={() => onChange([...vars, { name: `Переменная${vars.length + 1}`, value: 0 }])}
-        className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#4f1fd1] hover:underline"
+        className="mt-2 inline-flex items-center gap-1 text-sm font-semibold text-[#4d16c9] hover:underline"
       >
         <Plus className="h-4 w-4" strokeWidth={2.6} /> Переменная
       </button>
       <p className="mt-3 rounded-lg bg-[#eef0f5] p-2 text-xs text-slate-500 dark:bg-slate-800">
-        В надписи можно показать значение: <code className="font-mono text-[#4f1fd1]">Очки: {"{Очки}"}</code>
+        В надписи можно показать значение: <code className="font-mono text-[#4d16c9]">Очки: {"{Очки}"}</code>
       </p>
     </div>
   );

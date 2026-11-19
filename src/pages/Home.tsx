@@ -48,7 +48,7 @@ function TopicCard({ t, p }: { t: TrainerMeta; p: TopicStars }) {
         <Icon className="h-5 w-5 text-white" strokeWidth={1.75} />
       </span>
       <span className="min-w-0 flex-1">
-        <span className="line-clamp-2 block text-sm font-bold leading-snug text-slate-800 group-hover:text-[#4f1fd1]" title={t.title}>
+        <span className="line-clamp-2 block text-sm font-bold leading-snug text-slate-800 group-hover:text-[#4d16c9]" title={t.title}>
           {t.title}
         </span>
         <span className="mt-1 flex items-center gap-2 text-xs">
@@ -106,7 +106,7 @@ export function Home() {
 
       <div className="mb-5 flex">
         <span className="inline-flex items-center gap-2 rounded-lg border border-[#e6e7ee] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800">
-          <Layers className="h-4 w-4 text-[#4f1fd1] dark:text-violet-300" strokeWidth={2} /> Курсы
+          <Layers className="h-4 w-4 text-[#4d16c9] dark:text-violet-300" strokeWidth={2} /> Курсы
         </span>
       </div>
 
@@ -124,7 +124,7 @@ export function Home() {
         <Link to="/profile" className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#e4e6ec] px-4 text-sm font-semibold text-slate-600 hover:bg-[#d9dce4] dark:bg-slate-800 dark:text-slate-300">
           <BarChart3 className="h-4 w-4" strokeWidth={2} /> Мой прогресс
         </Link>
-        <Link to="/python" className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#4f1fd1] px-4 text-sm font-semibold text-white shadow hover:bg-[#4318b8]">
+        <Link to="/python" className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#4d16c9] px-4 text-sm font-semibold text-white shadow hover:bg-[#4514b5]">
           <Code2 className="h-4 w-4" strokeWidth={2} /> Курс Python
         </Link>
       </div>
@@ -159,7 +159,7 @@ export function Home() {
               aria-selected={course === c}
               onClick={() => pickCourse(c)}
               className={`rounded-md px-5 py-2 text-sm font-semibold transition ${
-                course === c ? "bg-white text-[#4f1fd1] shadow-sm dark:bg-slate-950 dark:text-violet-300" : "text-slate-500 hover:text-slate-800"
+                course === c ? "bg-white text-[#4d16c9] shadow-sm dark:bg-slate-950 dark:text-violet-300" : "text-slate-500 hover:text-slate-800"
               }`}
             >
               {c} курс
@@ -180,7 +180,7 @@ export function Home() {
               <button type="button" onClick={() => toggle(g.key)} aria-expanded={isOpen} className="flex w-full flex-wrap items-center gap-x-4 gap-y-3 p-5 text-left sm:p-6">
                 <span
                   className={`flex h-11 w-11 shrink-0 items-center justify-center rounded-xl text-lg font-bold ${
-                    g.badge ? "bg-[#4f1fd1] text-white" : "bg-slate-100 text-slate-400"
+                    g.badge ? "bg-[#4d16c9] text-white" : "bg-slate-100 text-slate-400"
                   } ${g.badge && g.badge.length > 2 ? "text-xs" : ""}`}
                 >
                   {g.badge ?? "+"}

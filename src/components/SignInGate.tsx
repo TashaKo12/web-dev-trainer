@@ -16,7 +16,7 @@ export function SignInGate() {
       <div className="flex flex-wrap justify-center gap-3">
         <a
           href={`${HUB_URL}#login`}
-          className="inline-flex items-center gap-2 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 text-sm font-bold text-white shadow hover:opacity-90"
+          className="inline-flex items-center gap-2 rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-6 py-2.5 text-sm font-bold text-white shadow hover:opacity-90"
         >
           <LogIn className="h-4 w-4" strokeWidth={2} />
           Войти или создать аккаунт

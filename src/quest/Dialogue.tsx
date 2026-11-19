@@ -98,7 +98,7 @@ export function Dialogue({ lines, onDone, doneLabel = "Поехали!" }: { lin
           <button
             type="button"
             onClick={() => (last ? onDone() : setI(i + 1))}
-            className="inline-flex items-center gap-1 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 text-base font-extrabold text-white shadow"
+            className="inline-flex items-center gap-1 rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-6 py-2.5 text-base font-extrabold text-white shadow"
           >
             {last ? doneLabel : "Дальше"}
             <ChevronRight className="h-5 w-5" strokeWidth={2.5} />

@@ -104,7 +104,7 @@ ${css}`} height={height} />} />
   );
 }
 
-const btn = "rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40";
+const btn = "rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-6 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-40";
 
 function ChoiceLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "choice" }>; onResult: (ok: boolean) => void }) {
   const [picked, setPicked] = useState<number | null>(null);

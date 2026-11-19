@@ -13,7 +13,7 @@ import { trainers } from "../trainers/registry";
 const CARD =
   "rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800";
 const BTN_MAIN =
-  "inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-4 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center gap-1.5 rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-4 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
 const BTN_SECOND =
   "inline-flex items-center gap-1.5 rounded-full border-2 border-slate-200 px-4 py-2 text-sm font-bold text-slate-600 disabled:opacity-40";
 

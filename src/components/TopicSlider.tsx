@@ -121,7 +121,7 @@ export function TopicSlider({ children }: { children: ReactNode }) {
                 aria-current={active ? "step" : undefined}
                 className={`inline-flex items-center gap-1.5 rounded-lg border px-3.5 py-2 text-sm font-semibold transition ${
                   active
-                    ? "border-transparent bg-[#4f1fd1] text-white shadow-sm"
+                    ? "border-transparent bg-[#4d16c9] text-white shadow-sm"
                     : blocked
                       ? "cursor-not-allowed border-[#e6e7ee] bg-white/60 text-slate-300 dark:border-slate-800"
                       : "border-[#e6e7ee] bg-white text-slate-600 shadow-sm hover:text-indigo-600 dark:border-slate-800"
@@ -167,7 +167,7 @@ export function TopicSlider({ children }: { children: ReactNode }) {
               type="button"
               onClick={() => go(index + 1)}
               disabled={locked}
-              className="inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 text-sm font-bold text-white shadow transition disabled:cursor-not-allowed disabled:opacity-40"
+              className="inline-flex items-center gap-1.5 rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-6 py-2.5 text-sm font-bold text-white shadow transition disabled:cursor-not-allowed disabled:opacity-40"
             >
               {LABEL[slides[index + 1].kind]}
               <ArrowRight className="h-4 w-4" strokeWidth={2.2} />

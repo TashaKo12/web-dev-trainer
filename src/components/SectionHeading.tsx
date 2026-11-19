@@ -12,7 +12,7 @@ export function SectionHeading({
 }) {
   return (
     <div className="mb-6">
-      <span className="text-xs font-bold uppercase tracking-wider text-[#4f1fd1] dark:text-violet-300">{kicker}</span>
+      <span className="text-xs font-bold uppercase tracking-wider text-[#4d16c9] dark:text-violet-300">{kicker}</span>
       <h2 className="mt-1 flex items-center gap-3 text-xl font-bold text-slate-800 sm:text-2xl dark:text-slate-100">
         <span className="h-3.5 w-3.5 shrink-0 rounded-full bg-[#3b82f6]" aria-hidden="true" />
         {title}

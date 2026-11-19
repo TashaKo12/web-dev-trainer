@@ -520,7 +520,7 @@ function LevelScreen() {
               <button
                 type="button"
                 onClick={() => (next ? navigate(`/beacon/${next.id}`) : navigate("/beacon", { state: { outro: true } }))}
-                className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 font-extrabold text-white shadow"
+                className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-6 py-2.5 font-extrabold text-white shadow"
               >
                 {next ? "Следующий уровень →" : "Маяк горит! →"}
               </button>

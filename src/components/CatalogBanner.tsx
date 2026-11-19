@@ -44,7 +44,7 @@ export function CatalogBanner({ kicker, title, note, icon }: { kicker: string; t
         </span>
         <span className="min-w-0 pb-1">
           <span className="block text-xs font-semibold text-white/75 sm:text-sm">{kicker}</span>
-          <span className="block text-xl font-bold text-white sm:text-2xl">{title}</span>
+          <span className="font-heading block text-xl font-bold text-white sm:text-2xl">{title}</span>
           {note && <span className="mt-1 block max-w-2xl text-sm text-white/80">{note}</span>}
         </span>
       </div>

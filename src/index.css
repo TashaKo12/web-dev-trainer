@@ -12,7 +12,7 @@ html.dark {
 
 body {
   margin: 0;
-  font-family: "Montserrat", "Nunito", system-ui, sans-serif;
+  font-family: "Nunito Sans", "Nunito", system-ui, sans-serif;
   background: #eef0f5;
   min-height: 100vh;
   transition: background-color 0.2s ease;
@@ -20,6 +20,15 @@ body {
 
 html.dark body {
   background: linear-gradient(180deg, #0b0a16 0%, #120f24 40%, #0a0e1a 100%);
+}
+
+/* headings: Manrope, the text: Nunito Sans (free fonts close to the school's TT Turns and Avenir) */
+h1,
+h2,
+h3,
+h4,
+.font-heading {
+  font-family: "Manrope", "Nunito Sans", system-ui, sans-serif;
 }
 
 code,
@@ -691,8 +700,8 @@ html.dark .hover\:bg-purple-100:hover,
 html.dark .hover\:bg-fuchsia-100:hover {
   background-color: rgb(139 92 246 / 0.22);
 }
-html.dark .hover\:text-\[\#4f1fd1\]:hover,
-html.dark .group:hover .group-hover\:text-\[\#4f1fd1\],
+html.dark .hover\:text-\[\#4d16c9\]:hover,
+html.dark .group:hover .group-hover\:text-\[\#4d16c9\],
 html.dark .hover\:text-indigo-600:hover,
 html.dark .hover\:text-violet-600:hover {
   color: #c4b5fd;

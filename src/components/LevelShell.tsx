@@ -13,7 +13,7 @@ export function LevelShell({
   explain,
   onJump,
   onNext,
-  nextClassName = "bg-[#4f1fd1] hover:bg-[#4318b8]",
+  nextClassName = "bg-[#4d16c9] hover:bg-[#4514b5]",
   children,
 }: {
   total: number;

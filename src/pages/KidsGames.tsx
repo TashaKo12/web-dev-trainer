@@ -37,7 +37,7 @@ export function GameCard({ g, pixel = false }: { g: (typeof GAMES)[number]; pixe
       </span>
       <span className="flex flex-1 flex-col p-4">
         <span className="mb-2 w-fit rounded-md bg-[#f1f2f6] px-2 py-0.5 text-[11px] font-semibold text-slate-500 dark:bg-slate-800 dark:text-slate-400">7–9 лет · игра</span>
-        <span className="block font-bold text-slate-800 group-hover:text-[#4f1fd1]">{g.title}</span>
+        <span className="block font-bold text-slate-800 group-hover:text-[#4d16c9]">{g.title}</span>
         <span className="mt-1 block text-sm text-slate-500">{g.about}</span>
       </span>
     </Link>

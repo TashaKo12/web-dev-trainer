@@ -18,7 +18,7 @@ function ComingSoon() {
       <CatalogBanner icon={<Gamepad2 className="h-8 w-8" strokeWidth={2} />} kicker="Конструктор игр" title="Скоро откроется" note="Здесь можно будет создавать свои игры: ставить объекты на сцену, рисовать персонажей и придумывать правила. Педагог скажет, когда всё будет готово!" />
       <p className={`${card} p-6 text-center text-slate-500`}>
         Пока конструктор доступен только педагогу. А сейчас можно поиграть в{" "}
-        <Link to="/quest" className="font-bold text-[#4f1fd1]">
+        <Link to="/quest" className="font-bold text-[#4d16c9]">
           «Тайну станции»
         </Link>
         .
@@ -47,7 +47,7 @@ function StudioProjects() {
         <p className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Сохранение в браузере выключено: игры пропадут после перезагрузки страницы. Включить его можно внизу страницы «Мой прогресс».</p>
       )}
       <div className="mb-8 flex flex-wrap gap-3">
-        <button type="button" onClick={() => create(emptyProject())} className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#4f1fd1] px-4 text-sm font-semibold text-white shadow hover:bg-[#4318b8]">
+        <button type="button" onClick={() => create(emptyProject())} className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#4d16c9] px-4 text-sm font-semibold text-white shadow hover:bg-[#4514b5]">
           <Plus className="h-4 w-4" strokeWidth={2.6} /> Новая игра
         </button>
         <button type="button" onClick={() => create(coinsTemplate())} className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#e4e6ec] px-4 text-sm font-semibold text-slate-700 hover:bg-[#d9dce4] dark:bg-slate-800 dark:text-slate-200">
@@ -74,7 +74,7 @@ function StudioProjects() {
               </Link>
               <div className="flex items-center gap-2 p-4">
                 <Link to={`/studio/${p.id}`} className="min-w-0 flex-1">
-                  <span className="block truncate font-bold text-slate-800 group-hover:text-[#4f1fd1]">{p.name}</span>
+                  <span className="block truncate font-bold text-slate-800 group-hover:text-[#4d16c9]">{p.name}</span>
                   <span className="block text-xs text-slate-400">
                     {p.objects.length} объект. · {p.scenes.length} сцен. · изменена {new Date(p.updated).toLocaleDateString("ru-RU")}
                   </span>
@@ -109,7 +109,7 @@ function StudioEditorRoute() {
   if (!found)
     return (
       <p className="text-center text-slate-500">
-        Такой игры нет. <Link to="/studio" className="font-bold text-[#4f1fd1]">К моим играм</Link>
+        Такой игры нет. <Link to="/studio" className="font-bold text-[#4d16c9]">К моим играм</Link>
       </p>
     );
   return <StudioEditor key={found.id} initial={found} />;

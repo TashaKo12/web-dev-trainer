@@ -33,7 +33,7 @@ function StatCard({ icon: Icon, label, value }: { icon: typeof Star; label: stri
 }
 
 const BTN_MAIN =
-  "inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
+  "inline-flex items-center gap-1.5 rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-5 py-2 text-sm font-bold text-white shadow disabled:cursor-not-allowed disabled:opacity-50";
 
 function ParticipantCode() {
   const account = useAccount();
@@ -177,7 +177,7 @@ function RestoreCode() {
           <button
             type="button"
             onClick={copy}
-            className="inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow"
+            className="inline-flex items-center gap-1.5 rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-5 py-2 text-sm font-bold text-white shadow"
           >
             {copied ? <Check className="h-4 w-4" strokeWidth={2.5} /> : <Copy className="h-4 w-4" strokeWidth={2} />}
             {copied ? "Скопировано" : "Скопировать код"}
@@ -187,7 +187,7 @@ function RestoreCode() {
         <button
           type="button"
           onClick={show}
-          className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow"
+          className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-5 py-2 text-sm font-bold text-white shadow"
         >
           Показать мой код
         </button>
@@ -218,7 +218,7 @@ function RestoreCode() {
               <button
                 type="button"
                 onClick={restore}
-                className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-5 py-2 text-sm font-bold text-white shadow"
+                className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-5 py-2 text-sm font-bold text-white shadow"
               >
                 Да, восстановить
               </button>

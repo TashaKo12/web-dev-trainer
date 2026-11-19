@@ -40,7 +40,7 @@ export function Player({ project, sceneId, onClose }: { project: Project; sceneI
           <button type="button" onClick={() => setRound((r) => r + 1)} className="inline-flex items-center gap-1.5 rounded-lg bg-white/10 px-4 py-2 text-sm font-semibold hover:bg-white/20">
             <RotateCcw className="h-4 w-4" strokeWidth={2.2} /> Заново
           </button>
-          <button type="button" onClick={onClose} className="inline-flex items-center gap-1.5 rounded-lg bg-[#4f1fd1] px-4 py-2 text-sm font-semibold hover:bg-[#4318b8]">
+          <button type="button" onClick={onClose} className="inline-flex items-center gap-1.5 rounded-lg bg-[#4d16c9] px-4 py-2 text-sm font-semibold hover:bg-[#4514b5]">
             <X className="h-4 w-4" strokeWidth={2.4} /> Стоп (Esc)
           </button>
         </div>
@@ -62,7 +62,7 @@ export function Player({ project, sceneId, onClose }: { project: Project; sceneI
         {status?.stopped && (
           <div className="absolute inset-0 flex flex-col items-center justify-center gap-4 rounded-xl bg-black/55 text-center">
             <p className="px-6 text-3xl font-extrabold text-white drop-shadow">{status.stopped}</p>
-            <button type="button" onClick={() => setRound((r) => r + 1)} className="rounded-lg bg-[#4f1fd1] px-5 py-2.5 font-semibold text-white hover:bg-[#4318b8]">
+            <button type="button" onClick={() => setRound((r) => r + 1)} className="rounded-lg bg-[#4d16c9] px-5 py-2.5 font-semibold text-white hover:bg-[#4514b5]">
               Играть ещё раз
             </button>
           </div>

@@ -497,7 +497,7 @@ function LevelScreen() {
               >
                 Ещё раз
               </button>
-              <button type="button" onClick={() => navigate(nextLevel)} className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 font-extrabold text-white shadow">
+              <button type="button" onClick={() => navigate(nextLevel)} className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-6 py-2.5 font-extrabold text-white shadow">
                 {index + 1 < bay.levels.length ? "Следующий уровень →" : bay.finale ? "Открыть Сердце! →" : "Чиним отсек! →"}
               </button>
             </div>

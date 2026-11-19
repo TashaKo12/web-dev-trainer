@@ -39,7 +39,7 @@ export function TheoryCard({ theory, onDone, doneLabel = "Понятно, к з�
         ))}
       </div>
       <div className="mt-6 flex justify-center">
-        <button type="button" onClick={onDone} className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-8 py-3 text-lg font-extrabold text-white shadow">
+        <button type="button" onClick={onDone} className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-8 py-3 text-lg font-extrabold text-white shadow">
           {doneLabel}
         </button>
       </div>

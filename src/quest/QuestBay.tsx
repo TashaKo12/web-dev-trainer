@@ -53,7 +53,7 @@ export function QuestBay() {
           <button type="button" onClick={() => setScreen("secret")} className="rounded-full border-2 border-slate-200 px-5 py-2.5 font-bold text-slate-600">
             Послушать секрет ещё раз
           </button>
-          <Link to="/quest" className="rounded-lg bg-[#4f1fd1] hover:bg-[#4318b8] px-6 py-2.5 font-extrabold text-white shadow">
+          <Link to="/quest" className="rounded-lg bg-[#4d16c9] hover:bg-[#4514b5] px-6 py-2.5 font-extrabold text-white shadow">
             На карту станции
           </Link>
         </div>
