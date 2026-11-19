@@ -46,7 +46,7 @@ export function KeysHome() {
   const total = KEYS_LEVELS.reduce((s, l) => s + (save.stars[l.id] ?? 0), 0);
   return (
     <div>
-      <CatalogBanner icon="⌨️" kicker="Программирование (1 ступень) · 7–9 лет" title="Клавиатура Пикселя" note="Находи клавиши на настоящей клавиатуре и узнавай, что они умеют." />
+      <CatalogBanner image="keys" icon="⌨️" kicker="Программирование (1 ступень) · 7–9 лет" title="Клавиатура Пикселя" note="Находи клавиши на настоящей клавиатуре и узнавай, что они умеют." />
       <div className="mb-6">
         <p className="inline-flex items-center gap-1 rounded-full bg-white/90 px-4 py-2 text-sm font-extrabold text-slate-700 shadow-sm">
           <Star className="h-4 w-4 text-amber-400" fill="currentColor" strokeWidth={1.5} /> {total} из {KEYS_LEVELS.length * 3}

@@ -34,20 +34,32 @@ export function BannerFrame({ children, className = "mb-5" }: { children: ReactN
 }
 
 /**
- * The wide header of a page: only the picture (for now — the sky; later a header image), no text or logo on it.
- * The title stays in the page for screen readers.
+ * The wide header of a page: a header picture (public/headers/<image>.png, 2480 × 460), or the sky while a page
+ * has no picture yet. No text or logo on top; the title stays in the page for screen readers.
  */
-export function PageHeader({ title, note, className = "mb-5" }: { title: string; note?: ReactNode; className?: string }) {
+export function PageHeader({ title, note, image, className = "mb-5" }: { title: string; note?: ReactNode; image?: string; className?: string }) {
+  const text = (
+    <>
+      <h1 className="sr-only">{title}</h1>
+      {note && <p className="sr-only">{note}</p>}
+    </>
+  );
+  if (image)
+    return (
+      <div className={`overflow-hidden rounded-2xl shadow-[0_10px_30px_rgb(79_31_209/0.18)] ${className}`}>
+        <img src={`${import.meta.env.BASE_URL}headers/${image}.png`} alt="" width={2480} height={460} className="block h-auto w-full" />
+        {text}
+      </div>
+    );
   return (
     <BannerFrame className={className}>
       <div className="h-[140px] sm:h-[200px]" />
-      <h1 className="sr-only">{title}</h1>
-      {note && <p className="sr-only">{note}</p>}
+      {text}
     </BannerFrame>
   );
 }
 
 /** The banner of a section page. The label and icon are kept in the call sites for later, but not drawn now. */
-export function CatalogBanner({ title, note }: { kicker: string; title: string; note?: ReactNode; icon?: ReactNode }) {
-  return <PageHeader title={title} note={note} />;
+export function CatalogBanner({ title, note, image }: { kicker: string; title: string; note?: ReactNode; icon?: ReactNode; image?: string }) {
+  return <PageHeader title={title} note={note} image={image} />;
 }

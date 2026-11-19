@@ -111,7 +111,7 @@ export function QuestHome() {
 
   return (
     <div>
-      <CatalogBanner
+      <CatalogBanner image="quest"
         icon="🛰️"
         kicker="Программирование (1 ступень) · 7–9 лет"
         title="Тайна станции"
