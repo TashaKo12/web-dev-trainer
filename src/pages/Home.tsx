@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router-dom";
-import { BarChart3, ChevronDown, Code2, Layers, Search, Star } from "lucide-react";
-import { GamePanel, Stars } from "../components/GamePanel";
+import { ChevronDown, Layers, Search, Star } from "lucide-react";
+import { Stars } from "../components/GamePanel";
 import { SectionTitle } from "./KidsGames";
 import { CatalogBanner } from "../components/CatalogBanner";
 import { starsFor, useGame } from "../lib/game";
@@ -121,12 +121,6 @@ export function Home() {
             className="h-11 w-full bg-transparent text-sm text-slate-800 outline-none placeholder:text-slate-500 dark:text-slate-100"
           />
         </label>
-        <Link to="/profile" className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#e4e6ec] px-4 text-sm font-semibold text-slate-600 hover:bg-[#d9dce4] dark:bg-slate-800 dark:text-slate-300">
-          <BarChart3 className="h-4 w-4" strokeWidth={2} /> Мой прогресс
-        </Link>
-        <Link to="/python" className="inline-flex h-11 items-center gap-2 rounded-lg bg-[#4d16c9] px-4 text-sm font-semibold text-white shadow hover:bg-[#4514b5]">
-          <Code2 className="h-4 w-4" strokeWidth={2} /> Курс Python
-        </Link>
       </div>
 
       {q ? (
@@ -168,8 +162,7 @@ export function Home() {
         </div>
       </div>
 
-      <GamePanel />
-
+      {/* the rank and the achievements live on «Мой прогресс» — the course page shows only the lessons */}
       <div className="space-y-4">
         {groups.map((g) => {
           const isOpen = open.includes(g.key);
