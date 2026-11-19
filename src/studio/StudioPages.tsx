@@ -5,12 +5,34 @@ import { coinsTemplate, emptyProject, platformerTemplate, type Project } from ".
 import { LookView } from "./Player";
 import { StudioEditor } from "./StudioEditor";
 import { deleteProject, saveProject, savingInBrowser, useProjects } from "./store";
+import { isTeacher } from "../lib/teacher";
 
 // «Конструктор игр»: the list of the child's games and the editor of one game.
 
 const card = "rounded-xl border border-[#e6e7ee] bg-white shadow-sm dark:border-slate-800";
 
+/** While the constructor is being tested, only the teacher can open it; students see this. */
+function ComingSoon() {
+  return (
+    <div>
+      <CatalogBanner icon={<Gamepad2 className="h-8 w-8" strokeWidth={2} />} kicker="Конструктор игр" title="Скоро откроется" note="Здесь можно будет создавать свои игры: ставить объекты на сцену, рисовать персонажей и придумывать правила. Педагог скажет, когда всё будет готово!" />
+      <p className={`${card} p-6 text-center text-slate-500`}>
+        Пока конструктор доступен только педагогу. А сейчас можно поиграть в{" "}
+        <Link to="/quest" className="font-bold text-[#4f1fd1]">
+          «Тайну станции»
+        </Link>
+        .
+      </p>
+    </div>
+  );
+}
+
 export function StudioHome() {
+  if (!isTeacher()) return <ComingSoon />;
+  return <StudioProjects />;
+}
+
+function StudioProjects() {
   const projects = useProjects();
   const navigate = useNavigate();
   const create = (p: Project) => {
@@ -76,6 +98,11 @@ export function StudioHome() {
 
 /** Every game gets a fresh editor. */
 export function StudioEditorPage() {
+  if (!isTeacher()) return <ComingSoon />;
+  return <StudioEditorRoute />;
+}
+
+function StudioEditorRoute() {
   const { id } = useParams();
   const projects = useProjects();
   const found = projects.find((p) => p.id === id);

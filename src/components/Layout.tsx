@@ -24,7 +24,7 @@ const RAIL: { to: string; label: string; icon: LucideIcon; match: (p: string) =>
 function SideRail({ pathname }: { pathname: string }) {
   return (
     <nav aria-label="Разделы" className="fixed inset-y-0 left-0 z-30 hidden w-[68px] flex-col items-center justify-center gap-3 border-r border-[#e6e7ee] bg-white md:flex dark:border-slate-800 dark:bg-slate-950">
-      {RAIL.map(({ to, label, icon: Icon, match }) => {
+      {RAIL.filter((r) => r.to !== "/studio" || getAdminSession()).map(({ to, label, icon: Icon, match }) => {
         const on = match(pathname);
         return (
           <Link
