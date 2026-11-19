@@ -1,6 +1,7 @@
 // A small Python subset that runs in the browser for the lessons: print, input, variables,
 // arithmetic, comparisons, and/or/not, if/elif/else, while, for over range() or a string,
-// break/continue, += and friends, and the builtins print/input/str/int/float/len/range/abs/min/max —
+// break/continue, += and friends, and the builtins print/input/str/int/float/bool/type/round/len/range/abs/min/max;
+// strings: indexes s[0], slices s[1:4], methods (upper, replace, find…) and f-strings —
 // with real Python error messages and hints in Russian.
 
 export type PyValue =
@@ -10,7 +11,9 @@ export type PyValue =
   | { t: "bool"; v: boolean }
   | { t: "none" }
   | { t: "range"; start: bigint; stop: bigint; step: bigint }
-  | { t: "builtin"; name: string };
+  | { t: "builtin"; name: string }
+  /** what type() returns: printed as <class 'int'> */
+  | { t: "type"; name: string };
 
 export type PyErrorInfo = {
   type: string;
@@ -54,6 +57,8 @@ type Tok =
   | { k: "num"; v: string }
   | { k: "str"; v: string }
   | { k: "op"; v: string }
+  /** f"..." — the text with {expressions} still inside */
+  | { k: "fstr"; v: string }
   | { k: "eof" };
 
 type Expr =
@@ -65,7 +70,11 @@ type Expr =
   | { k: "bin"; op: string; l: Expr; r: Expr }
   /** a < b <= c: every neighbouring pair is compared, like in real Python */
   | { k: "cmp"; ops: string[]; items: Expr[] }
-  | { k: "call"; fn: Expr; args: Expr[]; kw: { name: string; e: Expr }[] };
+  | { k: "call"; fn: Expr; args: Expr[]; kw: { name: string; e: Expr }[] }
+  | { k: "index"; obj: Expr; idx: Expr }
+  | { k: "slice"; obj: Expr; a: Expr | null; b: Expr | null; c: Expr | null }
+  | { k: "method"; obj: Expr; name: string; args: Expr[] }
+  | { k: "fstr"; parts: (string | { e: Expr; spec: string })[] };
 
 type Simple =
   | { k: "expr"; e: Expr }
@@ -73,7 +82,9 @@ type Simple =
   | { k: "aug"; id: string; op: string; e: Expr }
   | { k: "break" }
   | { k: "continue" }
-  | { k: "pass" };
+  | { k: "pass" }
+  /** s[0] = "x": strings cannot be changed — this always ends with Python's TypeError */
+  | { k: "itemset"; id: string };
 
 type Stmt =
   | (Simple & { line: number })
@@ -89,7 +100,7 @@ const MAX_STEPS = 200000; // a loop that never ends must not freeze the page
 const NAME_START = /[A-Za-z_Ѐ-ӿ]/;
 const NAME_CHAR = /[A-Za-z0-9_Ѐ-ӿ]/;
 const ODD_QUOTES = new Set(["“", "”", "‘", "’", "«", "»", "„"]);
-const BUILTINS = new Set(["print", "input", "str", "int", "float", "len", "range", "abs", "min", "max"]);
+const BUILTINS = new Set(["print", "input", "str", "int", "float", "bool", "type", "round", "len", "range", "abs", "min", "max"]);
 const KEYWORDS = new Set(["if", "elif", "else", "while", "for", "in", "break", "continue", "pass", "and", "or", "not", "def", "return", "import", "class", "True", "False", "None", "is"]);
 
 function tokenize(line: string, lineNo: number): Tok[] {
@@ -103,8 +114,10 @@ function tokenize(line: string, lineNo: number): Tok[] {
     }
     if (ch === "#") break;
 
-    if (ch === '"' || ch === "'") {
-      let j = i + 1;
+    const isF = (ch === "f" || ch === "F") && (line[i + 1] === '"' || line[i + 1] === "'");
+    if (ch === '"' || ch === "'" || isF) {
+      const quote = isF ? line[i + 1] : ch;
+      let j = i + (isF ? 2 : 1);
       let value = "";
       let closed = false;
       while (j < line.length) {
@@ -116,7 +129,7 @@ function tokenize(line: string, lineNo: number): Tok[] {
           j += 2;
           continue;
         }
-        if (c === ch) {
+        if (c === quote) {
           closed = true;
           break;
         }
@@ -124,7 +137,7 @@ function tokenize(line: string, lineNo: number): Tok[] {
         j++;
       }
       if (!closed) throw new PyError("SyntaxError", `unterminated string literal (detected at line ${lineNo})`, lineNo);
-      toks.push({ k: "str", v: value });
+      toks.push(isF ? { k: "fstr", v: value } : { k: "str", v: value });
       i = j + 1;
       continue;
     }
@@ -158,7 +171,7 @@ function tokenize(line: string, lineNo: number): Tok[] {
       i += 2;
       continue;
     }
-    if ("+-*/%(),=<>:".includes(ch)) {
+    if ("+-*/%(),=<>:[].".includes(ch)) {
       toks.push({ k: "op", v: ch });
       i++;
       continue;
@@ -259,6 +272,21 @@ class Parser {
       const e = this.parseExpr();
       this.expectEnd();
       return { k: "assign", id: first.v, e };
+    }
+    if (first.k === "name" && second.k === "op" && second.v === "[") {
+      // s[0] = ... : find the closing ] and look for a single =
+      let depth = 0;
+      let j = this.pos + 1;
+      for (; j < this.toks.length; j++) {
+        const t = this.toks[j];
+        if (t.k === "op" && t.v === "[") depth++;
+        if (t.k === "op" && t.v === "]" && --depth === 0) break;
+      }
+      const after = this.toks[j + 1];
+      if (after && after.k === "op" && after.v === "=") {
+        this.pos = this.toks.length - 1;
+        return { k: "itemset", id: first.v };
+      }
     }
     if (first.k === "name" && second.k === "op" && ["+=", "-=", "*=", "/=", "//=", "%="].includes(second.v)) {
       if (KEYWORDS.has(first.v)) this.fail();
@@ -369,11 +397,51 @@ class Parser {
 
   private parsePrimary(): Expr {
     let e = this.parseAtom();
-    while (this.isOp("(")) {
-      this.next();
-      e = this.parseCall(e);
+    while (true) {
+      if (this.isOp("(")) {
+        this.next();
+        e = this.parseCall(e);
+      } else if (this.isOp("[")) {
+        this.next();
+        e = this.parseSubscript(e);
+      } else if (this.isOp(".")) {
+        this.next();
+        const name = this.peek();
+        if (name.k !== "name") this.fail();
+        this.next();
+        if (!this.isOp("(")) this.fail(`'${name.v}' без скобок: методы вызываются со скобками, например .${name.v}()`);
+        this.next();
+        const call = this.parseCall({ k: "name", id: name.v }) as Extract<Expr, { k: "call" }>;
+        if (call.kw.length) this.fail();
+        e = { k: "method", obj: e, name: name.v, args: call.args };
+      } else break;
     }
     return e;
+  }
+
+  /** After "[": an index s[2] or a slice s[1:4], s[::-1]. */
+  private parseSubscript(obj: Expr): Expr {
+    const end = () => {
+      if (this.peek().k === "eof") this.fail("'[' was never closed");
+      if (!this.isOp("]")) this.fail();
+      this.next();
+    };
+    const part = () => (this.isOp(":") || this.isOp("]") ? null : this.parseExpr());
+    if (this.isOp("]")) this.fail();
+    const a = part();
+    if (!this.isOp(":")) {
+      end();
+      return { k: "index", obj, idx: a! };
+    }
+    this.next();
+    const b = part();
+    let c: Expr | null = null;
+    if (this.isOp(":")) {
+      this.next();
+      c = part();
+    }
+    end();
+    return { k: "slice", obj, a, b, c };
   }
 
   private parseCall(fn: Expr): Expr {
@@ -420,6 +488,10 @@ class Parser {
       if (/[.eE]/.test(clean)) return { k: "lit", val: { t: "float", v: Number(clean) } };
       return { k: "lit", val: { t: "int", v: BigInt(clean) } };
     }
+    if (t.k === "fstr") {
+      this.next();
+      return { k: "fstr", parts: parseFString(t.v, this.line) };
+    }
     if (t.k === "str") {
       let value = "";
       while (this.peek().k === "str") value += (this.next() as { v: string }).v;
@@ -446,6 +518,103 @@ class Parser {
   }
 }
 
+/** f"Привет, {name}! {x:.2f}" → text pieces and expressions (with an optional format after ':'). */
+function parseFString(text: string, line: number): (string | { e: Expr; spec: string })[] {
+  const parts: (string | { e: Expr; spec: string })[] = [];
+  let lit = "";
+  let i = 0;
+  while (i < text.length) {
+    const ch = text[i];
+    if (ch === "{" && text[i + 1] === "{") {
+      lit += "{";
+      i += 2;
+      continue;
+    }
+    if (ch === "}" && text[i + 1] === "}") {
+      lit += "}";
+      i += 2;
+      continue;
+    }
+    if (ch === "}") throw new PyError("SyntaxError", "f-string: single '}' is not allowed", line);
+    if (ch !== "{") {
+      lit += ch;
+      i++;
+      continue;
+    }
+    // an expression up to the matching } ; a ':' outside brackets and quotes starts the format
+    let j = i + 1;
+    let depth = 0;
+    let quote = "";
+    let colon = -1;
+    for (; j < text.length; j++) {
+      const c = text[j];
+      if (quote) {
+        if (c === quote) quote = "";
+        continue;
+      }
+      if (c === '"' || c === "'") quote = c;
+      else if (c === "(" || c === "[") depth++;
+      else if (c === ")" || c === "]") depth--;
+      else if (c === ":" && depth === 0 && colon < 0) colon = j;
+      else if (c === "}" && depth === 0) break;
+    }
+    if (j >= text.length) throw new PyError("SyntaxError", "f-string: expecting '}'", line);
+    const exprText = text.slice(i + 1, colon >= 0 ? colon : j);
+    if (!exprText.trim()) throw new PyError("SyntaxError", "f-string: valid expression required before '}'", line);
+    const parser = new Parser(tokenize(exprText, line), line);
+    const e = parser.parseExpr();
+    parser.expectEnd();
+    if (lit) parts.push(lit);
+    lit = "";
+    parts.push({ e, spec: colon >= 0 ? text.slice(colon + 1, j) : "" });
+    i = j + 1;
+  }
+  if (lit) parts.push(lit);
+  return parts;
+}
+
+/** The format after ':' in an f-string: width, alignment and digits after the point — {x:.2f}, {n:>5}, {n:d}. */
+function formatValue(v: PyValue, spec: string, line: number): string {
+  const m = /^([<>^]?)(\d*)(?:\.(\d+))?([fd]?)$/.exec(spec);
+  if (!m) throw new PyError("ValueError", `Invalid format specifier '${spec}' for object of type '${typeName(v)}'`, line);
+  const [, align, width, prec, kind] = m;
+  let out: string;
+  if (kind === "d") {
+    if (!isIntLike(v)) throw new PyError("ValueError", `Unknown format code 'd' for object of type '${typeName(v)}'`, line);
+    out = toBig(v).toString();
+  } else if (kind === "f" || (prec !== undefined && isNumeric(v))) {
+    if (!isNumeric(v)) throw new PyError("ValueError", `Unknown format code 'f' for object of type '${typeName(v)}'`, line);
+    out = toNum(v).toFixed(prec === undefined ? 6 : Number(prec));
+  } else {
+    out = toStr(v, line);
+  }
+  const w = Number(width || 0);
+  if (out.length < w) {
+    const pad = w - out.length;
+    const a = align || (isNumeric(v) ? ">" : "<");
+    out = a === ">" ? " ".repeat(pad) + out : a === "^" ? " ".repeat(Math.floor(pad / 2)) + out + " ".repeat(Math.ceil(pad / 2)) : out + " ".repeat(pad);
+  }
+  return out;
+}
+
+/** The positions a slice [a:b:c] takes from a sequence of length n — exactly like Python. */
+function sliceIndexes(n: number, a: number | null, b: number | null, c: number | null, line: number): number[] {
+  const step = c ?? 1;
+  if (step === 0) throw new PyError("ValueError", "slice step cannot be zero", line);
+  const norm = (x: number, lo: number, hi: number) => Math.max(lo, Math.min(hi, x < 0 ? x + n : x));
+  const out: number[] = [];
+  if (step > 0) {
+    const start = a === null ? 0 : norm(a, 0, n);
+    const stop = b === null ? n : norm(b, 0, n);
+    for (let i = start; i < stop; i += step) out.push(i);
+  } else {
+    const start = a === null ? n - 1 : norm(a, -1, n - 1);
+    const stop = b === null ? -1 : norm(b, -1, n - 1);
+    for (let i = start; i > stop; i += step) out.push(i);
+  }
+  return out;
+}
+
 function typeName(v: PyValue): string {
   switch (v.t) {
     case "int":
@@ -462,6 +631,8 @@ function typeName(v: PyValue): string {
       return "range";
     case "builtin":
       return "builtin_function_or_method";
+    case "type":
+      return "type";
   }
 }
 
@@ -499,6 +670,8 @@ function toStr(v: PyValue, line: number): string {
       return v.step === 1n ? `range(${v.start}, ${v.stop})` : `range(${v.start}, ${v.stop}, ${v.step})`;
     case "builtin":
       return `<built-in function ${v.name}>`;
+    case "type":
+      return `<class '${v.name}'>`;
   }
 }
 
@@ -614,7 +787,10 @@ function compare(op: string, a: PyValue, b: PyValue, line: number): PyValue {
   }
 
   if (op === "==" || op === "!=") {
-    const equal = c !== null ? c === 0 : a.t === "none" && b.t === "none";
+    const typeOf = (x: PyValue) => (x.t === "type" ? x.name : x.t === "builtin" && ["int", "float", "str", "bool"].includes(x.name) ? x.name : null);
+    const ta = typeOf(a);
+    const tb = typeOf(b);
+    const equal = ta !== null || tb !== null ? ta === tb : c !== null ? c === 0 : a.t === "none" && b.t === "none";
     return { t: "bool", v: op === "==" ? equal : !equal };
   }
   if (c === null) {
@@ -675,6 +851,11 @@ class Machine {
       }
       case "pass":
         return;
+      case "itemset": {
+        const cur = this.env.get(s.id);
+        if (!cur) throw new PyError("NameError", `name '${s.id}' is not defined`, s.line);
+        throw new PyError("TypeError", `'${typeName(cur)}' object does not support item assignment`, s.line);
+      }
       case "break":
         throw new BreakSignal();
       case "continue":
@@ -757,7 +938,125 @@ class Machine {
       }
       case "call":
         return this.call(e, line);
+      case "index": {
+        const obj = this.eval(e.obj, line);
+        const idx = this.eval(e.idx, line);
+        if (obj.t !== "str") throw new PyError("TypeError", `'${typeName(obj)}' object is not subscriptable`, line);
+        if (!isIntLike(idx)) throw new PyError("TypeError", `string indices must be integers, not '${typeName(idx)}'`, line);
+        const chars = [...obj.v];
+        let i = Number(toBig(idx));
+        if (i < 0) i += chars.length;
+        if (i < 0 || i >= chars.length) throw new PyError("IndexError", "string index out of range", line);
+        return { t: "str", v: chars[i] };
+      }
+      case "slice": {
+        const obj = this.eval(e.obj, line);
+        if (obj.t !== "str") throw new PyError("TypeError", `'${typeName(obj)}' object is not subscriptable`, line);
+        const num = (x: Expr | null) => {
+          if (!x) return null;
+          const v = this.eval(x, line);
+          if (v.t === "none") return null;
+          if (!isIntLike(v)) throw new PyError("TypeError", "slice indices must be integers or None or have an __index__ method", line);
+          return Number(toBig(v));
+        };
+        const chars = [...obj.v];
+        return { t: "str", v: sliceIndexes(chars.length, num(e.a), num(e.b), num(e.c), line).map((i) => chars[i]).join("") };
+      }
+      case "method":
+        return this.method(this.eval(e.obj, line), e.name, e.args.map((a) => this.eval(a, line)), line);
+      case "fstr":
+        return { t: "str", v: e.parts.map((part) => (typeof part === "string" ? part : formatValue(this.eval(part.e, line), part.spec, line))).join("") };
     }
+  }
+
+  /** The string methods the lessons use. */
+  private method(obj: PyValue, name: string, args: PyValue[], line: number): PyValue {
+    if (obj.t !== "str") throw new PyError("AttributeError", `'${typeName(obj)}' object has no attribute '${name}'`, line);
+    const s = obj.v;
+    const want = (min: number, max: number) => {
+      if (args.length < min || args.length > max) {
+        const n = min === max ? `exactly ${min} argument${min === 1 ? "" : "s"}` : `at most ${max} arguments`;
+        throw new PyError("TypeError", `str.${name}() takes ${n} (${args.length} given)`, line);
+      }
+    };
+    const strArg = (i: number) => {
+      const a = args[i];
+      if (a.t !== "str") throw new PyError("TypeError", `${name}() argument ${i + 1} must be str, not ${typeName(a)}`, line);
+      return a.v;
+    };
+    const str = (v: string): PyValue => ({ t: "str", v });
+    const bool = (v: boolean): PyValue => ({ t: "bool", v });
+    const int = (v: number): PyValue => ({ t: "int", v: BigInt(v) });
+    const strip = (side: "both" | "left" | "right") => {
+      want(0, 1);
+      const set = args[0] && args[0].t !== "none" ? strArg(0) : null;
+      const skip = (c: string) => (set === null ? /\s/.test(c) : set.includes(c));
+      const chars = [...s];
+      let a = 0;
+      let b = chars.length;
+      if (side !== "right") while (a < b && skip(chars[a])) a++;
+      if (side !== "left") while (b > a && skip(chars[b - 1])) b--;
+      return str(chars.slice(a, b).join(""));
+    };
+    switch (name) {
+      case "upper":
+        return want(0, 0), str(s.toUpperCase());
+      case "lower":
+        return want(0, 0), str(s.toLowerCase());
+      case "capitalize":
+        return want(0, 0), str(s ? s[0].toUpperCase() + s.slice(1).toLowerCase() : s);
+      case "title":
+        return want(0, 0), str(s.toLowerCase().replace(/(^|[^\p{L}])(\p{L})/gu, (_m, a: string, b: string) => a + b.toUpperCase()));
+      case "swapcase":
+        return want(0, 0), str([...s].map((c) => (c === c.toUpperCase() ? c.toLowerCase() : c.toUpperCase())).join(""));
+      case "strip":
+        return strip("both");
+      case "lstrip":
+        return strip("left");
+      case "rstrip":
+        return strip("right");
+      case "replace": {
+        want(2, 3);
+        const [from, to] = [strArg(0), strArg(1)];
+        let count = args[2] ? Number(toBig(args[2])) : -1;
+        if (count < 0) return str(from === "" ? s : s.split(from).join(to));
+        let out = "";
+        let rest = s;
+        while (count-- > 0 && from !== "" && rest.includes(from)) {
+          const k = rest.indexOf(from);
+          out += rest.slice(0, k) + to;
+          rest = rest.slice(k + from.length);
+        }
+        return str(out + rest);
+      }
+      case "count": {
+        want(1, 1);
+        const sub = strArg(0);
+        return int(sub === "" ? [...s].length + 1 : s.split(sub).length - 1);
+      }
+      case "find":
+      case "index": {
+        want(1, 1);
+        const k = s.indexOf(strArg(0));
+        if (k < 0 && name === "index") throw new PyError("ValueError", "substring not found", line);
+        return int(k < 0 ? -1 : [...s.slice(0, k)].length);
+      }
+      case "startswith":
+        return want(1, 1), bool(s.startsWith(strArg(0)));
+      case "endswith":
+        return want(1, 1), bool(s.endsWith(strArg(0)));
+      case "isdigit":
+        return want(0, 0), bool(/^\d+$/.test(s));
+      case "isalpha":
+        return want(0, 0), bool(/^\p{L}+$/u.test(s));
+      case "isupper":
+        return want(0, 0), bool(/\p{L}/u.test(s) && s === s.toUpperCase());
+      case "islower":
+        return want(0, 0), bool(/\p{L}/u.test(s) && s === s.toLowerCase());
+      case "isspace":
+        return want(0, 0), bool(/^\s+$/.test(s));
+    }
+    throw new PyError("AttributeError", `'str' object has no attribute '${name}'`, line);
   }
 
   private call(e: Extract<Expr, { k: "call" }>, line: number): PyValue {
@@ -826,8 +1125,32 @@ class Machine {
       throw new PyError("TypeError", `object of type '${typeName(v)}' has no len()`, line);
     }
 
+    if (fn.name === "type") {
+      if (args.length !== 1) throw new PyError("TypeError", "type() takes 1 argument", line);
+      return { t: "type", name: typeName(args[0]) };
+    }
+
+    if (fn.name === "round") {
+      if (!args.length || args.length > 2) throw new PyError("TypeError", `round() takes at most 2 arguments (${args.length} given)`, line);
+      const [x, nd] = args;
+      if (!isNumeric(x)) throw new PyError("TypeError", `type ${typeName(x)} doesn't define __round__ method`, line);
+      if (nd && !isIntLike(nd)) throw new PyError("TypeError", `'${typeName(nd)}' object cannot be interpreted as an integer`, line);
+      if (isIntLike(x)) return { t: "int", v: toBig(x) };
+      if (!nd) {
+        // Python rounds halves to the even number: round(2.5) == 2, round(3.5) == 4
+        const f = Math.floor(x.v);
+        const diff = x.v - f;
+        const r = diff > 0.5 ? f + 1 : diff < 0.5 ? f : f % 2 === 0 ? f : f + 1;
+        return { t: "int", v: BigInt(r) };
+      }
+      const k = Number(toBig(nd));
+      return { t: "float", v: Number(x.v.toFixed(Math.max(0, Math.min(15, k)))) };
+    }
+
     if (args.length > 1) throw new PyError("TypeError", `${fn.name}() takes at most 1 argument (${args.length} given)`, line);
     const v = args[0];
+
+    if (fn.name === "bool") return { t: "bool", v: v ? truthy(v) : false };
 
     if (fn.name === "abs") {
       if (!v || !isNumeric(v)) throw new PyError("TypeError", `bad operand type for abs(): '${v ? typeName(v) : "NoneType"}'`, line);
@@ -910,6 +1233,18 @@ function contains(container: PyValue, item: PyValue, line: number): boolean {
 }
 
 function hintFor(type: string, message: string, source: string): string {
+  if (type === "IndexError") return "Такой буквы в строке нет. Номера букв начинаются с 0, последняя — len(строка) - 1. С конца считают так: s[-1].";
+  if (type === "AttributeError") {
+    const name = /'([^']+)'$/.exec(message)?.[1] ?? "";
+    if (message.startsWith("'str'")) return `У строк нет метода «${name}». Проверь, как он пишется: upper(), lower(), replace(), find()…`;
+    return "Методы вроде upper() и replace() есть только у строк. Если это число — сначала сделай из него строку: str(x).";
+  }
+  if (type === "SyntaxError" && message.startsWith("f-string")) return "В f-строке внутри фигурных скобок пишут переменную или выражение: f\"Привет, {name}!\". Чтобы напечатать саму скобку, удвой её: {{ или }}.";
+  if (type === "TypeError" && message.includes("does not support item assignment")) return "Строку нельзя поменять по одной букве. Создай новую строку: s = s.replace(\"а\", \"о\") или склей её из кусочков.";
+  if (type === "TypeError" && message.startsWith("string indices must be integers")) return "В квадратных скобках нужен номер буквы — целое число: s[0]. Если номер пришёл из input(), оберни его в int(...).";
+  if (type === "TypeError" && message.includes("is not subscriptable")) return "Квадратные скобки работают со строками: s[0]. У числа нет букв — сначала сделай из него строку: str(x)[0].";
+  if (type === "ValueError" && message === "substring not found") return "Такого кусочка в строке нет. Метод find() в этом случае не ломается, а возвращает -1.";
+  if (type === "ValueError" && message.startsWith("Invalid format specifier")) return "После двоеточия в f-строке пиши формат числа, например {x:.2f} — два знака после точки.";
   if (type === "NameError") {
     const name = /'(.+)'/.exec(message)?.[1] ?? "";
     if (name.toLowerCase() === "print" || BUILTINS.has(name.toLowerCase())) {

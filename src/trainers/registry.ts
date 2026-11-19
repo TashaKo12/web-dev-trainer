@@ -50,6 +50,7 @@ import {
   Maximize,
   Files,
   FunctionSquare,
+  Shapes,
 } from "lucide-react";
 import type { TrainerId } from "../lib/progress";
 
@@ -528,6 +529,17 @@ export const trainers: TrainerMeta[] = [
     missions: { storageKey: "wdt:missions:python-variables", count: 5 },
   },
   {
+    id: "python-types",
+    path: "/python/types",
+    icon: Shapes,
+    title: "Типы данных",
+    summary: "int, float, str и bool: узнаём тип через type() и превращаем одно в другое — int(), float(), str(), bool().",
+    taskCount: 10,
+    gradient: "from-lime-500 to-emerald-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-types", count: 5 },
+  },
+  {
     id: "python-if",
     path: "/python/if",
     icon: GitBranch,
@@ -559,6 +571,17 @@ export const trainers: TrainerMeta[] = [
     gradient: "from-pink-500 to-rose-500",
     section: "python",
     missions: { storageKey: "wdt:missions:python-while", count: 5 },
+  },
+  {
+    id: "python-strings",
+    path: "/python/strings",
+    icon: Type,
+    title: "Строки",
+    summary: "Буквы по номерам, срезы, методы upper, replace, find и f-строки.",
+    taskCount: 10,
+    gradient: "from-fuchsia-500 to-violet-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-strings", count: 5 },
   },
   {
     id: "css-sizes",

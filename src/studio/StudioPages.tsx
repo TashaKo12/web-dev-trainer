@@ -15,7 +15,7 @@ const card = "rounded-xl border border-[#e6e7ee] bg-white shadow-sm dark:border-
 function ComingSoon() {
   return (
     <div>
-      <CatalogBanner icon={<Gamepad2 className="h-8 w-8" strokeWidth={2} />} kicker="Конструктор игр" title="Скоро откроется" note="Здесь можно будет создавать свои игры: ставить объекты на сцену, рисовать персонажей и придумывать правила. Педагог скажет, когда всё будет готово!" />
+      <CatalogBanner image="studio" icon={<Gamepad2 className="h-8 w-8" strokeWidth={2} />} kicker="Конструктор игр" title="Скоро откроется" note="Здесь можно будет создавать свои игры: ставить объекты на сцену, рисовать персонажей и придумывать правила. Педагог скажет, когда всё будет готово!" />
       <p className={`${card} p-6 text-center text-slate-500`}>
         Пока конструктор доступен только педагогу. А сейчас можно поиграть в{" "}
         <Link to="/quest" className="font-bold text-[#4d16c9]">
@@ -42,7 +42,7 @@ function StudioProjects() {
 
   return (
     <div>
-      <CatalogBanner icon={<Gamepad2 className="h-8 w-8" strokeWidth={2} />} kicker="Конструктор игр" title="Создай свою игру" note="Ставь объекты на сцену, загружай свои картинки, настраивай поведения и придумывай правила игры — без кода." />
+      <CatalogBanner image="studio" icon={<Gamepad2 className="h-8 w-8" strokeWidth={2} />} kicker="Конструктор игр" title="Создай свою игру" note="Ставь объекты на сцену, загружай свои картинки, настраивай поведения и придумывай правила игры — без кода." />
       {!savingInBrowser() && (
         <p className="mb-4 rounded-xl bg-amber-50 p-3 text-sm text-amber-800">Сохранение в браузере выключено: игры пропадут после перезагрузки страницы. Включить его можно внизу страницы «Мой прогресс».</p>
       )}

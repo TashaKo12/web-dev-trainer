@@ -45,6 +45,8 @@ export type TrainerId =
   | "python-if"
   | "python-for"
   | "python-while"
+  | "python-types"
+  | "python-strings"
   | "css-sizes"
   | "text-decoration"
   | "font-style"

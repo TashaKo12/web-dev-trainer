@@ -102,7 +102,7 @@ export function Home() {
 
   return (
     <div>
-      <CatalogBanner kicker="Онлайн-обучение" title="«Тренажёры» — учимся программировать" />
+      <CatalogBanner image="web" kicker="Онлайн-обучение" title="«Тренажёры» — учимся программировать" />
 
       <div className="mb-5 flex">
         <span className="inline-flex items-center gap-2 rounded-lg border border-[#e6e7ee] bg-white px-4 py-2.5 text-sm font-semibold text-slate-700 shadow-sm dark:border-slate-800">

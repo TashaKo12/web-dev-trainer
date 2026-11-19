@@ -20,6 +20,7 @@ export function PythonHome() {
     <div>
       <div className="mb-8">
         <CatalogBanner
+          image="python"
           icon={<FileCode className="h-8 w-8" strokeWidth={2} />}
           kicker="main.py — файл с программой на Python"
           title="Тренажёр по Python"

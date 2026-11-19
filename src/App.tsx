@@ -44,7 +44,7 @@ import { JsFunctionsTrainer } from "./trainers/js-functions/JsFunctionsTrainer";
 import { PythonHome } from "./pages/PythonHome";
 import { PythonPrintTrainer } from "./trainers/python-print/PythonPrintTrainer";
 import { PythonInputTrainer } from "./trainers/python-input/PythonInputTrainer";
-import { PythonForTrainer, PythonIfTrainer, PythonVariablesTrainer, PythonWhileTrainer } from "./trainers/python-topics/PythonTopicPages";
+import { PythonForTrainer, PythonIfTrainer, PythonStringsTrainer, PythonTypesTrainer, PythonVariablesTrainer, PythonWhileTrainer } from "./trainers/python-topics/PythonTopicPages";
 import {
   CssSizesTrainer,
   CssUnitsTrainer,
@@ -130,6 +130,8 @@ function App() {
           <Route path="python/if" element={<PythonIfTrainer />} />
           <Route path="python/for" element={<PythonForTrainer />} />
           <Route path="python/while" element={<PythonWhileTrainer />} />
+          <Route path="python/types" element={<PythonTypesTrainer />} />
+          <Route path="python/strings" element={<PythonStringsTrainer />} />
           <Route path="css-sizes" element={<CssSizesTrainer />} />
           <Route path="text-decoration" element={<TextDecorationTrainer />} />
           <Route path="font-style" element={<FontStyleTrainer />} />
