@@ -159,3 +159,9 @@ export function platformerTemplate(): Project {
   };
   return { id: uid(), name: "Прыгун", updated: Date.now(), objects: [player, ground, star, flag], scenes: [scene], variables: [{ name: "Звёзды", value: 0 }] };
 }
+
+export const SIZES: { label: string; w: number; h: number }[] = [
+  { label: "Широкая 800 × 480", w: 800, h: 480 },
+  { label: "Квадрат 600 × 600", w: 600, h: 600 },
+  { label: "Высокая 480 × 720", w: 480, h: 720 },
+];

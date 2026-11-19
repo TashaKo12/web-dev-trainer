@@ -113,7 +113,7 @@ export function Layout() {
         </div>
       </header>
       {/* game levels need room for a big map or the keyboard */}
-      <main className={`animate-fade-in relative z-[15] mx-auto px-5 py-6 sm:py-7 ${quest?.[2] || game ? "max-w-7xl" : "max-w-6xl"}`}>
+      <main className={`animate-fade-in relative z-[15] mx-auto px-5 py-6 sm:py-7 ${pathname.startsWith("/studio/") ? "max-w-none sm:px-4" : quest?.[2] || game ? "max-w-7xl" : "max-w-6xl"}`}>
         {locked ? <SignInGate /> : <Outlet />}
       </main>
       <footer className="mx-auto max-w-6xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">

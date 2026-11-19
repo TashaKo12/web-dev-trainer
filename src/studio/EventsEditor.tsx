@@ -19,8 +19,8 @@ import { LookView } from "./Player";
 
 // Events of a scene: each row is «Если <все условия> → то <действия>», checked from top to bottom many times a second.
 
-const field = "rounded-md border border-[#e6e7ee] bg-white px-2 py-1 text-sm text-slate-800 outline-none focus:border-[#4f1fd1] dark:border-slate-700";
-const panel = "rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm dark:border-slate-800";
+const field = "rounded-md border border-[#383b47] bg-[#2a2c36] px-2 py-1 text-sm text-[#e5e7eb] outline-none focus:border-[#7046ec]";
+const panel = "rounded-lg border border-[#2e3039] bg-[#1f2028] p-3 text-[#e5e7eb]";
 
 function Obj({ project, value, onChange }: { project: Project; value: string; onChange: (v: string) => void }) {
   return (
@@ -189,9 +189,9 @@ function ActionRow({ a, project, onChange }: { a: Action; project: Project; onCh
 
 function Row({ children, onRemove, tone }: { children: ReactNode; onRemove: () => void; tone: "if" | "then" }) {
   return (
-    <div className={`flex flex-wrap items-center gap-1.5 rounded-lg px-2.5 py-1.5 text-sm text-slate-700 ${tone === "if" ? "bg-[#eff6ff] dark:bg-sky-500/10" : "bg-[#f3efff] dark:bg-violet-500/10"}`}>
+    <div className={`flex flex-wrap items-center gap-1.5 rounded-md px-2.5 py-1.5 text-sm text-[#e5e7eb] ${tone === "if" ? "bg-[#1b2a3d]" : "bg-[#2a2140]"}`}>
       {children}
-      <button type="button" onClick={onRemove} aria-label="Убрать" className="ml-auto text-slate-400 hover:text-rose-500">
+      <button type="button" onClick={onRemove} aria-label="Убрать" className="ml-auto text-[#9ca3af] hover:text-[#fb7185]">
         <X className="h-4 w-4" strokeWidth={2.4} />
       </button>
     </div>
@@ -213,29 +213,29 @@ export function EventsEditor({ project, scene, onChange }: { project: Project; s
       {scene.events.map((ev, i) => (
         <div key={ev.id} className={panel}>
           <div className="mb-2 flex items-center gap-2">
-            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#4f1fd1] text-xs font-bold text-white">{i + 1}</span>
-            <span className="text-sm font-bold text-slate-700">Событие</span>
-            <div className="ml-auto flex gap-1 text-slate-400">
-              <button type="button" onClick={() => move(i, -1)} aria-label="Выше" className="rounded p-1 hover:bg-slate-100 hover:text-slate-700">
+            <span className="flex h-6 w-6 items-center justify-center rounded-md bg-[#7046ec] text-xs font-bold text-white">{i + 1}</span>
+            <span className="text-sm font-bold">Событие</span>
+            <div className="ml-auto flex gap-1 text-[#9ca3af]">
+              <button type="button" onClick={() => move(i, -1)} aria-label="Выше" className="rounded p-1 hover:bg-[#2a2c36] hover:text-white">
                 <ArrowUp className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => move(i, 1)} aria-label="Ниже" className="rounded p-1 hover:bg-slate-100 hover:text-slate-700">
+              <button type="button" onClick={() => move(i, 1)} aria-label="Ниже" className="rounded p-1 hover:bg-[#2a2c36] hover:text-white">
                 <ArrowDown className="h-4 w-4" />
               </button>
-              <button type="button" onClick={() => onChange({ ...scene, events: scene.events.filter((e) => e.id !== ev.id) })} aria-label="Удалить событие" className="rounded p-1 hover:bg-rose-50 hover:text-rose-600">
+              <button type="button" onClick={() => onChange({ ...scene, events: scene.events.filter((e) => e.id !== ev.id) })} aria-label="Удалить событие" className="rounded p-1 hover:bg-[#2a2c36] hover:text-[#fb7185]">
                 <Trash2 className="h-4 w-4" />
               </button>
             </div>
           </div>
           <div className="grid gap-3 lg:grid-cols-2">
             <div className="space-y-1.5">
-              <p className="text-xs font-bold uppercase tracking-wide text-sky-600">Если {ev.conditions.length > 1 && <span className="normal-case text-slate-400">(все условия сразу)</span>}</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-[#7dd3fc]">Если {ev.conditions.length > 1 && <span className="normal-case text-[#9ca3af]">(все условия сразу)</span>}</p>
               {ev.conditions.map((c, j) => (
                 <Row key={j} tone="if" onRemove={() => setEvent(ev.id, { ...ev, conditions: ev.conditions.filter((_, x) => x !== j) })}>
                   <ConditionRow c={c} project={project} onChange={(nc) => setEvent(ev.id, { ...ev, conditions: ev.conditions.map((x, k) => (k === j ? nc : x)) })} />
                 </Row>
               ))}
-              {!ev.conditions.length && <p className="text-xs text-slate-400">Без условий — действия выполняются всё время.</p>}
+              {!ev.conditions.length && <p className="text-xs text-[#9ca3af]">Без условий — действия выполняются всё время.</p>}
               <AddSelect
                 label="+ условие"
                 options={Object.entries(CONDITION_INFO).map(([k, v]) => [k, v.title])}
@@ -243,13 +243,13 @@ export function EventsEditor({ project, scene, onChange }: { project: Project; s
               />
             </div>
             <div className="space-y-1.5">
-              <p className="text-xs font-bold uppercase tracking-wide text-[#4f1fd1] dark:text-violet-300">То</p>
+              <p className="text-xs font-bold uppercase tracking-wide text-[#c4b5fd]">То</p>
               {ev.actions.map((a, j) => (
                 <Row key={j} tone="then" onRemove={() => setEvent(ev.id, { ...ev, actions: ev.actions.filter((_, x) => x !== j) })}>
                   <ActionRow a={a} project={project} onChange={(na) => setEvent(ev.id, { ...ev, actions: ev.actions.map((x, k) => (k === j ? na : x)) })} />
                 </Row>
               ))}
-              {!ev.actions.length && <p className="text-xs text-slate-400">Добавь, что должно произойти.</p>}
+              {!ev.actions.length && <p className="text-xs text-[#9ca3af]">Добавь, что должно произойти.</p>}
               <AddSelect
                 label="+ действие"
                 options={Object.entries(ACTION_INFO).map(([k, v]) => [k, v.title])}
@@ -262,7 +262,7 @@ export function EventsEditor({ project, scene, onChange }: { project: Project; s
       <button
         type="button"
         onClick={() => onChange({ ...scene, events: [...scene.events, { id: uid(), conditions: [], actions: [] }] })}
-        className="inline-flex w-full items-center justify-center gap-2 rounded-xl border-2 border-dashed border-[#c4b5fd] bg-white/60 py-3 text-sm font-semibold text-[#4f1fd1] hover:bg-[#f3efff] dark:bg-transparent"
+        className="inline-flex w-full items-center justify-center gap-2 rounded-lg border-2 border-dashed border-[#5b4b9a] py-3 text-sm font-semibold text-[#c4b5fd] hover:bg-[#2a2140]"
       >
         <Plus className="h-4 w-4" strokeWidth={2.6} /> Новое событие
       </button>
@@ -272,7 +272,7 @@ export function EventsEditor({ project, scene, onChange }: { project: Project; s
 
 function AddSelect({ label, options, onPick }: { label: string; options: [string, string][]; onPick: (k: string) => void }) {
   return (
-    <select value="" onChange={(e) => e.target.value && onPick(e.target.value)} className={`${field} w-full font-semibold text-[#4f1fd1]`}>
+    <select value="" onChange={(e) => e.target.value && onPick(e.target.value)} className={`${field} w-full font-semibold text-[#c4b5fd]`}>
       <option value="">{label}</option>
       {options.map(([k, t]) => (
         <option key={k} value={k}>
