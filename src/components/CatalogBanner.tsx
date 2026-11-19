@@ -1,5 +1,4 @@
 import type { ReactNode } from "react";
-import { Blocks } from "lucide-react";
 
 // The banner at the top of the catalog: a pink-to-violet sky with dots, sparkles and two thin orbits.
 
@@ -34,20 +33,21 @@ export function BannerFrame({ children, className = "mb-5" }: { children: ReactN
   );
 }
 
-/** The banner of a page: a round icon (the site logo by default), a small label, the title and an optional line under it. */
-export function CatalogBanner({ kicker, title, note, icon }: { kicker: string; title: string; note?: ReactNode; icon?: ReactNode }) {
+/**
+ * The wide header of a page: only the picture (for now — the sky; later a header image), no text or logo on it.
+ * The title stays in the page for screen readers.
+ */
+export function PageHeader({ title, note, className = "mb-5" }: { title: string; note?: ReactNode; className?: string }) {
   return (
-    <BannerFrame>
-      <div className="relative flex min-h-[170px] items-end gap-4 p-6 text-left sm:min-h-[216px] sm:p-7">
-        <span className="flex h-16 w-16 shrink-0 items-center justify-center rounded-full bg-[radial-gradient(circle_at_30%_30%,#c084fc,#6d28d9_70%)] text-3xl text-white ring-2 ring-white/40 sm:h-[68px] sm:w-[68px]">
-          {icon ?? <Blocks className="h-8 w-8" strokeWidth={2} />}
-        </span>
-        <span className="min-w-0 pb-1">
-          <span className="block text-xs font-semibold text-white/75 sm:text-sm">{kicker}</span>
-          <span className="font-heading block text-xl font-bold text-white sm:text-2xl">{title}</span>
-          {note && <span className="mt-1 block max-w-2xl text-sm text-white/80">{note}</span>}
-        </span>
-      </div>
+    <BannerFrame className={className}>
+      <div className="h-[140px] sm:h-[200px]" />
+      <h1 className="sr-only">{title}</h1>
+      {note && <p className="sr-only">{note}</p>}
     </BannerFrame>
   );
+}
+
+/** The banner of a section page. The label and icon are kept in the call sites for later, but not drawn now. */
+export function CatalogBanner({ title, note }: { kicker: string; title: string; note?: ReactNode; icon?: ReactNode }) {
+  return <PageHeader title={title} note={note} />;
 }
