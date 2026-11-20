@@ -16,6 +16,8 @@ type Body = {
   onGround: boolean;
   /** patrol: where it started and which way it goes */
   home: { x: number; y: number };
+  /** where it stood when the scene began: «Вернуть на чекпоинт» goes here if no checkpoint was saved */
+  start: { x: number; y: number };
   dir: 1 | -1;
   dead: boolean;
   /** drawn over the ones with a smaller z */
@@ -76,6 +78,8 @@ export class Game {
   /** The top-left corner of what the screen shows, in world coordinates. */
   private camera = { x: 0, y: 0 };
   private follow: { obj: string; smooth: boolean } | null = null;
+  /** saved return points: object kind → place (they belong to one scene) */
+  private checkpoints = new Map<string, { x: number; y: number; scene: string }>();
 
   constructor(project: Project, canvas: HTMLCanvasElement, onStatus: (s: GameStatus) => void) {
     this.project = project;
@@ -139,6 +143,7 @@ export class Game {
       vy: 0,
       onGround: false,
       home: { x, y },
+      start: { x, y },
       dir: 1,
       dead: false,
       z: inst?.z ?? 0,
@@ -163,6 +168,8 @@ export class Game {
     this.timers.clear();
     this.camera = { x: 0, y: 0 };
     this.follow = null;
+    // checkpoints of another scene are forgotten; restarting the same scene keeps them
+    for (const [k, c] of this.checkpoints) if (c.scene !== scene.id) this.checkpoints.delete(k);
   }
 
   private loop = (now: number) => {
@@ -369,7 +376,32 @@ export class Game {
       case "settext":
         targets(a.obj).forEach((b) => (b.text = a.text));
         break;
+      case "checkpoint": {
+        const who = targets(a.obj)[0];
+        if (!who) break;
+        // stand on the checkpoint: in the middle of it, feet at its bottom
+        const at = a.at && a.at !== a.obj ? targets(a.at)[0] : undefined;
+        const x = at ? at.x + at.w / 2 - who.w / 2 : who.x;
+        const y = at ? at.y + at.h - who.h : who.y;
+        const old = this.checkpoints.get(a.obj);
+        const fresh = !old || Math.abs(old.x - x) > 1 || Math.abs(old.y - y) > 1;
+        this.checkpoints.set(a.obj, { x, y, scene: this.scene.id });
+        if (fresh && a.say.trim()) this.message = this.fill(a.say);
+        break;
+      }
+      case "respawn":
+        targets(a.obj).forEach((b) => {
+          const c = this.checkpoints.get(b.kind.id);
+          const p = c && c.scene === this.scene.id ? c : b.start;
+          b.x = p.x;
+          b.y = p.y;
+          b.vy = 0;
+          b.onGround = false;
+        });
+        this.aim(false);
+        break;
       case "restartGame":
+        this.checkpoints.clear();
         this.vars = Object.fromEntries(this.project.variables.map((v) => [v.name, v.value]));
         this.pendingScene = this.project.scenes[0].id;
         break;

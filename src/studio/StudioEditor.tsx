@@ -3,6 +3,7 @@ import { Clapperboard, Grid3x3, ListChecks, Play, Variable, Redo2, Trash2, Undo2
 import { makeKind, uid, type Instance, type KindType, type ObjectKind, type Project, type Scene } from "./model";
 import { EventsEditor } from "./EventsEditor";
 import { VariablesTab } from "./VariablesTab";
+import { CheckpointRecipe } from "./CheckpointRecipe";
 import { ObjectsPanel, PropertiesPanel } from "./ObjectPanel";
 import { ObjectDialog } from "./ObjectDialog";
 import { Player } from "./Player";
@@ -303,6 +304,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
         <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_280px] max-lg:grid-cols-1 max-lg:overflow-y-auto">
           <div className="min-h-0 overflow-y-auto p-4">
             <p className="mb-3 text-sm text-[#9ca3af]">Игра проверяет события сверху вниз много раз в секунду: если все условия выполнены — делает действия.</p>
+            <CheckpointRecipe key={scene.id} project={project} sceneId={scene.id} onProject={(p) => change(() => p)} />
             <EventsEditor project={project} scene={scene} onChange={setScene} />
           </div>
           <div className="min-h-0 border-l border-[#2e3039]">

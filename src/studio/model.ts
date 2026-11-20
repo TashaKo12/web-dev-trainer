@@ -103,7 +103,12 @@ export type Action =
   /** a text or a button gets new words (they can show variables) */
   | { k: "settext"; obj: string; text: string }
   /** a sprite switches to another animation (by its name) */
-  | { k: "anim"; obj: string; name: string };
+  | { k: "anim"; obj: string; name: string }
+  /** remember a return point for the object: where the touched checkpoint object stands («at»), or where it is now (at = "");
+      «say» is shown once, when the point is new */
+  | { k: "checkpoint"; obj: string; at: string; say: string }
+  /** send the object back to its last checkpoint (or to where it started on the scene) */
+  | { k: "respawn"; obj: string };
 
 export type GameEvent = { id: string; conditions: Condition[]; actions: Action[] };
 export type Scene = { id: string; name: string; bg: string; w: number; h: number; instances: Instance[]; events: GameEvent[] };
@@ -161,6 +166,18 @@ export const ACTION_INFO: Record<Action["k"], { title: string; make: (p: Project
       return { k: "anim", obj: o?.id ?? "", name: o?.animations?.[0]?.name ?? "" };
     },
   },
+  checkpoint: {
+    title: "Сохранить чекпоинт",
+    make: (p) => {
+      const hero = p.objects.find((o) => o.behaviors.some((b) => b.kind === "platformer" || b.kind === "topdown")) ?? p.objects[0];
+      const flag = p.objects.find((o) => /чекпоинт|флаж|🚩/i.test(o.name + o.look)) ?? p.objects.find((o) => o !== hero);
+      return { k: "checkpoint", obj: hero?.id ?? "", at: flag?.id ?? "", say: "🚩 Чекпоинт!" };
+    },
+  },
+  respawn: {
+    title: "Вернуть на чекпоинт",
+    make: (p) => ({ k: "respawn", obj: (p.objects.find((o) => o.behaviors.some((b) => b.kind === "platformer" || b.kind === "topdown")) ?? p.objects[0])?.id ?? "" }),
+  },
   settext: {
     title: "Изменить текст объекта",
     make: (p) => ({ k: "settext", obj: (p.objects.find((o) => o.type === "text" || o.type === "button") ?? p.objects[0])?.id ?? "", text: "Очки: {Очки}" }),
@@ -217,6 +234,7 @@ export function platformerTemplate(): Project {
   const ground: ObjectKind = { id: uid(), name: "Платформа", look: "#16a34a", w: 80, h: 24, behaviors: [{ kind: "solid" }] };
   const star: ObjectKind = { id: uid(), name: "Звезда", look: "⭐", w: 30, h: 30, behaviors: [] };
   const flag: ObjectKind = { id: uid(), name: "Флаг", look: "🏁", w: 40, h: 40, behaviors: [] };
+  const checkpoint: ObjectKind = { id: uid(), name: "Чекпоинт", look: "🚩", w: 36, h: 40, behaviors: [] };
   const inst = (k: ObjectKind, x: number, y: number): Instance => ({ id: uid(), kind: k.id, x, y });
   // a long level: the floor has three holes, the camera follows the cat to the flag far on the right
   const holes = new Set([4, 5, 12, 13, 20, 21]);
@@ -229,16 +247,18 @@ export function platformerTemplate(): Project {
     bg: "#e0f2fe",
     w: 800,
     h: 480,
-    instances: [inst(player, 30, 400), ...floor, ...steps, ...stars, inst(flag, 2300, 416)],
+    instances: [inst(player, 30, 400), ...floor, ...steps, ...stars, inst(checkpoint, 820, 416), inst(checkpoint, 1500, 416), inst(flag, 2300, 416)],
     events: [
       { id: uid(), conditions: [{ k: "start" }], actions: [{ k: "var", name: "Звёзды", mode: "set", value: 0 }, { k: "camera", obj: player.id, smooth: true }, { k: "text", text: "Собери 6 звёзд и добеги до флага →" }] },
       { id: uid(), conditions: [{ k: "collide", a: player.id, b: star.id }], actions: [{ k: "delete", obj: star.id }, { k: "var", name: "Звёзды", mode: "add", value: 1 }, { k: "text", text: "Звёзды: {Звёзды} из 6" }] },
       { id: uid(), conditions: [{ k: "collide", a: player.id, b: flag.id }, { k: "var", name: "Звёзды", op: "≥", value: 6 }], actions: [{ k: "stop", text: "Уровень пройден! ⭐" }] },
       { id: uid(), conditions: [{ k: "collide", a: player.id, b: flag.id }, { k: "var", name: "Звёзды", op: "<", value: 6 }], actions: [{ k: "text", text: "Сначала собери все звёзды!" }] },
-      { id: uid(), conditions: [{ k: "pos", obj: player.id, axis: "y", op: ">", value: 700 }], actions: [{ k: "restartScene" }] },
+      // checkpoints: touch a red flag — falling into a hole returns the cat to it, the stars stay collected
+      { id: uid(), conditions: [{ k: "collide", a: player.id, b: checkpoint.id }], actions: [{ k: "checkpoint", obj: player.id, at: checkpoint.id, say: "🚩 Чекпоинт! Упадёшь — вернёшься сюда" }] },
+      { id: uid(), conditions: [{ k: "pos", obj: player.id, axis: "y", op: ">", value: 700 }], actions: [{ k: "respawn", obj: player.id }] },
     ],
   };
-  return { id: uid(), name: "Прыгун", updated: Date.now(), objects: [player, ground, star, flag], scenes: [scene], variables: [{ name: "Звёзды", value: 0 }] };
+  return { id: uid(), name: "Прыгун", updated: Date.now(), objects: [player, ground, star, checkpoint, flag], scenes: [scene], variables: [{ name: "Звёзды", value: 0 }] };
 }
 
 export const SIZES: { label: string; w: number; h: number }[] = [

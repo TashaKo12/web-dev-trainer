@@ -226,6 +226,30 @@ function ActionRow({ a, project, onChange }: { a: Action; project: Project; onCh
         </>
       );
     }
+    case "checkpoint":
+      return (
+        <>
+          🚩 запомнить точку возврата для <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} /> там, где
+          <select value={a.at} onChange={(e) => onChange({ ...a, at: e.target.value })} className={`${field} font-semibold`}>
+            <option value="">он стоит сейчас</option>
+            {project.objects
+              .filter((o) => o.id !== a.obj)
+              .map((o) => (
+                <option key={o.id} value={o.id}>
+                  стоит {o.name}
+                </option>
+              ))}
+          </select>
+          и сказать <input value={a.say} onChange={(e) => onChange({ ...a, say: e.target.value })} placeholder="можно оставить пустым" className={`${field} min-w-[9rem] flex-1`} />
+        </>
+      );
+    case "respawn":
+      return (
+        <>
+          ↩️ вернуть <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} /> на последний чекпоинт
+          <span className="text-xs text-[#9ca3af]">(если чекпоинта нет — туда, где он стоял в начале)</span>
+        </>
+      );
     case "camera":
       return (
         <>
