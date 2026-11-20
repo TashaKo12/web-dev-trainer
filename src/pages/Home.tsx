@@ -52,7 +52,7 @@ function TopicCard({ t, p }: { t: TrainerMeta; p: TopicStars }) {
           {t.title}
         </span>
         <span className="mt-1 flex items-center gap-2 text-xs">
-          <span className={`rounded-md border px-1.5 font-mono text-[10px] font-bold ${file.cls}`}>{file.label}</span>
+          <span className={`rounded-md border px-1.5 font-mono text-[0.625rem] font-bold ${file.cls}`}>{file.label}</span>
           {p && p.count > 0 ? (
             <Stars count={p.count} />
           ) : p && p.solved > 0 ? (

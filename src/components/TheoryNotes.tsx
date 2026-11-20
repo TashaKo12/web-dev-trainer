@@ -199,7 +199,7 @@ export function TheoryNotes({ trainerId }: { trainerId: string }) {
             <h3 className="mb-2 text-lg font-extrabold text-slate-800">{n.title}</h3>
             <p className="text-sm leading-relaxed text-slate-600">{n.text}</p>
             {n.code && (
-              <pre className="mt-3 overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[13px] leading-relaxed text-slate-100">{n.code}</pre>
+              <pre className="mt-3 overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[0.8125rem] leading-relaxed text-slate-100">{n.code}</pre>
             )}
             {n.table && (
               <div className="mt-3 overflow-x-auto">

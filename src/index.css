@@ -6,6 +6,12 @@
   color-scheme: light;
 }
 
+/* Big screens get everything bigger, like a browser zoom: the root size grows with the window (width and height),
+   and the whole interface is in rem. 16px on a laptop, up to 24px (150%) on a large monitor. */
+html {
+  font-size: clamp(16px, min(1.15vw, 2.1vh), 24px);
+}
+
 html.dark {
   color-scheme: dark;
 }

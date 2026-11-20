@@ -202,7 +202,7 @@ function topicKeys(r: TopicReport) {
 /** A small action that asks once more before doing it. */
 function ConfirmButton({ label, confirm, onConfirm, small }: { label: string; confirm: string; onConfirm: () => Promise<void>; small?: boolean }) {
   const [step, setStep] = useState<"idle" | "ask" | "busy" | "error">("idle");
-  const base = small ? "px-2 py-0.5 text-[11px]" : "px-3 py-1 text-xs";
+  const base = small ? "px-2 py-0.5 text-[0.6875rem]" : "px-3 py-1 text-xs";
   if (step === "ask" || step === "busy") {
     return (
       <span className="inline-flex items-center gap-1">
@@ -352,7 +352,7 @@ function ParticipantDetail({ p, actions }: { p: Participant; actions: Actions })
                       <StatusDot s={s} i={i} />
                       <span className="text-slate-700">Уровень {i + 1}</span>
                       {p.marks[markKey(r.meta.id, "L", i)] && (
-                        <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[11px] font-bold text-indigo-600">засчитал педагог</span>
+                        <span className="rounded-full bg-indigo-50 px-2 py-0.5 text-[0.6875rem] font-bold text-indigo-600">засчитал педагог</span>
                       )}
                       <span className="ml-auto flex items-center gap-2 text-right text-xs text-slate-400">
                         {s !== "correct" ? (

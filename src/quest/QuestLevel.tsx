@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Footprints, Lightbulb, Play, RotateCcw, Star, Trash2, Undo2 } from "lucide-react";
+import { useRoomBelow } from "../components/useRoomBelow";
 import { BAYS, DIARY, mapsOf } from "./data";
 import {
   bestLength,
@@ -80,6 +81,7 @@ export function QuestLevel() {
 
 function LevelScreen() {
   const { bay: bayParam, level: levelParam } = useParams();
+  const side = useRoomBelow<HTMLDivElement>();
   const navigate = useNavigate();
   const save = useQuest();
   const bay = BAYS.find((b) => String(b.id) === bayParam);
@@ -350,8 +352,8 @@ function LevelScreen() {
           </div>
         </div>
 
-        <div className="space-y-4">
-          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
+        <div ref={side.ref} style={{ maxHeight: side.room }} className="flex min-h-0 flex-col gap-4">
+          <div className="shrink-0 rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
             <p className="mb-2 text-sm font-extrabold text-slate-500">Команды — нажимай, чтобы добавить:</p>
             <div className="flex flex-wrap gap-2">
               {level.blocks.map((t) => {
@@ -375,8 +377,8 @@ function LevelScreen() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
-            <div className="mb-2 flex items-center justify-between gap-2">
+          <div className="flex min-h-0 flex-col rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
+            <div className="mb-2 flex shrink-0 items-center justify-between gap-2">
               <p className="text-sm font-extrabold text-slate-500">
                 Программа Пикселя: {total} {plural(total)}
               </p>
@@ -406,6 +408,7 @@ function LevelScreen() {
                 </button>
               </div>
             </div>
+            <div className="min-h-0 flex-1 overflow-y-auto">
             <ProgramView
               program={program}
               into={into}
@@ -417,7 +420,8 @@ function LevelScreen() {
               onSetCount={setCount}
               withFn={withFn}
             />
-            <div className="mt-3 flex flex-wrap items-center gap-2">
+            </div>
+            <div className="mt-3 flex shrink-0 flex-wrap items-center gap-2">
               <button
                 type="button"
                 onClick={start}
@@ -444,7 +448,7 @@ function LevelScreen() {
             </div>
           </div>
           {best !== null && (
-            <p className="text-center text-sm font-semibold text-slate-400">
+            <p className="shrink-0 text-center text-sm font-semibold text-slate-400">
               Лучшее решение — {best} {plural(best)}. Сможешь так же?
             </p>
           )}

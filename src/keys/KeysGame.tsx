@@ -111,7 +111,7 @@ function Keyboard({
                 type="button"
                 onClick={() => onKey(key.code)}
                 style={{ flexGrow: r === 0 ? 0 : (key.w ?? 1), flexBasis: r === 0 ? `${(key.w ?? 1) * 3.2}rem` : 0 }}
-                className={`relative flex h-11 min-w-0 items-center justify-center rounded-lg border-b-4 px-1 text-[clamp(0.6rem,1.6vw,1.05rem)] font-extrabold transition sm:h-14 ${
+                className={`relative flex h-11 min-w-0 items-center justify-center rounded-lg border-b-4 px-1 text-[clamp(0.6rem,1.6vw,1.05rem)] font-extrabold transition sm:h-[clamp(2.25rem,4.8vh,3.25rem)] ${
                   isFlash
                     ? flash!.ok
                       ? "border-emerald-700 bg-emerald-400 text-white"
@@ -306,7 +306,9 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
 
       {finished === null ? (
         <>
-          <div className="mb-5 rounded-xl border border-[#e6e7ee] bg-white p-5 text-center shadow-sm sm:p-7">
+          {/* on a wide screen the task and Pixel's words stand side by side, so the keyboard fits on the same screen */}
+          <div className={`grid gap-x-5 ${task?.dev ? "lg:grid-cols-[minmax(0,1fr)_minmax(0,1fr)]" : "lg:grid-cols-[minmax(0,3fr)_minmax(0,2fr)]"}`}>
+          <div className="mb-4 rounded-xl border border-[#e6e7ee] bg-white p-5 text-center shadow-sm">
             <p className="text-2xl font-extrabold text-slate-800 sm:text-3xl">{task?.say}</p>
             {task?.kind === "word" && (
               <p className="mt-4 font-mono text-5xl font-black tracking-[0.3em]">
@@ -317,10 +319,9 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
                 ))}
               </p>
             )}
-            {task?.kind === "key" && task.name.length === 1 && <p className="mt-3 text-7xl font-black text-violet-600">{task.name}</p>}
+            {task?.kind === "key" && task.name.length === 1 && <p className="mt-3 text-6xl font-black text-violet-600">{task.name}</p>}
           </div>
-
-          <div className="mb-5 flex items-end gap-3">
+          <div className="mb-4 flex items-end gap-3 lg:self-end">
             <BoltFigure className="w-14 shrink-0 sm:w-16" />
             <div
               className={`flex-1 rounded-3xl rounded-bl-md border px-4 py-3 font-semibold ${
@@ -334,15 +335,16 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
               {said ?? (level.hintAfter === 0 ? "Светящаяся клавиша подскажет, где искать." : "Найди клавишу сам. Если ошибёшься — я подсвечу нужную.")}
             </div>
           </div>
-
-          <Keyboard glow={glow} flash={flash} held={held} onKey={screenKey} />
-          <p className="mt-3 text-center text-sm text-slate-400">Нажимай клавиши на своей клавиатуре — или прямо на экране. Ctrl и Shift на экране «залипают» до следующей клавиши.</p>
           {task?.dev && (
-            <div className="mx-auto mt-5 max-w-3xl">
+            <div className="mb-4 lg:col-start-2 lg:row-span-2 lg:row-start-1">
               <p className="mb-2 text-sm font-extrabold uppercase tracking-wide text-violet-500">💻 Программисту на заметку</p>
               <CodeBox {...task.dev} />
             </div>
           )}
+          </div>
+
+          <Keyboard glow={glow} flash={flash} held={held} onKey={screenKey} />
+          <p className="mt-2 text-center text-sm text-slate-400">Нажимай клавиши на своей клавиатуре — или прямо на экране. Ctrl и Shift на экране «залипают» до следующей клавиши.</p>
         </>
       ) : (
         <div className="mx-auto max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl">

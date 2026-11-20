@@ -218,7 +218,7 @@ export function SceneEditor({
       <div className="absolute left-0 top-0" style={{ transform: `translate(${pan.x}px, ${pan.y}px)` }}>
         {/* what the screen shows at the start of the game */}
         <div className="pointer-events-none absolute left-0 top-0 rounded-sm border-2 border-dashed border-[#7046ec]/70" style={{ width: scene.w * scale, height: scene.h * scale }}>
-          <span className="absolute -top-6 left-0 whitespace-nowrap rounded bg-[#7046ec] px-2 py-0.5 text-[11px] font-bold text-white">Экран игры в начале · {scene.w} × {scene.h}</span>
+          <span className="absolute -top-6 left-0 whitespace-nowrap rounded bg-[#7046ec] px-2 py-0.5 text-[0.6875rem] font-bold text-white">Экран игры в начале · {scene.w} × {scene.h}</span>
         </div>
         {scene.instances.map((inst) => {
           const k = kinds.get(inst.kind);
@@ -259,7 +259,7 @@ export function SceneEditor({
       {!scene.instances.length && (
         <p className="pointer-events-none absolute inset-x-0 bottom-10 text-center text-sm font-semibold text-slate-500">Перетащи сюда объект из списка справа</p>
       )}
-      <p className="pointer-events-none absolute bottom-2 left-3 rounded bg-black/45 px-2 py-0.5 text-[11px] text-white">
+      <p className="pointer-events-none absolute bottom-2 left-3 rounded bg-black/45 px-2 py-0.5 text-[0.6875rem] text-white">
         Сцена бесконечная: двигай поле мышкой или колёсиком (Shift — вбок)
       </p>
     </div>

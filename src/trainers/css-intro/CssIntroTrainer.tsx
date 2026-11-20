@@ -122,8 +122,8 @@ const C = ({ children }: { children: ReactNode }) => <code className="rounded bg
 function CodeBox({ file, children, bad }: { file: string; children: string; bad?: boolean }) {
   return (
     <div className={`overflow-hidden rounded-2xl border ${bad ? "border-rose-200" : "border-slate-200"}`}>
-      <p className={`px-4 py-1.5 font-mono text-[11px] font-bold ${bad ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>{file}</p>
-      <pre className="whitespace-pre-wrap bg-slate-900 px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100">{children}</pre>
+      <p className={`px-4 py-1.5 font-mono text-[0.6875rem] font-bold ${bad ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>{file}</p>
+      <pre className="whitespace-pre-wrap bg-slate-900 px-4 py-3 font-mono text-[0.8125rem] leading-relaxed text-slate-100">{children}</pre>
     </div>
   );
 }
@@ -131,7 +131,7 @@ function CodeBox({ file, children, bad }: { file: string; children: string; bad?
 function Preview({ children }: { children: ReactNode }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200">
-      <p className="bg-slate-100 px-4 py-1.5 text-[11px] font-bold text-slate-500">В браузере</p>
+      <p className="bg-slate-100 px-4 py-1.5 text-[0.6875rem] font-bold text-slate-500">В браузере</p>
       <div className="space-y-1 bg-white px-4 py-3">{children}</div>
     </div>
   );

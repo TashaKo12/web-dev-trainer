@@ -44,7 +44,7 @@ export function ArgsPlayground() {
         второй.
       </p>
 
-      <pre className="overflow-x-auto rounded-2xl bg-slate-900 px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100">
+      <pre className="overflow-x-auto rounded-2xl bg-slate-900 px-4 py-3 font-mono text-[0.8125rem] leading-relaxed text-slate-100">
         <span className="text-violet-300">function</span> <span className="text-amber-200">order</span>(
         <span className="rounded px-1 font-bold" style={SKY}>dish</span>,{" "}
         <span className="rounded px-1 font-bold" style={AMBER}>count</span>) {"{\n"}
@@ -64,7 +64,7 @@ export function ArgsPlayground() {
         </div>
       </div>
 
-      <div className="rounded-2xl bg-slate-900 px-4 py-3 font-mono text-[13px] leading-loose text-slate-100">
+      <div className="rounded-2xl bg-slate-900 px-4 py-3 font-mono text-[0.8125rem] leading-loose text-slate-100">
         <span className="text-sky-300">console</span>.log(<span className="text-amber-200">order</span>(
         <Slot value={first} onChange={setFirst} style={SKY} label="Первый аргумент" />
         {!dropSecond && (

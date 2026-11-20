@@ -81,7 +81,7 @@ export function TerminalView({ result, onAnswer }: { result: RunResult | null; o
           <span className="h-2.5 w-2.5 rounded-full bg-rose-400/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber-300/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-          <span className="ml-2 font-mono text-[11px] text-slate-500">терминал</span>
+          <span className="ml-2 font-mono text-[0.6875rem] text-slate-500">терминал</span>
         </div>
         <div className="min-h-[5.5rem] px-4 py-3 font-mono text-sm leading-relaxed">
           <div className="text-slate-500">$ python main.py</div>

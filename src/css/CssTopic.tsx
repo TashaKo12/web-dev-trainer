@@ -97,7 +97,7 @@ function Theory({ parts, bare = false }: { parts: TheoryPart[]; bare?: boolean }
             <LiveDemo html={p.demo.html} css={p.demo.css} height={p.demo.height} render={(html, css, height) => <Preview html={html} css={`${p.demo!.base ?? ""}
 ${css}`} height={height} />} />
           )}
-          {p.code && <pre className="mt-4 overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[13px] leading-relaxed text-slate-100">{p.code}</pre>}
+          {p.code && <pre className="mt-4 overflow-x-auto rounded-2xl bg-slate-900 p-4 font-mono text-[0.8125rem] leading-relaxed text-slate-100">{p.code}</pre>}
         </div>
       ))}
     </div>
@@ -177,7 +177,7 @@ function WriteLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "wri
       <div className="grid gap-3 lg:grid-cols-2">
         <div>
           <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">style.css</p>
-          {level.css && <pre className="rounded-t-2xl bg-slate-800 px-3 py-2 font-mono text-[12px] text-slate-400">{level.css.trim()}</pre>}
+          {level.css && <pre className="rounded-t-2xl bg-slate-800 px-3 py-2 font-mono text-[0.75rem] text-slate-400">{level.css.trim()}</pre>}
           <textarea
             value={code}
             disabled={done}
@@ -191,7 +191,7 @@ function WriteLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "wri
             spellCheck={false}
             rows={Math.max(6, code.split("\n").length + 1)}
             aria-label="Редактор CSS"
-            className={`w-full resize-y border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[13px] leading-relaxed text-slate-100 outline-none focus:border-indigo-400 ${level.css ? "rounded-b-2xl" : "rounded-2xl"}`}
+            className={`w-full resize-y border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[0.8125rem] leading-relaxed text-slate-100 outline-none focus:border-indigo-400 ${level.css ? "rounded-b-2xl" : "rounded-2xl"}`}
           />
         </div>
         <div>
@@ -241,7 +241,7 @@ function HtmlLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "html
           spellCheck={false}
           rows={Math.max(8, code.split("\n").length + 1)}
           aria-label="Редактор HTML"
-          className="w-full resize-y rounded-2xl border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[13px] leading-relaxed text-slate-100 outline-none focus:border-indigo-400"
+          className="w-full resize-y rounded-2xl border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[0.8125rem] leading-relaxed text-slate-100 outline-none focus:border-indigo-400"
         />
         <Preview html={code} css="" height={220} />
       </div>

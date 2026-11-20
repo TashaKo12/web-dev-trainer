@@ -123,7 +123,7 @@ export function HtmlMissionPlay({
             spellCheck={false}
             rows={Math.max(7, code.split("\n").length + 1)}
             aria-label="Редактор HTML"
-            className="w-full resize-y rounded-2xl border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[13px] leading-relaxed text-slate-100 outline-none [font-variant-ligatures:none] focus:border-indigo-400"
+            className="w-full resize-y rounded-2xl border-2 border-slate-200 bg-slate-900 p-3 font-mono text-[0.8125rem] leading-relaxed text-slate-100 outline-none [font-variant-ligatures:none] focus:border-indigo-400"
           />
         </div>
         <div>

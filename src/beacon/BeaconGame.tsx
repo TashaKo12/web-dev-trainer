@@ -10,6 +10,7 @@ import { BeaconBoard } from "./BeaconBoard";
 import { ALL_LEVELS, BEACON_INTRO, BEACON_OUTRO, DECKS, LANGUAGE_THEORY, type Deck } from "./data";
 import { initial, parse, parseGrid, run, type RunResult } from "./engine";
 import { CatalogBanner } from "../components/CatalogBanner";
+import { useRoomBelow } from "../components/useRoomBelow";
 
 // Станция «Маяк»: the station map (decks of levels) and one level — write the code, run it, watch Pixel.
 
@@ -266,7 +267,7 @@ function CodeEditor({
         placeholder={"вперёд\nсвети"}
         aria-label="Код Пикселя"
         className="min-w-0 flex-1 resize-none overflow-x-auto bg-transparent px-3 py-3 text-[#a7f3d0] caret-[#fde047] outline-none placeholder:text-[#334155]"
-        style={{ height: count * 28 + 24 }}
+        style={{ height: `${count * 1.75 + 1.5}rem` }}
       />
     </div>
   );
@@ -281,6 +282,7 @@ export function BeaconLevelPage() {
 function LevelScreen() {
   const { level: param } = useParams();
   const navigate = useNavigate();
+  const side = useRoomBelow<HTMLDivElement>();
   const save = beaconStars.use();
   const quest = useQuest();
   const index = ALL_LEVELS.findIndex((l) => l.id === param);
@@ -445,16 +447,18 @@ function LevelScreen() {
           </p>
         </div>
 
-        <div className="flex flex-col gap-4">
-          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
-            <div className="mb-2 flex flex-wrap items-center justify-between gap-2">
+        <div ref={side.ref} style={{ maxHeight: side.room }} className="flex min-h-0 flex-col gap-4">
+          <div className="flex min-h-0 flex-col rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
+            <div className="mb-2 flex shrink-0 flex-wrap items-center justify-between gap-2">
               <p className="text-sm font-extrabold uppercase tracking-wide text-slate-500">Код Пикселя</p>
               <p className="text-sm font-bold text-slate-400">
                 {count} {lines(count)} · цель — не больше {BEST[level.id]}
               </p>
             </div>
-            <CodeEditor value={code} onChange={edit} readOnly={playing} active={result ? state.line : null} error={errorLine} area={area} />
-            <div className="mt-3 flex flex-wrap gap-2">
+            <div className="min-h-[7rem] overflow-y-auto rounded-2xl">
+              <CodeEditor value={code} onChange={edit} readOnly={playing} active={result ? state.line : null} error={errorLine} area={area} />
+            </div>
+            <div className="mt-3 flex shrink-0 flex-wrap gap-2">
               <button
                 type="button"
                 onClick={start}
@@ -472,7 +476,7 @@ function LevelScreen() {
             </div>
           </div>
 
-          <div className="rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
+          <div className="min-h-[8rem] shrink overflow-y-auto rounded-xl border border-[#e6e7ee] bg-white p-4 shadow-sm">
             <p className="mb-2 text-sm font-extrabold uppercase tracking-wide text-slate-500">Шпаргалка</p>
             <ul className="grid gap-1.5 sm:grid-cols-2">
               {known.map((w) => (

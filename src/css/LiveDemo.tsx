@@ -83,7 +83,7 @@ function Editor({ label, value, onChange }: { label: string; value: string; onCh
         wrap="off"
         rows={Math.max(3, value.split("\n").length)}
         aria-label={`Редактор ${label}`}
-        className="block w-full resize-y overflow-x-auto bg-transparent px-3 py-2.5 font-mono text-[13px] leading-relaxed text-[#e2e8f0] caret-[#fde047] outline-none"
+        className="block w-full resize-y overflow-x-auto bg-transparent px-3 py-2.5 font-mono text-[0.8125rem] leading-relaxed text-[#e2e8f0] caret-[#fde047] outline-none"
       />
     </div>
   );

@@ -67,7 +67,7 @@ export function TagPalette({ chips, onInsert }: { chips: Chip[]; onInsert: (c: C
             }}
             onClick={() => onInsert(c)}
             title="Перетащи в редактор или нажми, чтобы вставить там, где курсор"
-            className="inline-flex cursor-grab items-center gap-1 rounded-xl border border-indigo-200 bg-indigo-50 py-1.5 pl-1.5 pr-3 font-mono text-[13px] font-bold text-indigo-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow active:cursor-grabbing"
+            className="inline-flex cursor-grab items-center gap-1 rounded-xl border border-indigo-200 bg-indigo-50 py-1.5 pl-1.5 pr-3 font-mono text-[0.8125rem] font-bold text-indigo-700 shadow-sm transition hover:-translate-y-0.5 hover:shadow active:cursor-grabbing"
           >
             <GripVertical className="h-3.5 w-3.5 text-indigo-300" strokeWidth={2} />
             {c.label}

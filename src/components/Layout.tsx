@@ -23,7 +23,7 @@ const RAIL: { to: string; label: string; icon: LucideIcon; match: (p: string) =>
 
 function SideRail({ pathname }: { pathname: string }) {
   return (
-    <nav aria-label="Разделы" className="fixed inset-y-0 left-0 z-30 hidden w-[68px] flex-col items-center justify-center gap-3 border-r border-[#e6e7ee] bg-white md:flex dark:border-slate-800 dark:bg-slate-950">
+    <nav aria-label="Разделы" className="fixed inset-y-0 left-0 z-30 hidden w-[4.25rem] flex-col items-center justify-center gap-3 border-r border-[#e6e7ee] bg-white md:flex dark:border-slate-800 dark:bg-slate-950">
       {RAIL.filter((r) => r.to !== "/studio" || getAdminSession()).map(({ to, label, icon: Icon, match }) => {
         const on = match(pathname);
         return (
@@ -56,6 +56,8 @@ export function Layout() {
   const quest = pathname.match(/^\/quest\/(\d+)(\/\d+)?$/);
   // a level of the logic or keyboard game: "/logic/2", "/keys/5"
   const game = pathname.match(/^\/(logic|keys|beacon|studio)\/[\w-]+$/);
+  // a level is played on one screen: no footer under it, so the page does not scroll
+  const level = !!quest?.[2] || (!!game && game[1] !== "studio");
   const back =
     pathname === "/" || pathname === "" || pathname === "/python"
       ? null
@@ -78,7 +80,7 @@ export function Layout() {
               : { to: "/", label: "Все тренажёры" };
 
   return (
-    <div className="min-h-screen text-slate-800 md:pl-[68px] dark:text-slate-100">
+    <div className="min-h-screen text-slate-800 md:pl-[4.25rem] dark:text-slate-100">
       {/* the soft colour blobs stay only in the dark theme: the light one is flat grey, like a school catalog */}
       <div className="hidden dark:block">
         <AnimatedBackground />
@@ -92,7 +94,7 @@ export function Layout() {
             </span>
             <span className="hidden leading-none min-[360px]:block">
               <span className="block text-lg font-extrabold uppercase tracking-wide text-[#4d16c9] dark:text-violet-300">Тренажёры</span>
-              <span className="block text-[10px] font-semibold text-[#7c5cf0] dark:text-violet-400">программирование для детей</span>
+              <span className="block text-[0.625rem] font-semibold text-[#7c5cf0] dark:text-violet-400">программирование для детей</span>
             </span>
           </a>
           <div className="flex items-center gap-2 sm:gap-3">
@@ -113,10 +115,10 @@ export function Layout() {
         </div>
       </header>
       {/* game levels need room for a big map or the keyboard */}
-      <main className={`animate-fade-in relative z-[15] mx-auto px-5 py-6 sm:py-7 ${pathname.startsWith("/studio/") ? "max-w-none sm:px-4" : quest?.[2] || game ? "max-w-7xl" : "max-w-6xl"}`}>
+      <main className={`animate-fade-in relative z-[15] mx-auto px-5 ${level ? "py-4" : "py-6 sm:py-7"} ${pathname.startsWith("/studio/") ? "max-w-none sm:px-4" : quest?.[2] || game ? "max-w-7xl" : "max-w-6xl"}`}>
         {locked ? <SignInGate /> : <Outlet />}
       </main>
-      <footer className="mx-auto max-w-6xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
+      <footer hidden={level} className="mx-auto max-w-6xl px-5 py-10 text-center text-sm text-slate-400 dark:text-slate-600">
         <p>Сделано для тех, кто делает первые шаги в программировании</p>
         <p className="mt-1 text-xs text-slate-400/80 dark:text-slate-600">Автор проекта — Татьяна Кондратюк</p>
         {account ? (

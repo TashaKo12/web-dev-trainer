@@ -62,7 +62,7 @@ export function JsTerminal({ result, running }: { result: JsResult | null; runni
           <span className="h-2.5 w-2.5 rounded-full bg-rose-400/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-amber-300/70" />
           <span className="h-2.5 w-2.5 rounded-full bg-emerald-400/70" />
-          <span className="ml-2 font-mono text-[11px] text-slate-500">консоль</span>
+          <span className="ml-2 font-mono text-[0.6875rem] text-slate-500">консоль</span>
         </div>
         <div className="min-h-[5.5rem] px-4 py-3 font-mono text-sm leading-relaxed">
           <div className="text-slate-500">$ node script.js</div>
@@ -212,7 +212,7 @@ function LevelTask({ level, onResult }: { level: JsLevel; onResult: (correct: bo
           </>
         )}
         {shownTests.length > 0 && (
-          <div className="space-y-1 font-mono text-[13px]">
+          <div className="space-y-1 font-mono text-[0.8125rem]">
             {shownTests.map((t) => (
               <p key={t.call} className="text-slate-700">
                 <span className="text-indigo-600">{t.call}</span>
@@ -246,7 +246,7 @@ function LevelTask({ level, onResult }: { level: JsLevel; onResult: (correct: bo
           )}
           {checked.rows.length > 0 && (
             <div className="overflow-x-auto rounded-2xl border border-slate-200">
-              <table className="w-full text-left font-mono text-[13px]">
+              <table className="w-full text-left font-mono text-[0.8125rem]">
                 <thead className="bg-slate-50 font-sans text-xs uppercase tracking-wide text-slate-400">
                   <tr>
                     <th className="px-3 py-2">Вызов</th>

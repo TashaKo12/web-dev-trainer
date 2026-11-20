@@ -34,16 +34,16 @@ function Theory() {
 
       <div className="grid grid-cols-3 gap-2">
         <div
-          className={`rounded-lg border-2 p-3 text-center font-mono text-[11px] transition ${
+          className={`rounded-lg border-2 p-3 text-center font-mono text-[0.6875rem] transition ${
             idSet ? "border-amber-400 bg-amber-50 font-bold text-amber-700" : "border-slate-200 text-slate-400"
           }`}
         >
           {idSet ? 'id="logo"' : "div"}
         </div>
-        <div className="rounded-lg border-2 border-slate-200 p-3 text-center font-mono text-[11px] text-slate-500">
+        <div className="rounded-lg border-2 border-slate-200 p-3 text-center font-mono text-[0.6875rem] text-slate-500">
           class="item"
         </div>
-        <div className="rounded-lg border-2 border-slate-200 p-3 text-center font-mono text-[11px] text-slate-500">
+        <div className="rounded-lg border-2 border-slate-200 p-3 text-center font-mono text-[0.6875rem] text-slate-500">
           class="item"
         </div>
       </div>

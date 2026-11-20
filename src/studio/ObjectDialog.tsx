@@ -78,7 +78,7 @@ function AnimationCard({
       <div className="flex flex-wrap items-start gap-3">
         <div className="flex flex-col items-center gap-1">
           <AnimPreview anim={anim} />
-          <span className={`text-[11px] ${ui.muted}`}>просмотр</span>
+          <span className={`text-[0.6875rem] ${ui.muted}`}>просмотр</span>
         </div>
         <div className="flex min-w-0 flex-1 flex-wrap gap-2">
           {frames.map((f, i) => (
@@ -86,7 +86,7 @@ function AnimationCard({
               <button type="button" onClick={() => setDrawing(i)} title="Дорисовать кадр" className="block">
                 <LookView look={f} className="h-14 w-14 text-4xl [image-rendering:pixelated]" />
               </button>
-              <span className="absolute left-1 top-0.5 text-[10px] font-bold text-[#9ca3af]">{i + 1}</span>
+              <span className="absolute left-1 top-0.5 text-[0.625rem] font-bold text-[#9ca3af]">{i + 1}</span>
               <div className="mt-1 flex justify-center gap-0.5 text-[#9ca3af]">
                 <button type="button" onClick={() => i > 0 && set(frames.map((x, j) => (j === i - 1 ? frames[i] : j === i ? frames[i - 1] : x)))} aria-label="Кадр левее" className="rounded p-0.5 hover:bg-[#343744] hover:text-white">
                   <ArrowLeft className="h-3 w-3" />

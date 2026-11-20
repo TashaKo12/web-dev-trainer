@@ -14,9 +14,9 @@ export function FileTree({ openFile, highlight }: { openFile: string; highlight?
       >
         <Icon className="h-3.5 w-3.5 shrink-0" strokeWidth={2} />
         <span>{label}</span>
-        {active && <span className="ml-1 rounded-full bg-teal-600 px-1.5 text-[10px] font-bold text-white">открыт</span>}
+        {active && <span className="ml-1 rounded-full bg-teal-600 px-1.5 text-[0.625rem] font-bold text-white">открыт</span>}
         {target && (
-          <span className="ml-1 flex items-center gap-0.5 rounded-full bg-amber-500 px-1.5 text-[10px] font-bold text-white">
+          <span className="ml-1 flex items-center gap-0.5 rounded-full bg-amber-500 px-1.5 text-[0.625rem] font-bold text-white">
             <Target className="h-2.5 w-2.5" strokeWidth={2.5} />
             цель
           </span>

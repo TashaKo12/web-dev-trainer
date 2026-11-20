@@ -3,13 +3,17 @@ import { PixelFigure } from "../components/PixelBuddy";
 import { key, type Frame, type Grid } from "./engine";
 
 // The map of a level: floor tiles, walls, crystals, sprouts, gear parts, a diary page, the exit — and Pixel walking on it.
-// The map fits the window: as wide as its column allows, but never taller than about 70% of the screen.
+// The map fits the window: as wide as its column allows, and only as tall as the room left below it on the screen.
 
 const ITEM: Record<string, string> = { "*": "💎", D: "📜" };
 const MAX_CELL = 150;
 const FRAME = 20; // the board's border and padding, in px
+const BELOW = 3.75; // the legend under the map and the page's bottom padding, in rem (the root size grows on big screens)
 
 /** The size of one cell that fits the column width and the window height. */
+/** One rem in px right now. */
+export const rem = () => parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+
 export function useCellSize(w: number, h: number) {
   const box = useRef<HTMLDivElement>(null);
   const [cell, setCell] = useState(64);
@@ -18,7 +22,10 @@ export function useCellSize(w: number, h: number) {
     if (!el) return;
     const fit = () => {
       const byWidth = (el.clientWidth - FRAME) / w;
-      const byHeight = (window.innerHeight * 0.7 - FRAME) / h;
+      // the room from the map's top to the bottom of the window, minus the line under the map
+      const top = el.getBoundingClientRect().top + window.scrollY;
+      const room = Math.max(window.innerHeight * 0.45, window.innerHeight - top - BELOW * rem());
+      const byHeight = (room - FRAME) / h;
       setCell(Math.max(36, Math.floor(Math.min(byWidth, byHeight, MAX_CELL))));
     };
     fit();

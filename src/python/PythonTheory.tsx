@@ -14,8 +14,8 @@ const C = ({ children }: { children: ReactNode }) => (
 function ExampleCard({ e }: { e: Example }) {
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200">
-      <pre className="bg-slate-900 px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100">{e.code}</pre>
-      <div className={`flex items-start gap-2 px-4 py-2.5 font-mono text-[13px] ${e.error ? "bg-rose-50 text-rose-700" : "bg-slate-50 text-slate-700"}`}>
+      <pre className="bg-slate-900 px-4 py-3 font-mono text-[0.8125rem] leading-relaxed text-slate-100">{e.code}</pre>
+      <div className={`flex items-start gap-2 px-4 py-2.5 font-mono text-[0.8125rem] ${e.error ? "bg-rose-50 text-rose-700" : "bg-slate-50 text-slate-700"}`}>
         <SquareTerminal className="mt-0.5 h-4 w-4 shrink-0 opacity-60" strokeWidth={2} />
         <span className="whitespace-pre-wrap">{e.out}</span>
       </div>

@@ -210,7 +210,7 @@ function PageZonesTheory() {
     return `rounded-xl border-2 p-3 transition ${active === key ? "border-indigo-400 bg-indigo-50" : "border-transparent"} ${extra}`;
   }
   const label = (name: string) => (
-    <span className="mb-1.5 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">{name}</span>
+    <span className="mb-1.5 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[0.625rem] text-slate-400">{name}</span>
   );
 
   return (
@@ -241,11 +241,11 @@ function PageZonesTheory() {
           <div className="flex flex-wrap items-center justify-between gap-3">
             <div>
               <p className="text-sm font-extrabold text-slate-700">Пекарня «Булочка»</p>
-              <p className="text-[11px] text-slate-400">Свежий хлеб каждое утро</p>
+              <p className="text-[0.6875rem] text-slate-400">Свежий хлеб каждое утро</p>
             </div>
             <div className={boxClass("nav", "!p-2")}>
               {label("nav")}
-              <div className="flex gap-3 text-[11px] font-bold text-indigo-500">
+              <div className="flex gap-3 text-[0.6875rem] font-bold text-indigo-500">
                 <span>Главная</span>
                 <span>Меню</span>
                 <span>Контакты</span>
@@ -262,7 +262,7 @@ function PageZonesTheory() {
         </div>
         <div className={boxClass("footer")}>
           {label("footer")}
-          <p className="text-[11px] text-slate-500">ул. Хлебная, 5 · +7 900 000-00-00 · © 2026 Пекарня «Булочка»</p>
+          <p className="text-[0.6875rem] text-slate-500">ул. Хлебная, 5 · +7 900 000-00-00 · © 2026 Пекарня «Булочка»</p>
         </div>
       </div>
 
@@ -333,10 +333,10 @@ function MoreTagsTheory() {
 
       <div className="grid gap-3 sm:grid-cols-[2fr_1fr]">
         <div className={boxClass("article")}>
-          <span className="mb-2 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">article</span>
+          <span className="mb-2 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[0.625rem] text-slate-400">article</span>
           <h4 className="mb-2 text-sm font-extrabold text-slate-700">Собака научилась открывать холодильник</h4>
           <div className={boxClass("section")}>
-            <span className="mb-1 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">section</span>
+            <span className="mb-1 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[0.625rem] text-slate-400">section</span>
             <p className="text-xs leading-relaxed text-slate-600">
               Хозяева заметили это{" "}
               <span className={`rounded px-1 ${active === "span" ? "bg-amber-200 font-bold text-amber-900" : ""}`}>случайно</span> — а
@@ -347,13 +347,13 @@ function MoreTagsTheory() {
           </div>
         </div>
         <div className={boxClass("aside")}>
-          <span className="mb-2 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[10px] text-slate-400">aside</span>
-          <div className="mb-3 flex items-center justify-center gap-1 rounded-lg bg-amber-50 p-2 text-center text-[11px] font-bold text-amber-700">
+          <span className="mb-2 inline-block rounded bg-slate-100 px-2 py-0.5 font-mono text-[0.625rem] text-slate-400">aside</span>
+          <div className="mb-3 flex items-center justify-center gap-1 rounded-lg bg-amber-50 p-2 text-center text-[0.6875rem] font-bold text-amber-700">
             <Megaphone className="h-3 w-3" strokeWidth={2} />
             Реклама: корм для собак −20%
           </div>
-          <p className="mb-1 text-[11px] font-bold text-slate-500">Похожие статьи</p>
-          <ul className="space-y-1 text-[11px] text-slate-500">
+          <p className="mb-1 text-[0.6875rem] font-bold text-slate-500">Похожие статьи</p>
+          <ul className="space-y-1 text-[0.6875rem] text-slate-500">
             <li>• Кот открыл дверь лапой</li>
             <li>• 5 странных привычек питомцев</li>
           </ul>

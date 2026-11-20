@@ -165,7 +165,7 @@ export function ObjectsPanel({
               <KindPreview kind={o} />
               <span className="min-w-0 flex-1">
                 <span className="block truncate font-semibold">{o.name}</span>
-                <span className={`block text-[11px] ${ui.muted}`}>{KIND_TYPES[kindType(o)].title}</span>
+                <span className={`block text-[0.6875rem] ${ui.muted}`}>{KIND_TYPES[kindType(o)].title}</span>
               </span>
             </button>
             <button type="button" onClick={() => onEdit(o.id)} aria-label={`Изменить ${o.name}`} title="Изменить объект" className="mr-1 rounded p-1.5 text-[#9ca3af] hover:bg-[#343744] hover:text-white">

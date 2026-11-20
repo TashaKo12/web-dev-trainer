@@ -45,7 +45,7 @@ function Tile({ c, label, active, failed, onRemove }: { c: Cmd; label: string; a
         title={b.label}
       >
         <Icon className="h-6 w-6" strokeWidth={2.5} fill={c === "A" ? "currentColor" : "none"} />
-        <span className="text-[10px] font-bold leading-none opacity-80">{label}</span>
+        <span className="text-[0.625rem] font-bold leading-none opacity-80">{label}</span>
       </span>
       <button
         type="button"

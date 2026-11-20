@@ -26,7 +26,7 @@ function Preview({ html }: { html: string }) {
   const [height, setHeight] = useState(80);
   return (
     <div className="overflow-hidden rounded-2xl border border-slate-200 bg-white">
-      <p className="border-b border-slate-200 bg-slate-100 px-4 py-1.5 text-[11px] font-bold text-slate-500">В браузере</p>
+      <p className="border-b border-slate-200 bg-slate-100 px-4 py-1.5 text-[0.6875rem] font-bold text-slate-500">В браузере</p>
       <iframe
         title="Как это выглядит в браузере"
         sandbox="allow-same-origin"
@@ -46,11 +46,11 @@ function Example({ e }: { e: WebExample }) {
   return (
     <div className={`grid gap-3 ${e.preview ? "md:grid-cols-2" : ""}`}>
       <div className={`overflow-hidden rounded-2xl border ${e.bad ? "border-rose-200" : "border-slate-200"}`}>
-        <p className={`px-4 py-1.5 font-mono text-[11px] font-bold ${e.bad ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>
+        <p className={`px-4 py-1.5 font-mono text-[0.6875rem] font-bold ${e.bad ? "bg-rose-50 text-rose-600" : "bg-slate-100 text-slate-500"}`}>
           {e.bad ? "✗ " : ""}
           {e.file ?? "код"}
         </p>
-        <pre className="whitespace-pre-wrap break-words bg-slate-900 px-4 py-3 font-mono text-[13px] leading-relaxed text-slate-100">{e.code}</pre>
+        <pre className="whitespace-pre-wrap break-words bg-slate-900 px-4 py-3 font-mono text-[0.8125rem] leading-relaxed text-slate-100">{e.code}</pre>
         {e.note && <p className="border-t border-slate-200 bg-white px-4 py-2 text-xs text-slate-500">{e.note}</p>}
       </div>
       {e.preview && <Preview html={e.preview} />}

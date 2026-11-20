@@ -39,14 +39,14 @@ export function GamePanel() {
           <div className="rounded-2xl bg-slate-50 px-4 py-3 text-center">
             <Flame className={`mx-auto h-5 w-5 ${streak.current >= 3 ? "text-orange-500" : "text-slate-300"}`} strokeWidth={2} />
             <p className="mt-1 text-lg font-extrabold text-slate-800">{streak.current}</p>
-            <p className="text-[11px] font-bold text-slate-400">серия · рекорд {streak.best}</p>
+            <p className="text-[0.6875rem] font-bold text-slate-400">серия · рекорд {streak.best}</p>
           </div>
           <Link to="/profile" className="rounded-2xl bg-slate-50 px-4 py-3 text-center hover:ring-2 hover:ring-amber-200">
             <Award className="mx-auto h-5 w-5 text-amber-500" strokeWidth={2} />
             <p className="mt-1 text-lg font-extrabold text-slate-800">
               {got}/{achievements.length}
             </p>
-            <p className="text-[11px] font-bold text-slate-400">достижений</p>
+            <p className="text-[0.6875rem] font-bold text-slate-400">достижений</p>
           </Link>
         </div>
       </div>
