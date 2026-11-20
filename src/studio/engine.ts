@@ -18,6 +18,12 @@ type Body = {
   home: { x: number; y: number };
   /** where it stood when the scene began: «Вернуть на чекпоинт» goes here if no checkpoint was saved */
   start: { x: number; y: number };
+  /** where it looks (the last way it moved): shots fly this way */
+  face: { x: number; y: number };
+  /** a shot: flies by itself with this speed until it hits a wall or leaves the screen far behind */
+  fly: { x: number; y: number } | null;
+  /** seconds until the weapon can shoot again */
+  reload: number;
   dir: 1 | -1;
   dead: boolean;
   /** drawn over the ones with a smaller z */
@@ -40,6 +46,7 @@ const KEY_CODES: Record<KeyName, string[]> = {
   ArrowDown: ["ArrowDown", "KeyS"],
   Space: ["Space"],
   Enter: ["Enter", "NumpadEnter"],
+  KeyX: ["KeyX"],
 };
 const GAME_KEYS = new Set(Object.values(KEY_CODES).flat());
 
@@ -144,6 +151,9 @@ export class Game {
       onGround: false,
       home: { x, y },
       start: { x, y },
+      face: { x: 1, y: 0 },
+      fly: null,
+      reload: 0,
       dir: 1,
       dead: false,
       z: inst?.z ?? 0,
@@ -221,10 +231,12 @@ export class Game {
         const dx = (this.down("ArrowRight") ? 1 : 0) - (this.down("ArrowLeft") ? 1 : 0);
         const dy = (this.down("ArrowDown") ? 1 : 0) - (this.down("ArrowUp") ? 1 : 0);
         const len = Math.hypot(dx, dy) || 1;
+        if (dx || dy) b.face = { x: dx / len, y: dy / len };
         this.move(b, (dx / len) * beh.speed * dt, 0);
         this.move(b, 0, (dy / len) * beh.speed * dt);
       } else if (beh.kind === "platformer") {
         const dx = (this.down("ArrowRight") ? 1 : 0) - (this.down("ArrowLeft") ? 1 : 0);
+        if (dx) b.face = { x: dx, y: 0 };
         this.move(b, dx * beh.speed * dt, 0);
         if (b.onGround && (this.down("ArrowUp") || this.down("Space"))) b.vy = -beh.jump;
         b.vy = Math.min(b.vy + beh.gravity * dt, 1400);
@@ -232,8 +244,16 @@ export class Game {
         const hit = this.move(b, 0, b.vy * dt);
         b.onGround = hit && falling;
         if (hit) b.vy = 0;
+      } else if (beh.kind === "weapon") {
+        b.reload -= dt;
+        if (this.down(beh.key) && b.reload <= 0) {
+          this.fire(b, beh.bullet, b.face, beh.speed);
+          b.reload = 1 / Math.max(0.5, beh.rate);
+        }
       } else if (beh.kind === "patrol") {
         const step = beh.speed * dt * b.dir;
+        if (beh.axis === "x") b.face = { x: b.dir, y: 0 };
+        else b.face = { x: 0, y: b.dir };
         const hit = beh.axis === "x" ? this.move(b, step, 0) : this.move(b, 0, step);
         const away = beh.axis === "x" ? b.x - b.home.x : b.y - b.home.y;
         if (hit || (b.dir > 0 && away >= beh.distance) || (b.dir < 0 && away <= 0)) b.dir = b.dir > 0 ? -1 : 1;
@@ -389,6 +409,11 @@ export class Game {
         if (fresh && a.say.trim()) this.message = this.fill(a.say);
         break;
       }
+      case "shoot": {
+        const dirs = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
+        targets(a.obj).forEach((b) => this.fire(b, a.bullet, a.dir === "face" ? b.face : dirs[a.dir], a.speed));
+        break;
+      }
       case "respawn":
         targets(a.obj).forEach((b) => {
           const c = this.checkpoints.get(b.kind.id);
@@ -406,6 +431,30 @@ export class Game {
         this.pendingScene = this.project.scenes[0].id;
         break;
     }
+  }
+
+  /** A shot leaves the shooter from its side that looks the way of the shot. */
+  private fire(from: Body, bulletKind: string, dir: { x: number; y: number }, speed: number) {
+    const kind = this.kindOf(bulletKind);
+    if (!kind || bulletKind === from.kind.id) return;
+    const len = Math.hypot(dir.x, dir.y) || 1;
+    const d = { x: dir.x / len, y: dir.y / len };
+    const cx = from.x + from.w / 2 + d.x * (from.w / 2 + kind.w / 2 + 2);
+    const cy = from.y + from.h / 2 + d.y * (from.h / 2 + kind.h / 2 + 2);
+    this.spawn(bulletKind, cx - kind.w / 2, cy - kind.h / 2);
+    const shot = this.bodies[this.bodies.length - 1];
+    shot.fly = { x: d.x * speed, y: d.y * speed };
+    shot.face = d;
+    shot.z = from.z;
+  }
+
+  /** A shot flies straight; a wall stops it, and it disappears far outside the screen. */
+  private flyShot(b: Body, dt: number) {
+    const f = b.fly!;
+    if (this.move(b, f.x * dt, 0) || this.move(b, 0, f.y * dt)) b.dead = true;
+    const c = this.camera;
+    const m = 300;
+    if (b.x + b.w < c.x - m || b.x > c.x + this.scene.w + m || b.y + b.h < c.y - m || b.y > c.y + this.scene.h + m) b.dead = true;
   }
 
   /** Puts the followed object in the middle of the screen; smoothly — a bit closer every frame. */
@@ -427,7 +476,8 @@ export class Game {
   private step(dt: number) {
     for (const b of this.bodies)
       if (!b.dead) {
-        this.behave(b, dt);
+        if (b.fly) this.flyShot(b, dt);
+        else this.behave(b, dt);
         b.animTime += dt;
       }
     this.time += dt;

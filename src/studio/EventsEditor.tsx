@@ -5,6 +5,8 @@ import {
   CONDITION_INFO,
   KEY_LABEL,
   OPS,
+  SHOT_DIRS,
+  type ShotDir,
   uid,
   type Action,
   type Condition,
@@ -241,6 +243,21 @@ function ActionRow({ a, project, onChange }: { a: Action; project: Project; onCh
               ))}
           </select>
           и сказать <input value={a.say} onChange={(e) => onChange({ ...a, say: e.target.value })} placeholder="можно оставить пустым" className={`${field} min-w-[9rem] flex-1`} />
+        </>
+      );
+    case "shoot":
+      return (
+        <>
+          🔫 <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} /> стреляет
+          <Obj project={project} value={a.bullet} only={(o) => o.id !== a.obj && (o.type ?? "sprite") === "sprite"} onChange={(bullet) => onChange({ ...a, bullet })} />
+          <select value={a.dir} onChange={(e) => onChange({ ...a, dir: e.target.value as ShotDir })} className={`${field} font-semibold`}>
+            {(Object.keys(SHOT_DIRS) as ShotDir[]).map((d) => (
+              <option key={d} value={d}>
+                {SHOT_DIRS[d]}
+              </option>
+            ))}
+          </select>
+          скорость <NumIn value={a.speed} w="w-16" onChange={(speed) => onChange({ ...a, speed: Math.max(20, speed) })} />
         </>
       );
     case "respawn":

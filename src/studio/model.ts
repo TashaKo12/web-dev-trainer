@@ -10,7 +10,9 @@ export type Behavior =
   | { kind: "solid" }
   | { kind: "patrol"; axis: "x" | "y"; distance: number; speed: number }
   | { kind: "chase"; target: string; speed: number }
-  | { kind: "bounds" };
+  | { kind: "bounds" }
+  /** a weapon: the key shoots a copy of the «bullet» object where the object looks; rate — shots per second */
+  | { kind: "weapon"; bullet: string; key: KeyName; speed: number; rate: number };
 
 /** What an object is: a picture, a picture repeated like tiles, a text, or a button. Old games have no type — a sprite. */
 export type KindType = "sprite" | "tiled" | "text" | "button";
@@ -75,7 +77,7 @@ export const instSize = (k: ObjectKind, i: { w?: number; h?: number }) =>
   kindType(k) === "tiled" ? { w: i.w ?? k.w * 5, h: i.h ?? k.h } : { w: k.w, h: k.h };
 
 export type Op = "=" | "≠" | ">" | "<" | "≥" | "≤";
-export type KeyName = "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown" | "Space" | "Enter";
+export type KeyName = "ArrowLeft" | "ArrowRight" | "ArrowUp" | "ArrowDown" | "Space" | "Enter" | "KeyX";
 
 export type Condition =
   | { k: "start" }
@@ -108,7 +110,12 @@ export type Action =
       «say» is shown once, when the point is new */
   | { k: "checkpoint"; obj: string; at: string; say: string }
   /** send the object back to its last checkpoint (or to where it started on the scene) */
-  | { k: "respawn"; obj: string };
+  | { k: "respawn"; obj: string }
+  /** the object shoots a copy of «bullet»: where it looks, or in a fixed direction */
+  | { k: "shoot"; obj: string; bullet: string; dir: ShotDir; speed: number };
+
+export type ShotDir = "face" | "left" | "right" | "up" | "down";
+export const SHOT_DIRS: Record<ShotDir, string> = { face: "куда смотрит", left: "влево", right: "вправо", up: "вверх", down: "вниз" };
 
 export type GameEvent = { id: string; conditions: Condition[]; actions: Action[] };
 export type Scene = { id: string; name: string; bg: string; w: number; h: number; instances: Instance[]; events: GameEvent[] };
@@ -130,10 +137,15 @@ export const BEHAVIOR_INFO: Record<Behavior["kind"], { title: string; about: str
   solid: { title: "Твёрдое препятствие", about: "Сквозь него не пройти: стены, пол, платформы.", make: () => ({ kind: "solid" }) },
   patrol: { title: "Ходит туда-обратно", about: "Сам двигается по линии и разворачивается.", make: () => ({ kind: "patrol", axis: "x", distance: 160, speed: 90 }) },
   chase: { title: "Преследует", about: "Двигается к другому объекту.", make: (objects) => ({ kind: "chase", target: objects[0]?.id ?? "", speed: 70 }) },
+  weapon: {
+    title: "Оружие (стреляет)",
+    about: "По клавише выпускает снаряд туда, куда смотрит объект. Снаряд — любой другой объект: огонёк, шарик, лазер.",
+    make: (objects) => ({ kind: "weapon", bullet: objects.find((o) => /пул|снаряд|огон|лазер|шар/i.test(o.name))?.id ?? "", key: "KeyX", speed: 520, rate: 4 }),
+  },
   bounds: { title: "Не уходит за край экрана", about: "Объект не может выйти за края того, что видно на экране.", make: () => ({ kind: "bounds" }) },
 };
 
-export const KEY_LABEL: Record<KeyName, string> = { ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓", Space: "Пробел", Enter: "Enter" };
+export const KEY_LABEL: Record<KeyName, string> = { ArrowLeft: "←", ArrowRight: "→", ArrowUp: "↑", ArrowDown: "↓", Space: "Пробел", Enter: "Enter", KeyX: "X" };
 export const OPS: Op[] = ["=", "≠", ">", "<", "≥", "≤"];
 
 export const CONDITION_INFO: Record<Condition["k"], { title: string; make: (p: Project) => Condition }> = {
@@ -173,6 +185,10 @@ export const ACTION_INFO: Record<Action["k"], { title: string; make: (p: Project
       const flag = p.objects.find((o) => /чекпоинт|флаж|🚩/i.test(o.name + o.look)) ?? p.objects.find((o) => o !== hero);
       return { k: "checkpoint", obj: hero?.id ?? "", at: flag?.id ?? "", say: "🚩 Чекпоинт!" };
     },
+  },
+  shoot: {
+    title: "Выстрелить",
+    make: (p) => ({ k: "shoot", obj: p.objects[0]?.id ?? "", bullet: (p.objects.find((o) => /пул|снаряд|огон|лазер|шар/i.test(o.name)) ?? p.objects[1] ?? p.objects[0])?.id ?? "", dir: "face", speed: 400 }),
   },
   respawn: {
     title: "Вернуть на чекпоинт",

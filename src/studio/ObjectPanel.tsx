@@ -2,6 +2,7 @@ import { useRef, useState, type ReactNode } from "react";
 import { Brush, ChevronDown, ChevronRight, ImagePlus, Pencil, Plus, Search, Trash2, X } from "lucide-react";
 import {
   BEHAVIOR_INFO,
+  KEY_LABEL,
   COLOR_LOOKS,
   EMOJI_LOOKS,
   KIND_TYPES,
@@ -226,6 +227,38 @@ export function BehaviorCard({ b, project, onChange, onRemove }: { b: Behavior; 
             <Field label="Скорость">
               <Num value={b.speed} onChange={(speed) => onChange({ ...b, speed })} />
             </Field>
+          </>
+        )}
+        {b.kind === "weapon" && (
+          <>
+            <Field label="Снаряд">
+              <select value={b.bullet} onChange={(e) => onChange({ ...b, bullet: e.target.value })} className={ui.input}>
+                {!project.objects.some((o) => o.id === b.bullet) && <option value="">— выбери объект —</option>}
+                {project.objects
+                  .filter((o) => kindType(o) === "sprite")
+                  .map((o) => (
+                    <option key={o.id} value={o.id}>
+                      {o.name}
+                    </option>
+                  ))}
+              </select>
+            </Field>
+            <Field label="Клавиша">
+              <select value={b.key} onChange={(e) => onChange({ ...b, key: e.target.value as typeof b.key })} className={ui.input}>
+                {(Object.keys(KEY_LABEL) as (keyof typeof KEY_LABEL)[]).map((k) => (
+                  <option key={k} value={k}>
+                    {KEY_LABEL[k]}
+                  </option>
+                ))}
+              </select>
+            </Field>
+            <Field label="Скорость снаряда">
+              <Num value={b.speed} min={50} max={2000} onChange={(speed) => onChange({ ...b, speed })} />
+            </Field>
+            <Field label="Выстрелов в секунду">
+              <Num value={b.rate} min={1} max={20} onChange={(rate) => onChange({ ...b, rate })} />
+            </Field>
+            <p className={`text-xs sm:col-span-2 ${ui.muted}`}>Снаряд летит туда, куда объект шёл последний раз. Чтобы снаряд побеждал врагов, добавь событие: «снаряд касается врага» → удалить врага и снаряд.</p>
           </>
         )}
         {b.kind === "chase" && (
