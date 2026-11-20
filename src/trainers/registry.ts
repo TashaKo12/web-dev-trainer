@@ -1,4 +1,5 @@
 import type { LucideIcon } from "lucide-react";
+import { Binary, Database, History, ListChecks, Network, Server, Sigma, Table2, Trophy } from "lucide-react";
 import {
   HTML_MISSIONS } from "../missions/html";
 import {
@@ -62,7 +63,7 @@ export type TrainerMeta = {
   summary: string;
   taskCount: number;
   gradient: string;
-  section: "html" | "css" | "js" | "python";
+  section: "html" | "css" | "js" | "python" | "sql";
   /** Game missions shown before practice (Python topics). */
   missions?: { storageKey: string; count: number };
   /** The course lesson where this topic is used for the first time. */
@@ -582,6 +583,105 @@ export const trainers: TrainerMeta[] = [
     gradient: "from-fuchsia-500 to-violet-500",
     section: "python",
     missions: { storageKey: "wdt:missions:python-strings", count: 5 },
+  },
+  {
+    id: "sql-intro",
+    path: "/sql/intro",
+    icon: Database,
+    title: "Базы данных и SQL",
+    summary: "Что такое данные, база и СУБД, модели данных, язык SQL. Первые команды: SELECT, SHOW TABLES, DESCRIBE.",
+    taskCount: 10,
+    gradient: "from-sky-500 to-blue-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-intro", count: 5 },
+  },
+  {
+    id: "sql-lifecycle",
+    path: "/sql/lifecycle",
+    icon: History,
+    title: "Жизненный цикл базы",
+    summary: "От идеи до работающей базы: анализ, концептуальное, логическое и физическое проектирование, сопровождение.",
+    taskCount: 8,
+    gradient: "from-cyan-500 to-sky-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-lifecycle", count: 4 },
+  },
+  {
+    id: "sql-algebra",
+    path: "/sql/algebra",
+    icon: Sigma,
+    title: "Реляционная алгебра",
+    summary: "Отношение, атрибут, кортеж. Выборка, проекция, объединение, пересечение, разность, произведение и соединение.",
+    taskCount: 10,
+    gradient: "from-indigo-500 to-violet-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-algebra", count: 5 },
+  },
+  {
+    id: "sql-design",
+    path: "/sql/design",
+    icon: Network,
+    title: "Проектирование базы",
+    summary: "Связи 1:1, 1:N и N:M, первичные и внешние ключи, нормальные формы 1НФ–3НФ.",
+    taskCount: 9,
+    gradient: "from-violet-500 to-fuchsia-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-design", count: 4 },
+  },
+  {
+    id: "sql-setup",
+    path: "/sql/setup",
+    icon: Server,
+    title: "СУБД и установка MySQL",
+    summary: "Обзор СУБД, отечественные СУБД, редакции MySQL 8, установка на Windows, CREATE DATABASE и USE.",
+    taskCount: 8,
+    gradient: "from-teal-500 to-cyan-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-setup", count: 4 },
+  },
+  {
+    id: "sql-types",
+    path: "/sql/types",
+    icon: Binary,
+    title: "Типы данных",
+    summary: "Числа, строки, даты, BOOLEAN, JSON и пространственные типы; DEFAULT и сколько места занимает тип.",
+    taskCount: 8,
+    gradient: "from-emerald-500 to-teal-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-types", count: 4 },
+  },
+  {
+    id: "sql-tables",
+    path: "/sql/tables",
+    icon: Table2,
+    title: "Создаём и меняем таблицы",
+    summary: "CREATE TABLE, ALTER TABLE, DROP TABLE, INSERT, индексы и простой SELECT.",
+    taskCount: 10,
+    gradient: "from-blue-500 to-indigo-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-tables", count: 5 },
+  },
+  {
+    id: "sql-crud",
+    path: "/sql/crud",
+    icon: ListChecks,
+    title: "CRUD-операции",
+    summary: "Создать, прочитать, изменить, удалить: INSERT, SELECT, UPDATE и DELETE.",
+    taskCount: 10,
+    gradient: "from-amber-500 to-orange-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-crud", count: 5 },
+  },
+  {
+    id: "sql-final",
+    path: "/sql/final",
+    icon: Trophy,
+    title: "Итоговая работа модуля 1",
+    summary: "Своя база «Кинотеатр» от проекта до запросов и итоговые задания по всему модулю.",
+    taskCount: 8,
+    gradient: "from-rose-500 to-pink-600",
+    section: "sql",
+    missions: { storageKey: "wdt:missions:sql-final", count: 5 },
   },
   {
     id: "css-sizes",

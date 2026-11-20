@@ -15,6 +15,7 @@ const FILE: Record<TrainerMeta["section"], { label: string; cls: string }> = {
   css: { label: "CSS", cls: "border-violet-200 bg-violet-50 text-violet-700" },
   js: { label: "JS", cls: "border-amber-200 bg-amber-50 text-amber-700" },
   python: { label: "PY", cls: "border-emerald-200 bg-emerald-50 text-emerald-700" },
+  sql: { label: "SQL", cls: "border-cyan-200 bg-cyan-50 text-cyan-700" },
 };
 
 const OPEN_KEY = "home-open-lessons"; // view preferences only: not part of the progress
@@ -85,7 +86,7 @@ export function Home() {
     saveJSON(COURSE_KEY, c);
   }
 
-  const web = trainers.filter((t) => t.section !== "python");
+  const web = trainers.filter((t) => t.section !== "python" && t.section !== "sql");
   const first = web.filter((t) => (t.course ?? 1) === 1);
   const second = web.filter((t) => t.course === 2);
   const groups: Group[] =

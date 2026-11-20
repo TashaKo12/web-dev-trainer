@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { lazy, Suspense, useState, type ReactNode } from "react";
 import { HashRouter, Route, Routes } from "react-router-dom";
 import { Layout } from "./components/Layout";
 import { LoadingScreen } from "./components/LoadingScreen";
@@ -44,6 +44,17 @@ import { JsFunctionsTrainer } from "./trainers/js-functions/JsFunctionsTrainer";
 import { PythonHome } from "./pages/PythonHome";
 import { PythonPrintTrainer } from "./trainers/python-print/PythonPrintTrainer";
 import { PythonInputTrainer } from "./trainers/python-input/PythonInputTrainer";
+const SqlHome = lazy(() => import("./sql/SqlHome").then((m) => ({ default: m.SqlHome })));
+const SqlIntroPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlIntroPage })));
+const SqlLifecyclePage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlLifecyclePage })));
+const SqlAlgebraPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlAlgebraPage })));
+const SqlDesignPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlDesignPage })));
+const SqlSetupPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlSetupPage })));
+const SqlTypesPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlTypesPage })));
+const SqlTablesPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlTablesPage })));
+const SqlCrudPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlCrudPage })));
+const SqlFinalPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlFinalPage })));
+const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={<p className="p-6 text-center text-sm text-slate-400">Загружаю…</p>}>{children}</Suspense>;
 import { PythonForTrainer, PythonIfTrainer, PythonStringsTrainer, PythonTypesTrainer, PythonVariablesTrainer, PythonWhileTrainer } from "./trainers/python-topics/PythonTopicPages";
 import {
   CssSizesTrainer,
@@ -124,6 +135,16 @@ function App() {
 
           {/* Python */}
           <Route path="python" element={<PythonHome />} />
+          <Route path="sql" element={<Lazy><SqlHome /></Lazy>} />
+          <Route path="sql/intro" element={<Lazy><SqlIntroPage /></Lazy>} />
+          <Route path="sql/lifecycle" element={<Lazy><SqlLifecyclePage /></Lazy>} />
+          <Route path="sql/algebra" element={<Lazy><SqlAlgebraPage /></Lazy>} />
+          <Route path="sql/design" element={<Lazy><SqlDesignPage /></Lazy>} />
+          <Route path="sql/setup" element={<Lazy><SqlSetupPage /></Lazy>} />
+          <Route path="sql/types" element={<Lazy><SqlTypesPage /></Lazy>} />
+          <Route path="sql/tables" element={<Lazy><SqlTablesPage /></Lazy>} />
+          <Route path="sql/crud" element={<Lazy><SqlCrudPage /></Lazy>} />
+          <Route path="sql/final" element={<Lazy><SqlFinalPage /></Lazy>} />
           <Route path="python/print" element={<PythonPrintTrainer />} />
           <Route path="python/input" element={<PythonInputTrainer />} />
           <Route path="python/variables" element={<PythonVariablesTrainer />} />

@@ -18,6 +18,7 @@ const SECTION_TITLES: Record<TrainerMeta["section"], string> = {
   css: "CSS",
   js: "JavaScript",
   python: "Python",
+  sql: "SQL",
 };
 
 function StatCard({ icon: Icon, label, value }: { icon: typeof Star; label: string; value: string }) {

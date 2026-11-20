@@ -56,10 +56,12 @@ export function Layout() {
   // a level is played on one screen: no footer under it, so the page does not scroll
   const level = !!quest?.[2] || (!!game && game[1] !== "studio");
   const back =
-    pathname === "/" || pathname === "" || pathname === "/python"
+    pathname === "/" || pathname === "" || pathname === "/python" || pathname === "/sql"
       ? null
       : pathname.startsWith("/python/")
         ? { to: "/python", label: "Темы Python" }
+        : pathname.startsWith("/sql/")
+          ? { to: "/sql", label: "Темы SQL" }
         : quest
           ? quest[2]
             ? { to: `/quest/${quest[1]}`, label: "Уровни отсека" }

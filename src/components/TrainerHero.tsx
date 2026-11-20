@@ -13,8 +13,8 @@ export function TrainerHero({
   title: string;
   summary: string;
   gradient: string;
-  section?: "html" | "css" | "js" | "python";
+  section?: "html" | "css" | "js" | "python" | "sql";
 }) {
-  const image = section === "python" ? "python" : section ? "web" : undefined;
+  const image = section === "python" ? "python" : section === "sql" ? undefined : section ? "web" : undefined;
   return <PageHeader title={title} note={summary} image={image} className="mb-8" />;
 }
