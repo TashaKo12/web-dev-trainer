@@ -11,10 +11,21 @@ const listeners = new Set<() => void>();
 
 function read(): Project[] {
   try {
-    return JSON.parse(localStorage.getItem(KEY) ?? "[]") as Project[];
+    return (JSON.parse(localStorage.getItem(KEY) ?? "[]") as Project[]).map(upgrade);
   } catch {
     return [];
   }
+}
+
+/** Games saved by an older version: the short-lived «Оружие» behavior and «Выстрелить» action are gone
+    (shooting is made with events now: «Создать объект у объекта» + «Двигать объект к мышке»). */
+function upgrade(p: Project): Project {
+  const gone = (x: { kind?: string; k?: string }) => x.kind === "weapon" || x.k === "shoot";
+  return {
+    ...p,
+    objects: p.objects.map((o) => ({ ...o, behaviors: o.behaviors.filter((b) => !gone(b)) })),
+    scenes: p.scenes.map((s) => ({ ...s, events: s.events.map((e) => ({ ...e, actions: e.actions.filter((a) => !gone(a)) })) })),
+  };
 }
 
 /** Saving failed (the browser storage is full or off): the screen tells the child. */

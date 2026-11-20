@@ -18,12 +18,8 @@ type Body = {
   home: { x: number; y: number };
   /** where it stood when the scene began: «Вернуть на чекпоинт» goes here if no checkpoint was saved */
   start: { x: number; y: number };
-  /** where it looks (the last way it moved): shots fly this way */
-  face: { x: number; y: number };
-  /** a shot: flies by itself with this speed until it hits a wall or leaves the screen far behind */
+  /** launched («Двигать объект к мышке»): flies by itself with this speed until it hits a wall or leaves the screen far behind */
   fly: { x: number; y: number } | null;
-  /** seconds until the weapon can shoot again */
-  reload: number;
   dir: 1 | -1;
   dead: boolean;
   /** drawn over the ones with a smaller z */
@@ -68,6 +64,8 @@ export class Game {
   private keys = new Set<string>();
   /** clicks in screen coordinates (objects fixed on the screen use them as they are, the others add the camera) */
   private clicks: { x: number; y: number }[] = [];
+  /** where the mouse is on the game screen (screen coordinates) */
+  private mouse = { x: 0, y: 0 };
   /** tiled sprites: one tile, ready to be repeated */
   private tiles = new Map<string, CanvasPattern | null>();
   private vars: Record<string, number> = {};
@@ -110,6 +108,7 @@ export class Game {
     window.addEventListener("keyup", this.onKeyUp);
     window.addEventListener("blur", this.onBlur);
     this.canvas.addEventListener("pointerdown", this.onPointer);
+    this.canvas.addEventListener("pointermove", this.onMouseMove);
     this.last = performance.now();
     this.raf = requestAnimationFrame(this.loop);
   }
@@ -120,6 +119,7 @@ export class Game {
     window.removeEventListener("keyup", this.onKeyUp);
     window.removeEventListener("blur", this.onBlur);
     this.canvas.removeEventListener("pointerdown", this.onPointer);
+    this.canvas.removeEventListener("pointermove", this.onMouseMove);
   }
 
   private onKeyDown = (e: KeyboardEvent) => {
@@ -130,7 +130,13 @@ export class Game {
   private onBlur = () => this.keys.clear();
   private onPointer = (e: PointerEvent) => {
     const r = this.canvas.getBoundingClientRect();
-    this.clicks.push({ x: ((e.clientX - r.left) / r.width) * this.scene.w, y: ((e.clientY - r.top) / r.height) * this.scene.h });
+    const p = { x: ((e.clientX - r.left) / r.width) * this.scene.w, y: ((e.clientY - r.top) / r.height) * this.scene.h };
+    this.mouse = p;
+    this.clicks.push(p);
+  };
+  private onMouseMove = (e: PointerEvent) => {
+    const r = this.canvas.getBoundingClientRect();
+    this.mouse = { x: ((e.clientX - r.left) / r.width) * this.scene.w, y: ((e.clientY - r.top) / r.height) * this.scene.h };
   };
 
   private kindOf = (id: string) => this.project.objects.find((o) => o.id === id);
@@ -151,9 +157,7 @@ export class Game {
       onGround: false,
       home: { x, y },
       start: { x, y },
-      face: { x: 1, y: 0 },
       fly: null,
-      reload: 0,
       dir: 1,
       dead: false,
       z: inst?.z ?? 0,
@@ -231,12 +235,10 @@ export class Game {
         const dx = (this.down("ArrowRight") ? 1 : 0) - (this.down("ArrowLeft") ? 1 : 0);
         const dy = (this.down("ArrowDown") ? 1 : 0) - (this.down("ArrowUp") ? 1 : 0);
         const len = Math.hypot(dx, dy) || 1;
-        if (dx || dy) b.face = { x: dx / len, y: dy / len };
         this.move(b, (dx / len) * beh.speed * dt, 0);
         this.move(b, 0, (dy / len) * beh.speed * dt);
       } else if (beh.kind === "platformer") {
         const dx = (this.down("ArrowRight") ? 1 : 0) - (this.down("ArrowLeft") ? 1 : 0);
-        if (dx) b.face = { x: dx, y: 0 };
         this.move(b, dx * beh.speed * dt, 0);
         if (b.onGround && (this.down("ArrowUp") || this.down("Space"))) b.vy = -beh.jump;
         b.vy = Math.min(b.vy + beh.gravity * dt, 1400);
@@ -244,16 +246,8 @@ export class Game {
         const hit = this.move(b, 0, b.vy * dt);
         b.onGround = hit && falling;
         if (hit) b.vy = 0;
-      } else if (beh.kind === "weapon") {
-        b.reload -= dt;
-        if (this.down(beh.key) && b.reload <= 0) {
-          this.fire(b, beh.bullet, b.face, beh.speed);
-          b.reload = 1 / Math.max(0.5, beh.rate);
-        }
       } else if (beh.kind === "patrol") {
         const step = beh.speed * dt * b.dir;
-        if (beh.axis === "x") b.face = { x: b.dir, y: 0 };
-        else b.face = { x: 0, y: b.dir };
         const hit = beh.axis === "x" ? this.move(b, step, 0) : this.move(b, 0, step);
         const away = beh.axis === "x" ? b.x - b.home.x : b.y - b.home.y;
         if (hit || (b.dir > 0 && away >= beh.distance) || (b.dir < 0 && away <= 0)) b.dir = b.dir > 0 ? -1 : 1;
@@ -317,6 +311,8 @@ export class Game {
         picked.set(c.obj, hit);
         return true;
       }
+      case "mouse":
+        return this.clicks.length > 0;
       case "count":
         return compare(this.alive(c.obj).length, c.op, c.value);
       case "var":
@@ -352,9 +348,24 @@ export class Game {
       case "delete":
         targets(a.obj).forEach((b) => (b.dead = true));
         break;
-      case "create":
-        this.spawn(a.obj, a.x, a.y);
+      case "create": {
+        const kind = this.kindOf(a.obj);
+        if (!kind) break;
+        const at: (Body | null)[] = a.at ? targets(a.at) : [null];
+        const made = new Set<Body>();
+        for (const o of at) {
+          // in the middle of the object (x, y shift it), or at the point x, y
+          const x = o ? o.x + o.w / 2 - kind.w / 2 + a.x : a.x;
+          const y = o ? o.y + o.h / 2 - kind.h / 2 + a.y : a.y;
+          this.spawn(a.obj, x, y);
+          const b = this.bodies[this.bodies.length - 1];
+          if (o) b.z = o.z;
+          made.add(b);
+        }
+        // the next actions of this event («Двигать к мышке», «Удалить») work with the new copies
+        if (made.size) picked.set(a.obj, made);
         break;
+      }
       case "teleport":
         targets(a.obj).forEach((b) => {
           b.x = a.x;
@@ -409,9 +420,32 @@ export class Game {
         if (fresh && a.say.trim()) this.message = this.fill(a.say);
         break;
       }
-      case "shoot": {
-        const dirs = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
-        targets(a.obj).forEach((b) => this.fire(b, a.bullet, a.dir === "face" ? b.face : dirs[a.dir], a.speed));
+      case "launch": {
+        const dirs: Record<string, { x: number; y: number }> = { left: { x: -1, y: 0 }, right: { x: 1, y: 0 }, up: { x: 0, y: -1 }, down: { x: 0, y: 1 } };
+        targets(a.obj).forEach((b) => {
+          if (a.speed <= 0) {
+            b.fly = null;
+            return;
+          }
+          let d = dirs[a.to];
+          if (!d) {
+            // a point: the mouse (screen → world) or the middle of the nearest copy of an object
+            let p: { x: number; y: number } | null = null;
+            if (a.to === "mouse") p = { x: this.mouse.x + this.camera.x, y: this.mouse.y + this.camera.y };
+            else {
+              const cx = b.x + b.w / 2;
+              const cy = b.y + b.h / 2;
+              const t = this.alive(a.to)
+                .filter((t) => t !== b)
+                .sort((u, v) => Math.hypot(u.x - cx, u.y - cy) - Math.hypot(v.x - cx, v.y - cy))[0];
+              if (t) p = { x: t.x + t.w / 2, y: t.y + t.h / 2 };
+            }
+            if (!p) return;
+            d = { x: p.x - (b.x + b.w / 2), y: p.y - (b.y + b.h / 2) };
+          }
+          const len = Math.hypot(d.x, d.y) || 1;
+          b.fly = { x: (d.x / len) * a.speed, y: (d.y / len) * a.speed };
+        });
         break;
       }
       case "respawn":
@@ -433,22 +467,7 @@ export class Game {
     }
   }
 
-  /** A shot leaves the shooter from its side that looks the way of the shot. */
-  private fire(from: Body, bulletKind: string, dir: { x: number; y: number }, speed: number) {
-    const kind = this.kindOf(bulletKind);
-    if (!kind || bulletKind === from.kind.id) return;
-    const len = Math.hypot(dir.x, dir.y) || 1;
-    const d = { x: dir.x / len, y: dir.y / len };
-    const cx = from.x + from.w / 2 + d.x * (from.w / 2 + kind.w / 2 + 2);
-    const cy = from.y + from.h / 2 + d.y * (from.h / 2 + kind.h / 2 + 2);
-    this.spawn(bulletKind, cx - kind.w / 2, cy - kind.h / 2);
-    const shot = this.bodies[this.bodies.length - 1];
-    shot.fly = { x: d.x * speed, y: d.y * speed };
-    shot.face = d;
-    shot.z = from.z;
-  }
-
-  /** A shot flies straight; a wall stops it, and it disappears far outside the screen. */
+  /** A launched object flies straight; a wall stops it, and it disappears far outside the screen. */
   private flyShot(b: Body, dt: number) {
     const f = b.fly!;
     if (this.move(b, f.x * dt, 0) || this.move(b, 0, f.y * dt)) b.dead = true;

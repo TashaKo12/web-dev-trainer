@@ -4,9 +4,8 @@ import {
   ACTION_INFO,
   CONDITION_INFO,
   KEY_LABEL,
+  LAUNCH_TO,
   OPS,
-  SHOT_DIRS,
-  type ShotDir,
   uid,
   type Action,
   type Condition,
@@ -89,6 +88,8 @@ function ConditionRow({ c, project, onChange }: { c: Condition; project: Project
           <Obj project={project} value={c.a} onChange={(a) => onChange({ ...c, a })} /> касается <Obj project={project} value={c.b} onChange={(b) => onChange({ ...c, b })} />
         </>
       );
+    case "mouse":
+      return <span>🖱️ нажата кнопка мыши (в любом месте экрана)</span>;
     case "click":
       return (
         <>
@@ -147,8 +148,22 @@ function ActionRow({ a, project, onChange }: { a: Action; project: Project; onCh
     case "create":
       return (
         <>
-          создать <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} /> в точке x <NumIn value={a.x} w="w-16" onChange={(x) => onChange({ ...a, x })} /> y{" "}
-          <NumIn value={a.y} w="w-16" onChange={(y) => onChange({ ...a, y })} />
+          создать <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} />
+          <select
+            value={a.at ?? ""}
+            onChange={(e) => onChange(e.target.value ? { ...a, at: e.target.value, x: 0, y: 0 } : { ...a, at: undefined, x: 100, y: 100 })}
+            className={`${field} font-semibold`}
+          >
+            <option value="">в точке</option>
+            {project.objects
+              .filter((o) => o.id !== a.obj)
+              .map((o) => (
+                <option key={o.id} value={o.id}>
+                  у объекта {o.name}
+                </option>
+              ))}
+          </select>
+          {a.at ? "сдвиг" : ""} x <NumIn value={a.x} w="w-16" onChange={(x) => onChange({ ...a, x })} /> y <NumIn value={a.y} w="w-16" onChange={(y) => onChange({ ...a, y })} />
         </>
       );
     case "teleport":
@@ -245,19 +260,26 @@ function ActionRow({ a, project, onChange }: { a: Action; project: Project; onCh
           и сказать <input value={a.say} onChange={(e) => onChange({ ...a, say: e.target.value })} placeholder="можно оставить пустым" className={`${field} min-w-[9rem] flex-1`} />
         </>
       );
-    case "shoot":
+    case "launch":
       return (
         <>
-          🔫 <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} /> стреляет
-          <Obj project={project} value={a.bullet} only={(o) => o.id !== a.obj && (o.type ?? "sprite") === "sprite"} onChange={(bullet) => onChange({ ...a, bullet })} />
-          <select value={a.dir} onChange={(e) => onChange({ ...a, dir: e.target.value as ShotDir })} className={`${field} font-semibold`}>
-            {(Object.keys(SHOT_DIRS) as ShotDir[]).map((d) => (
-              <option key={d} value={d}>
-                {SHOT_DIRS[d]}
+          🚀 двигать <Obj project={project} value={a.obj} onChange={(obj) => onChange({ ...a, obj })} />
+          <select value={a.to} onChange={(e) => onChange({ ...a, to: e.target.value })} className={`${field} font-semibold`}>
+            {Object.entries(LAUNCH_TO).map(([v, l]) => (
+              <option key={v} value={v}>
+                {l}
               </option>
             ))}
+            {project.objects
+              .filter((o) => o.id !== a.obj)
+              .map((o) => (
+                <option key={o.id} value={o.id}>
+                  к объекту {o.name}
+                </option>
+              ))}
           </select>
-          скорость <NumIn value={a.speed} w="w-16" onChange={(speed) => onChange({ ...a, speed: Math.max(20, speed) })} />
+          со скоростью <NumIn value={a.speed} w="w-16" onChange={(speed) => onChange({ ...a, speed: Math.max(0, speed) })} />
+          <span className="text-xs text-[#9ca3af]">летит, пока не врежется в стену (0 — остановить)</span>
         </>
       );
     case "respawn":

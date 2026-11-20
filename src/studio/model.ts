@@ -10,9 +10,7 @@ export type Behavior =
   | { kind: "solid" }
   | { kind: "patrol"; axis: "x" | "y"; distance: number; speed: number }
   | { kind: "chase"; target: string; speed: number }
-  | { kind: "bounds" }
-  /** a weapon: the key shoots a copy of the «bullet» object where the object looks; rate — shots per second */
-  | { kind: "weapon"; bullet: string; key: KeyName; speed: number; rate: number };
+  | { kind: "bounds" };
 
 /** What an object is: a picture, a picture repeated like tiles, a text, or a button. Old games have no type — a sprite. */
 export type KindType = "sprite" | "tiled" | "text" | "button";
@@ -84,6 +82,8 @@ export type Condition =
   | { k: "key"; key: KeyName }
   | { k: "collide"; a: string; b: string }
   | { k: "click"; obj: string }
+  /** the mouse button was pressed anywhere on the game screen */
+  | { k: "mouse" }
   | { k: "count"; obj: string; op: Op; value: number }
   | { k: "var"; name: string; op: Op; value: number }
   | { k: "timer"; seconds: number }
@@ -92,7 +92,9 @@ export type Condition =
 
 export type Action =
   | { k: "delete"; obj: string }
-  | { k: "create"; obj: string; x: number; y: number }
+  /** a new copy appears at x, y — or, when «at» names an object, in the middle of that object (x, y are then a shift from it).
+      The next actions of the same event work with the new copy. */
+  | { k: "create"; obj: string; x: number; y: number; at?: string }
   | { k: "teleport"; obj: string; x: number; y: number }
   | { k: "var"; name: string; mode: "set" | "add" | "sub"; value: number }
   | { k: "text"; text: string }
@@ -111,11 +113,12 @@ export type Action =
   | { k: "checkpoint"; obj: string; at: string; say: string }
   /** send the object back to its last checkpoint (or to where it started on the scene) */
   | { k: "respawn"; obj: string }
-  /** the object shoots a copy of «bullet»: where it looks, or in a fixed direction */
-  | { k: "shoot"; obj: string; bullet: string; dir: ShotDir; speed: number };
+  /** the object flies straight towards a point with this speed and keeps flying (like a shot) until a wall stops it;
+      to: "mouse" — where the mouse is, a direction, or an object's id. Speed 0 stops it. */
+  | { k: "launch"; obj: string; to: string; speed: number };
 
-export type ShotDir = "face" | "left" | "right" | "up" | "down";
-export const SHOT_DIRS: Record<ShotDir, string> = { face: "куда смотрит", left: "влево", right: "вправо", up: "вверх", down: "вниз" };
+/** Where «launch» can send an object besides another object. */
+export const LAUNCH_TO: Record<string, string> = { mouse: "к мышке", left: "влево", right: "вправо", up: "вверх", down: "вниз" };
 
 export type GameEvent = { id: string; conditions: Condition[]; actions: Action[] };
 export type Scene = { id: string; name: string; bg: string; w: number; h: number; instances: Instance[]; events: GameEvent[] };
@@ -137,11 +140,6 @@ export const BEHAVIOR_INFO: Record<Behavior["kind"], { title: string; about: str
   solid: { title: "Твёрдое препятствие", about: "Сквозь него не пройти: стены, пол, платформы.", make: () => ({ kind: "solid" }) },
   patrol: { title: "Ходит туда-обратно", about: "Сам двигается по линии и разворачивается.", make: () => ({ kind: "patrol", axis: "x", distance: 160, speed: 90 }) },
   chase: { title: "Преследует", about: "Двигается к другому объекту.", make: (objects) => ({ kind: "chase", target: objects[0]?.id ?? "", speed: 70 }) },
-  weapon: {
-    title: "Оружие (стреляет)",
-    about: "По клавише выпускает снаряд туда, куда смотрит объект. Снаряд — любой другой объект: огонёк, шарик, лазер.",
-    make: (objects) => ({ kind: "weapon", bullet: objects.find((o) => /пул|снаряд|огон|лазер|шар/i.test(o.name))?.id ?? "", key: "KeyX", speed: 520, rate: 4 }),
-  },
   bounds: { title: "Не уходит за край экрана", about: "Объект не может выйти за края того, что видно на экране.", make: () => ({ kind: "bounds" }) },
 };
 
@@ -152,6 +150,7 @@ export const CONDITION_INFO: Record<Condition["k"], { title: string; make: (p: P
   start: { title: "В начале сцены", make: () => ({ k: "start" }) },
   collide: { title: "Объект касается объекта", make: (p) => ({ k: "collide", a: p.objects[0]?.id ?? "", b: p.objects[1]?.id ?? p.objects[0]?.id ?? "" }) },
   key: { title: "Нажата клавиша", make: () => ({ k: "key", key: "Space" }) },
+  mouse: { title: "Нажата кнопка мыши", make: () => ({ k: "mouse" }) },
   click: { title: "Кликнули по объекту", make: (p) => ({ k: "click", obj: p.objects[0]?.id ?? "" }) },
   count: { title: "Сколько объектов на сцене", make: (p) => ({ k: "count", obj: p.objects[0]?.id ?? "", op: "=", value: 0 }) },
   var: { title: "Значение переменной", make: (p) => ({ k: "var", name: p.variables[0]?.name ?? "", op: "≥", value: 10 }) },
@@ -186,9 +185,9 @@ export const ACTION_INFO: Record<Action["k"], { title: string; make: (p: Project
       return { k: "checkpoint", obj: hero?.id ?? "", at: flag?.id ?? "", say: "🚩 Чекпоинт!" };
     },
   },
-  shoot: {
-    title: "Выстрелить",
-    make: (p) => ({ k: "shoot", obj: p.objects[0]?.id ?? "", bullet: (p.objects.find((o) => /пул|снаряд|огон|лазер|шар/i.test(o.name)) ?? p.objects[1] ?? p.objects[0])?.id ?? "", dir: "face", speed: 400 }),
+  launch: {
+    title: "Двигать объект к мышке (полёт)",
+    make: (p) => ({ k: "launch", obj: (p.objects.find((o) => /пул|снаряд|огон|лазер|шар|молни/i.test(o.name)) ?? p.objects[0])?.id ?? "", to: "mouse", speed: 500 }),
   },
   respawn: {
     title: "Вернуть на чекпоинт",
