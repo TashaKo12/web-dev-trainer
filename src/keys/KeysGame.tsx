@@ -1,10 +1,11 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Lock, RotateCcw, Star } from "lucide-react";
 import { createStarStore } from "../lib/gameStars";
 import { emitPixel } from "../lib/pixelBus";
 import { BoltFigure, Dialogue } from "../quest/Dialogue";
-import { CODE_OF, KEY_BY_CODE, KEYS_INTRO, KEYS_LEVELS, ROWS, type Task } from "./data";
+import { CODE_OF, KEYS_INTRO, KEYS_LEVELS, type Task } from "./data";
+import { forLayout, keyOf, LAYOUTS, rowsFor, setLayout, shortcutKey, taskFor, theoryFor, useLayout, type Layout } from "./layout";
 import { CodeBox, TheoryButton, TheoryCard } from "../components/GameTheory";
 import { KEYS_THEORY } from "./theory";
 import { CatalogBanner } from "../components/CatalogBanner";
@@ -13,7 +14,7 @@ import { CatalogBanner } from "../components/CatalogBanner";
 
 export const keysStars = createStarStore("wdt:keys", "keys", () => KEYS_LEVELS.map((l) => l.id));
 
-const MODIFIERS = new Set(["ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "MetaLeft", "MetaRight", "CapsLock"]);
+const MODIFIERS = new Set(["ShiftLeft", "ShiftRight", "ControlLeft", "ControlRight", "AltLeft", "AltRight", "MetaLeft", "MetaRight", "CapsLock", "Fn"]);
 const levelOpen = (stars: Record<string, number>, i: number) => i === 0 || (stars[KEYS_LEVELS[i - 1].id] ?? 0) > 0;
 
 function StarRow({ n, size = "h-4 w-4" }: { n: number; size?: string }) {
@@ -26,8 +27,33 @@ function StarRow({ n, size = "h-4 w-4" }: { n: number; size?: string }) {
   );
 }
 
+/** Which keyboard to train on: Windows or Mac. */
+function LayoutSwitch({ compact = false }: { compact?: boolean }) {
+  const layout = useLayout();
+  return (
+    <div className="inline-flex items-center gap-2">
+      {!compact && <span className="text-sm font-extrabold text-slate-500">Моя клавиатура:</span>}
+      <div role="radiogroup" aria-label="Клавиатура" className="inline-flex rounded-full border border-[#e6e7ee] bg-white p-1 shadow-sm dark:border-slate-700 dark:bg-slate-800">
+        {LAYOUTS.map((l) => (
+          <button
+            key={l.id}
+            type="button"
+            role="radio"
+            aria-checked={layout === l.id}
+            onClick={() => setLayout(l.id)}
+            className={`rounded-full px-3 py-1 text-sm font-extrabold transition ${layout === l.id ? "bg-[#4d16c9] text-white" : "text-slate-500 hover:text-[#4d16c9] dark:text-slate-300"}`}
+          >
+            {l.icon} {l.title}
+          </button>
+        ))}
+      </div>
+    </div>
+  );
+}
+
 export function KeysHome() {
   const save = keysStars.use();
+  const layout = useLayout();
   const [intro, setIntro] = useState(!save.intro);
   if (intro)
     return (
@@ -47,10 +73,11 @@ export function KeysHome() {
   return (
     <div>
       <CatalogBanner image="keys" icon="⌨️" kicker="Программирование (1 ступень) · 7–9 лет" title="Клавиатура Пикселя" note="Находи клавиши на настоящей клавиатуре и узнавай, что они умеют." />
-      <div className="mb-6">
+      <div className="mb-6 flex flex-wrap items-center justify-between gap-3">
         <p className="inline-flex items-center gap-1 rounded-full bg-white/90 px-4 py-2 text-sm font-extrabold text-slate-700 shadow-sm">
           <Star className="h-4 w-4 text-amber-400" fill="currentColor" strokeWidth={1.5} /> {total} из {KEYS_LEVELS.length * 3}
         </p>
+        <LayoutSwitch />
       </div>
       <div className="grid gap-4 sm:grid-cols-2 lg:grid-cols-3">
         {KEYS_LEVELS.map((l, i) => {
@@ -64,7 +91,7 @@ export function KeysHome() {
               </div>
               <p className="text-xs font-extrabold uppercase tracking-wide text-slate-400">Уровень {i + 1}</p>
               <h3 className="text-lg font-extrabold text-slate-800">{l.title}</h3>
-              <p className="mt-1 text-sm text-slate-500">{l.about}</p>
+              <p className="mt-1 text-sm text-slate-500">{forLayout(layout, l.about)}</p>
             </>
           );
           return open ? (
@@ -88,11 +115,13 @@ export function KeysHome() {
 }
 
 function Keyboard({
+  layout,
   glow,
   flash,
   held,
   onKey,
 }: {
+  layout: Layout;
   glow: Set<string>;
   flash: { code: string; ok: boolean } | null;
   held: { ctrl: boolean; shift: boolean };
@@ -100,11 +129,11 @@ function Keyboard({
 }) {
   return (
     <div className="mx-auto w-full max-w-5xl select-none rounded-3xl border-4 border-slate-700 bg-slate-800 p-2 shadow-inner sm:p-3">
-      {ROWS.map((row, r) => (
+      {rowsFor(layout).map((row, r) => (
         <div key={r} className={`mb-1.5 flex gap-1.5 last:mb-0 ${r === 0 ? "justify-between" : ""}`}>
           {row.map((key) => {
             const isFlash = flash?.code === key.code;
-            const isHeld = (held.ctrl && key.code.startsWith("Control")) || (held.shift && key.code.startsWith("Shift"));
+            const isHeld = (held.ctrl && key.code.startsWith(shortcutKey(layout))) || (held.shift && key.code.startsWith("Shift"));
             return (
               <button
                 key={key.code}
@@ -147,7 +176,10 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
   const save = keysStars.use();
   const index = KEYS_LEVELS.findIndex((l) => l.id === param);
   const level = KEYS_LEVELS[index];
-  const [tasks] = useState<Task[]>(() => (level ? level.tasks() : []));
+  const layout = useLayout();
+  const [rawTasks] = useState<Task[]>(() => (level ? level.tasks() : []));
+  // the same tasks, said in the words of the chosen keyboard (⌘ Cmd and return on a Mac)
+  const tasks = useMemo(() => rawTasks.map((t) => taskFor(layout, t)), [rawTasks, layout]);
   const [at, setAt] = useState(0);
   const [pos, setPos] = useState(0); // the letter of the word being typed
   const [mistakes, setMistakes] = useState(0);
@@ -198,7 +230,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
         setMistakes((m) => m + 1);
         setTaskMistakes((m) => m + 1);
         emitPixel("wrong");
-        const got = KEY_BY_CODE.get(code);
+        const got = keyOf(layout, code);
         setSaid(got ? `Это «${got.label}». Попробуй ещё раз!` : "Не та клавиша. Попробуй ещё раз!");
       };
       if (task.kind === "key") {
@@ -223,7 +255,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
         else setPos(pos + 1);
       } else wrong();
     },
-    [task, pos, next, finished],
+    [task, pos, next, finished, layout],
   );
 
   // the real keyboard
@@ -253,7 +285,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
 
   /** A click on the on-screen keyboard: Ctrl and Shift stay pressed until the next key. */
   function screenKey(code: string) {
-    const isCtrl = code.startsWith("Control");
+    const isCtrl = code.startsWith(shortcutKey(layout));
     const isShift = code.startsWith("Shift");
     const wantsThisModifier = task?.kind === "key" && task.codes.includes(code);
     if ((isCtrl || isShift) && !wantsThisModifier) {
@@ -268,7 +300,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
   if (task && taskMistakes >= level.hintAfter && !said?.startsWith("Верно") && !said?.startsWith("Готово")) {
     if (task.kind === "key") task.codes.slice(0, 2).forEach((c) => glow.add(c));
     if (task.kind === "combo") {
-      glow.add(task.mod === "ctrl" ? "ControlLeft" : "ShiftLeft");
+      glow.add(task.mod === "ctrl" ? `${shortcutKey(layout)}Left` : "ShiftLeft");
       glow.add(task.code);
     }
     if (task.kind === "word") glow.add(CODE_OF.get(task.word[pos]) ?? "");
@@ -282,7 +314,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
         <p className="mb-4 text-center text-sm font-extrabold uppercase tracking-wide text-orange-500">
           {level.emoji} Уровень {index + 1}: {level.title}
         </p>
-        <TheoryCard theory={KEYS_THEORY[level.id]} onDone={() => setTheory(false)} doneLabel="Понятно, к клавишам!" />
+        <TheoryCard theory={theoryFor(layout, KEYS_THEORY[level.id])} onDone={() => setTheory(false)} doneLabel="Понятно, к клавишам!" />
       </div>
     );
 
@@ -296,6 +328,7 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
           <h1 className="text-2xl font-extrabold text-slate-800 sm:text-3xl dark:text-slate-100">{level.title}</h1>
         </div>
         <div className="flex flex-wrap items-center gap-3 text-sm font-extrabold text-slate-500">
+          <LayoutSwitch compact />
           <TheoryButton onClick={() => setTheory(true)} />
           <span>
             Задание {Math.min(at + 1, tasks.length)} из {tasks.length}
@@ -343,8 +376,8 @@ function KeysLevelScreen({ onRestart }: { onRestart: () => void }) {
           )}
           </div>
 
-          <Keyboard glow={glow} flash={flash} held={held} onKey={screenKey} />
-          <p className="mt-2 text-center text-sm text-slate-400">Нажимай клавиши на своей клавиатуре — или прямо на экране. Ctrl и Shift на экране «залипают» до следующей клавиши.</p>
+          <Keyboard layout={layout} glow={glow} flash={flash} held={held} onKey={screenKey} />
+          <p className="mt-2 text-center text-sm text-slate-400">{forLayout(layout, "Нажимай клавиши на своей клавиатуре — или прямо на экране. Ctrl и Shift на экране «залипают» до следующей клавиши.")}</p>
         </>
       ) : (
         <div className="mx-auto max-w-md rounded-3xl bg-white p-6 text-center shadow-2xl">
