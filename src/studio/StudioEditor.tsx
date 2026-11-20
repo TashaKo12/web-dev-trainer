@@ -1,7 +1,8 @@
 import { useEffect, useRef, useState, type ReactNode } from "react";
-import { Clapperboard, Grid3x3, ListChecks, Play, Redo2, Trash2, Undo2, ZoomIn, ZoomOut } from "lucide-react";
+import { Clapperboard, Grid3x3, ListChecks, Play, Variable, Redo2, Trash2, Undo2, ZoomIn, ZoomOut } from "lucide-react";
 import { makeKind, uid, type Instance, type KindType, type ObjectKind, type Project, type Scene } from "./model";
 import { EventsEditor } from "./EventsEditor";
+import { VariablesTab } from "./VariablesTab";
 import { ObjectsPanel, PropertiesPanel } from "./ObjectPanel";
 import { ObjectDialog } from "./ObjectDialog";
 import { Player } from "./Player";
@@ -36,7 +37,7 @@ export function StudioEditor({ initial }: { initial: Project }) {
   const future = useRef<Project[]>([]);
   const lastChange = useRef(0);
   const [sceneId, setSceneId] = useState(initial.scenes[0].id);
-  const [tab, setTab] = useState<"scene" | "events">("scene");
+  const [tab, setTab] = useState<"scene" | "events" | "vars">("scene");
   const [kindId, setKindId] = useState<string | null>(null);
   const [instanceId, setInstanceId] = useState<string | null>(null);
   const [playing, setPlaying] = useState(false);
@@ -171,6 +172,9 @@ export function StudioEditor({ initial }: { initial: Project }) {
         <button type="button" onClick={() => setTab("events")} className={tabCls(tab === "events")}>
           <ListChecks className="h-4 w-4" /> {scene.name} (События: {scene.events.length})
         </button>
+        <button type="button" onClick={() => setTab("vars")} className={tabCls(tab === "vars")}>
+          <Variable className="h-4 w-4" /> Переменные ({project.variables.length})
+        </button>
         <span className="ml-auto self-center pb-1 pr-2 text-xs text-[#9ca3af]">
           {saved === "saving" ? "Сохраняю…" : saved === "error" ? <span className="text-[#fb7185]">Не сохранилось — мало места</span> : "Сохранено"}
         </span>
@@ -290,6 +294,10 @@ export function StudioEditor({ initial }: { initial: Project }) {
               onEdit={editKind}
             />
           </div>
+        </div>
+      ) : tab === "vars" ? (
+        <div className="min-h-0 flex-1 overflow-y-auto p-4">
+          <VariablesTab project={project} sceneId={scene.id} onProject={(p) => change(() => p)} />
         </div>
       ) : (
         <div className="grid min-h-0 flex-1 grid-cols-[minmax(0,1fr)_280px] max-lg:grid-cols-1 max-lg:overflow-y-auto">
