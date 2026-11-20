@@ -2,7 +2,7 @@ import { useEffect } from "react";
 import { trainers } from "../trainers/registry";
 import { setTimeTopic } from "../lib/timeTracker";
 import { Link, Outlet, useLocation } from "react-router-dom";
-import { Blocks, Code2, Gamepad2, Layers, Rocket, UserRound, type LucideIcon } from "lucide-react";
+import { Blocks, Layers, UserRound, type LucideIcon } from "lucide-react";
 import { AnimatedBackground } from "./AnimatedBackground";
 import { PointsBadge } from "./PointsBadge";
 import { AccountButton } from "./AccountButton";
@@ -12,19 +12,16 @@ import { GameToast } from "./GameToast";
 import { formatCode, getAdminSession, useAccount } from "../lib/cloud";
 import { ThemeToggle } from "./ThemeToggle";
 
-/** The narrow menu on the left (from tablets up): the main sections as icons. */
+/** The narrow menu on the left (from tablets up): all courses and the student's progress. */
 const RAIL: { to: string; label: string; icon: LucideIcon; match: (p: string) => boolean }[] = [
   { to: "/", label: "Курсы", icon: Layers, match: (p) => p === "/" || p === "" },
-  { to: "/quest", label: "Тайна станции", icon: Rocket, match: (p) => /^\/(quest|beacon|logic|keys)/.test(p) },
-  { to: "/python", label: "Python", icon: Code2, match: (p) => p.startsWith("/python") },
-  { to: "/studio", label: "Конструктор игр", icon: Gamepad2, match: (p) => p.startsWith("/studio") },
   { to: "/profile", label: "Мой прогресс", icon: UserRound, match: (p) => p.startsWith("/profile") },
 ];
 
 function SideRail({ pathname }: { pathname: string }) {
   return (
     <nav aria-label="Разделы" className="fixed inset-y-0 left-0 z-30 hidden w-[4.25rem] flex-col items-center justify-center gap-3 border-r border-[#e6e7ee] bg-white md:flex dark:border-slate-800 dark:bg-slate-950">
-      {RAIL.filter((r) => r.to !== "/studio" || getAdminSession()).map(({ to, label, icon: Icon, match }) => {
+      {RAIL.map(({ to, label, icon: Icon, match }) => {
         const on = match(pathname);
         return (
           <Link
