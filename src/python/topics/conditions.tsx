@@ -2,6 +2,8 @@ import { Code, passes, uses, type PythonTopicData } from "../PythonTopic";
 
 const C = Code;
 
+// The if topic: if, comparisons, else, elif. The operators and, or, not and in come later — in their own topic.
+
 export const CONDITIONS: PythonTopicData = {
   id: "python-if",
   theory: {
@@ -32,7 +34,7 @@ export const CONDITIONS: PythonTopicData = {
           </>
         ),
         examples: [
-          { code: 'пароль = "pixel"\nif пароль == "pixel":\n    print("Дверь открыта")', out: "Дверь открыта" },
+          { code: 'password = "pixel"\nif password == "pixel":\n    print("Дверь открыта")', out: "Дверь открыта" },
           { code: "if x = 5:\n    print(x)", out: "SyntaxError: invalid syntax. Maybe you meant '==' …", error: true, note: "Для сравнения нужно ==." },
         ],
       },
@@ -45,21 +47,22 @@ export const CONDITIONS: PythonTopicData = {
           </>
         ),
         examples: [
-          { code: 'возраст = 10\nif возраст >= 18:\n    print("Взрослый")\nelse:\n    print("Ребёнок")', out: "Ребёнок" },
+          { code: 'age = 10\nif age >= 18:\n    print("Взрослый")\nelse:\n    print("Ребёнок")', out: "Ребёнок" },
           { code: 't = 18\nif t < 10:\n    print("Холодно")\nelif t < 25:\n    print("Тепло")\nelse:\n    print("Жарко")', out: "Тепло" },
         ],
       },
       {
-        title: "and, or, not",
+        title: "Сравниваем текст",
         text: (
           <>
-            <C>and</C> — «и»: верно, только если верны оба условия. <C>or</C> — «или»: хватит одного. <C>not</C> переворачивает
-            условие. Ещё можно проверить, есть ли буква в слове: <C>"а" in слово</C>.
+            Текст тоже можно сравнивать: <C>==</C> и <C>!=</C> проверяют, совпадает ли он буква в букву. Большие и маленькие буквы
+            различаются: <C>"Да" == "да"</C> — это <C>False</C>. Поэтому ответ часто приводят к маленьким буквам:{" "}
+            <C>answer.lower() == "да"</C>.
           </>
         ),
         examples: [
-          { code: 'n = 8\nif n >= 7 and n <= 12:\n    print("В клубе")', out: "В клубе" },
-          { code: 'день = "сб"\nif день == "сб" or день == "вс":\n    print("Выходной")', out: "Выходной" },
+          { code: 'answer = "Да"\nif answer == "да":\n    print("Ура!")\nelse:\n    print("Не совпало")', out: "Не совпало", note: "«Да» с большой буквы — другой текст." },
+          { code: 'answer = "Да"\nif answer.lower() == "да":\n    print("Ура!")', out: "Ура!" },
         ],
       },
       {
@@ -80,7 +83,7 @@ export const CONDITIONS: PythonTopicData = {
   },
   game: {
     title: "Пиксель охраняет базу",
-    description: "Пять миссий: научи робота проверять пароли, погоду и возраст — и решать, что ответить.",
+    description: "Пять миссий: научи робота проверять пароли, погоду и заряд батареи — и решать, что ответить.",
     finish: "Все миссии пройдены — Пиксель научился принимать решения! Закрепим на практике.",
     missions: [
       {
@@ -92,7 +95,7 @@ export const CONDITIONS: PythonTopicData = {
           </p>
         ),
         goal: "При пароле pixel — «Дверь открыта», при другом пароле — ничего.",
-        start: 'пароль = input("Пароль: ")\n',
+        start: 'password = input("Пароль: ")\n',
         check: (_r, _a, code) =>
           passes(code, [
             { inputs: ["pixel"], expected: "Дверь открыта" },
@@ -110,7 +113,7 @@ export const CONDITIONS: PythonTopicData = {
           </p>
         ),
         goal: "pixel → «Дверь открыта», всё остальное → «Доступ запрещён».",
-        start: 'пароль = input("Пароль: ")\nif пароль == "pixel":\n    print("Дверь открыта")\n',
+        start: 'password = input("Пароль: ")\nif password == "pixel":\n    print("Дверь открыта")\n',
         check: (_r, _a, code) =>
           passes(code, [
             { inputs: ["pixel"], expected: "Дверь открыта" },
@@ -142,24 +145,24 @@ export const CONDITIONS: PythonTopicData = {
               : "Проверь границы: 10 — уже тепло, 25 — уже жарко.",
       },
       {
-        title: "Клуб юных роботов",
+        title: "Заряд батареи",
         body: (
           <p>
-            В клуб берут от 7 до 12 лет включительно. Спроси возраст и выведи <C>Добро пожаловать</C> или{" "}
-            <C>Клуб для 7–12 лет</C>. Пригодится <C>and</C>.
+            Пиксель проверяет свою батарею. Спроси заряд в процентах. Меньше 20 — <C>Нужна зарядка</C>, меньше 80 —{" "}
+            <C>Можно работать</C>, иначе — <C>Полный заряд</C>.
           </p>
         ),
-        goal: "7 и 12 — «Добро пожаловать», 6 и 13 — «Клуб для 7–12 лет».",
-        start: 'возраст = int(input("Сколько тебе лет? "))\n',
+        goal: "10 → Нужна зарядка, 50 → Можно работать, 95 → Полный заряд.",
+        start: 'battery = int(input("Заряд: "))\n',
         check: (_r, _a, code) =>
           passes(code, [
-            { inputs: ["7"], expected: "Добро пожаловать" },
-            { inputs: ["12"], expected: "Добро пожаловать" },
-            { inputs: ["6"], expected: "Клуб для 7–12 лет" },
-            { inputs: ["13"], expected: "Клуб для 7–12 лет" },
+            { inputs: ["10"], expected: "Нужна зарядка" },
+            { inputs: ["20"], expected: "Можно работать" },
+            { inputs: ["79"], expected: "Можно работать" },
+            { inputs: ["80"], expected: "Полный заряд" },
           ])
             ? true
-            : "Условие: возраст >= 7 and возраст <= 12. Проверь и границы 7 и 12.",
+            : "Три ветки: if battery < 20, elif battery < 80, else. Проверь границы 20 и 80.",
       },
       {
         title: "Чёт или нечет",
@@ -206,12 +209,12 @@ export const CONDITIONS: PythonTopicData = {
     {
       badge: "исправь ошибку",
       prompt: "Робот должен радоваться ответу «да», но программа не запускается.",
-      start: 'слово = input("Играем? ")\nif слово = "да":\n    print("Ура!")',
+      start: 'answer = input("Играем? ")\nif answer = "да":\n    print("Ура!")',
       tests: [
         { inputs: ["да"], expected: "Ура!" },
         { inputs: ["нет"], expected: "" },
       ],
-      explain: 'Для сравнения пишут два знака: if слово == "да":',
+      explain: 'Для сравнения пишут два знака: if answer == "да":',
     },
     {
       badge: "else",
@@ -224,7 +227,7 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "else"),
       ruleHint: "используй else.",
-      explain: 'if возраст >= 18: print("Взрослый") и else: print("Ребёнок").',
+      explain: 'age = int(input()), if age >= 18: print("Взрослый"), else: print("Ребёнок").',
     },
     {
       badge: "исправь отступ",
@@ -248,7 +251,7 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "elif"),
       ruleHint: "используй elif.",
-      explain: "if оценка == 5: …, elif оценка == 4: …, elif оценка == 3: …, else: …",
+      explain: "grade = int(input()), потом if grade == 5: …, elif grade == 4: …, elif grade == 3: …, else: …",
     },
     {
       badge: "без max",
@@ -264,29 +267,29 @@ export const CONDITIONS: PythonTopicData = {
       explain: "if a > b: print(a), else: print(b).",
     },
     {
-      badge: "and",
-      prompt: "Спроси число. Если оно от 1 до 10 включительно — «В диапазоне», иначе — «Вне диапазона».",
+      badge: "!=",
+      prompt: "Спроси секретное слово. Если это не «пиксель», выведи «Неверно». Если «пиксель» — ничего не печатай.",
       start: "",
       tests: [
-        { inputs: ["1"], expected: "В диапазоне" },
-        { inputs: ["10"], expected: "В диапазоне" },
-        { inputs: ["0"], expected: "Вне диапазона" },
-        { inputs: ["11"], expected: "Вне диапазона" },
+        { inputs: ["кот"], expected: "Неверно" },
+        { inputs: ["пиксель"], expected: "" },
       ],
-      explain: "if n >= 1 and n <= 10: — and требует, чтобы оба условия были верны.",
+      rule: (code) => /!=/.test(code),
+      ruleHint: "используй сравнение != («не равно»).",
+      explain: 'word = input(), if word != "пиксель": print("Неверно").',
     },
     {
-      badge: "or",
-      prompt: "Спроси день недели (пн, вт, …). Если сб или вс — «Выходной», иначе — «Учёба».",
+      badge: "текст",
+      prompt: "Спроси «Продолжить?». Если ответили «да» любыми буквами (да, Да, ДА) — «Продолжаем», иначе — «Стоп».",
       start: "",
       tests: [
-        { inputs: ["сб"], expected: "Выходной" },
-        { inputs: ["вс"], expected: "Выходной" },
-        { inputs: ["ср"], expected: "Учёба" },
+        { inputs: ["Да"], expected: "Продолжаем" },
+        { inputs: ["ДА"], expected: "Продолжаем" },
+        { inputs: ["нет"], expected: "Стоп" },
       ],
-      rule: (code) => uses(code, "or") || uses(code, "in"),
-      ruleHint: "объедини два условия через or.",
-      explain: 'if день == "сб" or день == "вс": — or хватает одного верного условия.',
+      rule: (code) => uses(code, "lower") || uses(code, "upper"),
+      ruleHint: "приведи ответ к одному виду: answer.lower().",
+      explain: 'answer = input(), if answer.lower() == "да": print("Продолжаем"), else: print("Стоп").',
     },
     {
       badge: "остаток",
@@ -306,10 +309,10 @@ export const CONDITIONS: PythonTopicData = {
     { text: "Для сравнения в условии пишут один знак =.", answer: false, explain: "Нет, два: ==. Один = записывает значение в переменную." },
     { text: "else выполняется, когда условие в if оказалось ложным.", answer: true, explain: "Да, else — это «иначе»." },
     { text: "Если подошли и if, и elif, выполнятся обе ветки.", answer: false, explain: "Нет, Python выполняет только первую подходящую ветку и дальше не смотрит." },
-    { text: "Условие a > 0 and a < 10 верно для a = 15.", answer: false, explain: "Нет: and требует обоих условий, а 15 < 10 — ложь." },
-    { text: 'Условие день == "сб" or день == "вс" верно для воскресенья.', answer: true, explain: "Да, or хватает одного верного условия." },
+    { text: '"Да" == "да" — это True.', answer: false, explain: "Нет, большие и маленькие буквы различаются. Помогает .lower()." },
+    { text: "elif можно написать без if перед ним.", answer: false, explain: "Нет, elif и else продолжают if — сами по себе они не работают." },
     { text: "7 % 2 == 0 — это True.", answer: false, explain: "Нет, остаток от деления 7 на 2 равен 1. Число 7 нечётное." },
     { text: '"5" > 3 сработает, ведь там пятёрка.', answer: false, explain: "Нет, \"5\" — текст, его нельзя сравнить с числом. Нужно int(\"5\")." },
-    { text: "!= значит «не равно».", answer: true, explain: "Да: if ответ != \"да\": — сработает при любом ответе, кроме «да»." },
+    { text: "!= значит «не равно».", answer: true, explain: "Да: if answer != \"да\": — сработает при любом ответе, кроме «да»." },
   ],
 };

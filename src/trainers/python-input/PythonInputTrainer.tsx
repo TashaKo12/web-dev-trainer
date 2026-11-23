@@ -56,21 +56,21 @@ const MISSIONS: IOMission[] = [
       <>
         <p>
           Ответ можно сохранить в <b>переменную</b> — коробочку с именем. Пишем имя, знак <Code>=</Code> и{" "}
-          <Code>input</Code>: <Code>имя = input("Как тебя зовут? ")</Code>. Теперь всё, что ввёл человек, лежит в
-          коробочке <Code>имя</Code>.
+          <Code>input</Code>: <Code>name = input("Как тебя зовут? ")</Code>. Теперь всё, что ввёл человек, лежит в
+          коробочке <Code>name</Code>.
         </p>
         <p>
-          Достать ответ можно в любой момент: <Code>print("Привет,", имя)</Code>. Имя переменной пишут без кавычек —
-          иначе это будет просто текст «имя».
+          Достать ответ можно в любой момент: <Code>print("Привет,", name)</Code>. Имя переменной пишут без кавычек —
+          иначе это будет просто текст «name».
         </p>
       </>
     ),
     goal: "Пусть робот поздоровается по имени: «Привет, …» и твоё имя.",
-    start: 'имя = input("Как тебя зовут? ")\nprint("Привет!")',
+    start: 'name = input("Как тебя зовут? ")\nprint("Привет!")',
     check: (r, answers) => {
       const name = answers[0]?.trim();
       if (!name) return "Когда робот спросит, напиши своё имя.";
-      return lastLine(r).includes(name) ? true : 'Робот пока не называет имя. Добавь переменную в print: print("Привет,", имя).';
+      return lastLine(r).includes(name) ? true : 'Робот пока не называет имя. Добавь переменную в print: print("Привет,", name).';
     },
   },
   {
@@ -82,13 +82,13 @@ const MISSIONS: IOMission[] = [
           на 2, просто повторяется: из «5» получится «55».
         </p>
         <p>
-          Чтобы превратить ответ в число, его оборачивают в <Code>int</Code>: <Code>число = int(input("Число: "))</Code>.
+          Чтобы превратить ответ в число, его оборачивают в <Code>int</Code>: <Code>number = int(input("Число: "))</Code>.
           Теперь с ним можно считать.
         </p>
       </>
     ),
     goal: "Сделай так, чтобы робот правильно удваивал число: на 5 он должен ответить 10.",
-    start: 'число = input("Введи число: ")\nprint(число * 2)',
+    start: 'number = input("Введи число: ")\nprint(number * 2)',
     check: (r, answers) => {
       if (!answers[0] || !isInt(answers[0])) return "Введи целое число, например 5.";
       return lastLine(r) === String(Number(answers[0]) * 2) ? true : "Робот склеил текст. Оберни ответ: int(input(...)).";
@@ -103,16 +103,16 @@ const MISSIONS: IOMission[] = [
           положить в свою переменную.
         </p>
         <p>
-          <Code>имя = input("Как тебя зовут? ")</Code>
+          <Code>name = input("Как тебя зовут? ")</Code>
           <br />
-          <Code>город = input("Где ты живёшь? ")</Code>
+          <Code>city = input("Где ты живёшь? ")</Code>
         </p>
       </>
     ),
     goal: "Добавь второй вопрос — про возраст — и пусть робот скажет имя и возраст в одной фразе.",
-    start: 'имя = input("Как тебя зовут? ")\nprint("Привет,", имя)',
+    start: 'name = input("Как тебя зовут? ")\nprint("Привет,", name)',
     check: (r, answers) => {
-      if (answers.length < 2) return "Нужен второй вопрос: возраст = input(...).";
+      if (answers.length < 2) return "Нужен второй вопрос: age = input(...).";
       const said = r.printed;
       return answers.every((a) => a.trim() && said.includes(a.trim())) ? true : "Пусть в print будут и имя, и возраст.";
     },
@@ -200,10 +200,10 @@ const LEVELS: IOLevel[] = [
   {
     badge: "впиши вопрос",
     prompt: "Допиши в скобки input вопрос «Как тебя зовут?», чтобы человек понял, что от него ждут.",
-    start: 'имя = input()\nprint("Привет,", имя)',
+    start: 'name = input()\nprint("Привет,", name)',
     tests: [{ inputs: ["Аня"], expected: "Привет, Аня" }],
     rule: (results) => results[0].prompts[0]?.includes("?") ?? false,
-    explain: 'имя = input("Как тебя зовут? ") — текст в скобках input показывается как вопрос.',
+    explain: 'name = input("Как тебя зовут? ") — текст в скобках input показывается как вопрос.',
   },
   {
     badge: "напиши сам",
@@ -213,27 +213,27 @@ const LEVELS: IOLevel[] = [
       { inputs: ["синий"], expected: "Твой любимый цвет — синий" },
       { inputs: ["зелёный"], expected: "Твой любимый цвет — зелёный" },
     ],
-    explain: 'цвет = input("Какой твой любимый цвет? ") и print("Твой любимый цвет —", цвет).',
+    explain: 'color = input("Какой твой любимый цвет? ") и print("Твой любимый цвет —", color).',
   },
   {
     badge: "исправь ошибку",
-    prompt: "Программа всем говорит «Привет, имя» вместо настоящего имени. Исправь.",
-    start: 'имя = input("Как тебя зовут? ")\nprint("Привет, имя")',
+    prompt: "Программа всем говорит «Привет, name» вместо настоящего имени. Исправь.",
+    start: 'name = input("Как тебя зовут? ")\nprint("Привет, name")',
     tests: [
       { inputs: ["Петя"], expected: "Привет, Петя" },
       { inputs: ["Оля"], expected: "Привет, Оля" },
     ],
-    explain: 'print("Привет,", имя) — имя переменной пишут без кавычек, иначе это просто текст.',
+    explain: 'print("Привет,", name) — имя переменной пишут без кавычек, иначе это просто текст.',
   },
   {
     badge: "исправь ошибку",
     prompt: "Программа должна прибавлять к возрасту 1, но падает с ошибкой. Исправь.",
-    start: 'возраст = input("Сколько тебе лет? ")\nprint(возраст + 1)',
+    start: 'age = input("Сколько тебе лет? ")\nprint(age + 1)',
     tests: [
       { inputs: ["11"], expected: "12" },
       { inputs: ["7"], expected: "8" },
     ],
-    explain: 'возраст = int(input("Сколько тебе лет? ")) — input даёт текст, int превращает его в число.',
+    explain: 'age = int(input("Сколько тебе лет? ")) — input даёт текст, int превращает его в число.',
   },
   {
     badge: "напиши сам",
@@ -253,7 +253,7 @@ const LEVELS: IOLevel[] = [
       { inputs: ["Оля", "Казань"], expected: "Оля живёт в городе Казань" },
       { inputs: ["Миша", "Омск"], expected: "Миша живёт в городе Омск" },
     ],
-    explain: 'имя = input(...), город = input(...) и print(имя, "живёт в городе", город).',
+    explain: 'name = input(...), city = input(...) и print(name, "живёт в городе", city).',
   },
   {
     badge: "калькулятор",
@@ -273,17 +273,17 @@ const LEVELS: IOLevel[] = [
       { inputs: ["ку"], expected: "кукуку" },
       { inputs: ["ла"], expected: "лалала" },
     ],
-    explain: 'слово = input("Слово: ") и print(слово * 3) — текст можно умножать на число.',
+    explain: 'word = input("Слово: ") и print(word * 3) — текст можно умножать на число.',
   },
   {
     badge: "исправь ошибку",
     prompt: "Программа должна удваивать число, но что-то пошло не так.",
-    start: 'число = int(input("Число: ")\nprint(число * 2)',
+    start: 'number = int(input("Число: ")\nprint(number * 2)',
     tests: [
       { inputs: ["5"], expected: "10" },
       { inputs: ["21"], expected: "42" },
     ],
-    explain: 'число = int(input("Число: ")) — у int и у input свои скобки, закрыть нужно обе.',
+    explain: 'number = int(input("Число: ")) — у int и у input свои скобки, закрыть нужно обе.',
   },
   {
     badge: "напиши сам",
@@ -293,7 +293,7 @@ const LEVELS: IOLevel[] = [
       { inputs: ["11"], expected: "Через 5 лет тебе будет 16" },
       { inputs: ["7"], expected: "Через 5 лет тебе будет 12" },
     ],
-    explain: 'возраст = int(input(...)) и print("Через 5 лет тебе будет", возраст + 5).',
+    explain: 'age = int(input(...)) и print("Через 5 лет тебе будет", age + 5).',
   },
 ];
 
@@ -382,7 +382,7 @@ const TRUE_FALSE: TrueFalseStatement[] = [
   { text: "input всегда возвращает число, если ввести цифры.", answer: false, explain: "Нет, input всегда возвращает текст. Число получают через int(input(...))." },
   { text: 'Если ввести 5, то print(input() * 2) напечатает 10.', answer: false, explain: "Нет, напечатает 55: текст «5» повторится два раза." },
   { text: "int(input()) превращает ответ в целое число.", answer: true, explain: "Да, int переделывает текст из цифр в число, с которым можно считать." },
-  { text: "Ответ из input можно сохранить в переменную: имя = input().", answer: true, explain: "Да, и потом использовать её сколько угодно раз." },
+  { text: "Ответ из input можно сохранить в переменную: name = input().", answer: true, explain: "Да, и потом использовать её сколько угодно раз." },
   { text: 'print("имя") напечатает то, что лежит в переменной имя.', answer: false, explain: "Нет, в кавычках это просто слово «имя». Переменную пишут без кавычек." },
   { text: "Текст в скобках input — это подсказка для человека.", answer: true, explain: "Да, его видит тот, кто запускает программу, и понимает, что ввести." },
   { text: "В одной программе может быть только один input.", answer: false, explain: "Нет, вопросов может быть сколько угодно." },

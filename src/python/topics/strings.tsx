@@ -98,7 +98,7 @@ export const STRINGS: PythonTopicData = {
         ),
         examples: [
           { code: 'name = "Пиксель"\nage = 3\nprint(f"Меня зовут {name}, мне {age} года")', out: "Меня зовут Пиксель, мне 3 года" },
-          { code: 'цена = 49.5\nprint(f"Итого: {цена * 2:.2f} руб.")', out: "Итого: 99.00 руб." },
+          { code: 'price = 49.5\nprint(f"Итого: {price * 2:.2f} руб.")', out: "Итого: 99.00 руб." },
         ],
       },
     ],
@@ -112,13 +112,13 @@ export const STRINGS: PythonTopicData = {
         title: "Первая и последняя",
         body: (
           <p>
-            В переменной <C>имя</C> лежит «Пиксель». Выведи через пробел его первую и последнюю букву с помощью индексов.
+            В переменной <C>name</C> лежит «Пиксель». Выведи через пробел его первую и последнюю букву с помощью индексов.
           </p>
         ),
         goal: "В терминале должно появиться: П ь",
-        start: 'имя = "Пиксель"\n',
+        start: 'name = "Пиксель"\n',
         check: (r, _a, code) =>
-          r.printed.trim() !== "П ь" ? "Нужно: П ь. Первая буква — имя[0], последняя — имя[-1]." : !/\[\s*-?\d+\s*\]/.test(codeOnly(code)) ? "Используй индексы в квадратных скобках." : true,
+          r.printed.trim() !== "П ь" ? "Нужно: П ь. Первая буква — name[0], последняя — name[-1]." : !/\[\s*-?\d+\s*\]/.test(codeOnly(code)) ? "Используй индексы в квадратных скобках." : true,
       },
       {
         title: "Громкий робот",
@@ -128,14 +128,14 @@ export const STRINGS: PythonTopicData = {
           </p>
         ),
         goal: "Запусти и ответь роботу. Например: привет → ПРИВЕТ",
-        start: 'фраза = input("Скажи что-нибудь: ")\n',
+        start: 'phrase = input("Скажи что-нибудь: ")\n',
         check: (_r, _a, code) =>
           passes(code, [
             { inputs: ["привет"], expected: "ПРИВЕТ" },
             { inputs: ["я робот"], expected: "Я РОБОТ" },
           ])
             ? true
-            : "Выведи фразу большими буквами: print(фраза.upper()).",
+            : "Выведи фразу большими буквами: print(phrase.upper()).",
       },
       {
         title: "Слово наоборот",
@@ -145,14 +145,14 @@ export const STRINGS: PythonTopicData = {
           </p>
         ),
         goal: "Запусти и ответь роботу. Например: робот → тобор",
-        start: 'слово = input("Слово: ")\n',
+        start: 'word = input("Слово: ")\n',
         check: (_r, _a, code) =>
           passes(code, [
             { inputs: ["робот"], expected: "тобор" },
             { inputs: ["кот"], expected: "ток" },
           ])
             ? true
-            : "Переверни слово срезом: print(слово[::-1]).",
+            : "Переверни слово срезом: print(word[::-1]).",
       },
       {
         title: "Опечатка",
@@ -163,9 +163,9 @@ export const STRINGS: PythonTopicData = {
           </p>
         ),
         goal: "В терминале должно появиться: Пиксель",
-        start: 'табличка = "Пиксиль"\n',
+        start: 'sign = "Пиксиль"\n',
         check: (r, _a, code) =>
-          r.printed.trim() !== "Пиксель" ? "Должно получиться: Пиксель." : !/\.replace\(/.test(code) ? "Используй replace: табличка.replace(\"и\", \"е\") — но осторожно, «и» в слове две!" : true,
+          r.printed.trim() !== "Пиксель" ? "Должно получиться: Пиксель." : !/\.replace\(/.test(code) ? "Используй replace: sign.replace(\"и\", \"е\") — но осторожно, «и» в слове две!" : true,
       },
       {
         title: "Визитка",
@@ -175,10 +175,10 @@ export const STRINGS: PythonTopicData = {
           </p>
         ),
         goal: "Запусти и ответь роботу. Например: Оля и пиццу → Меня зовут Оля, я люблю пиццу!",
-        start: 'имя = input("Имя: ")\nеда = input("Любимая еда: ")\n',
+        start: 'name = input("Имя: ")\nfood = input("Любимая еда: ")\n',
         check: (_r, _a, code) =>
           !/\bf["']/.test(code)
-            ? 'Используй f-строку: print(f"Меня зовут {имя}, я люблю {еда}!").'
+            ? 'Используй f-строку: print(f"Меня зовут {name}, я люблю {food}!").'
             : passes(code, [
                   { inputs: ["Оля", "пиццу"], expected: "Меня зовут Оля, я люблю пиццу!" },
                   { inputs: ["Тимур", "блины"], expected: "Меня зовут Тимур, я люблю блины!" },
@@ -278,8 +278,8 @@ export const STRINGS: PythonTopicData = {
         { inputs: ["7"], expected: "Цена: 7.00 руб." },
       ],
       rule: (code) => /\bf["']/.test(code),
-      ruleHint: "используй f-строку с форматом {цена:.2f}.",
-      explain: 'цена = float(input()), print(f"Цена: {цена:.2f} руб.").',
+      ruleHint: "используй f-строку с форматом {price:.2f}.",
+      explain: 'price = float(input()), print(f"Цена: {price:.2f} руб.").',
     },
     {
       badge: "isdigit()",

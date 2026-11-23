@@ -58,7 +58,7 @@ export const TYPES: PythonTopicData = {
         ),
         examples: [
           { code: 'print(int("42") + 1)\nprint(int(3.9), round(3.9))\nprint(float(5))', out: "43\n3 4\n5.0" },
-          { code: 'возраст = 9\nprint("Мне " + str(возраст) + " лет")', out: "Мне 9 лет", note: "Склеить через + можно только текст с текстом — число превращаем в str." },
+          { code: 'age = 9\nprint("Мне " + str(age) + " лет")', out: "Мне 9 лет", note: "Склеить через + можно только текст с текстом — число превращаем в str." },
         ],
       },
       {
@@ -102,9 +102,9 @@ export const TYPES: PythonTopicData = {
           </p>
         ),
         goal: "В терминале должно появиться: <class 'float'>",
-        start: "посылка = 3.14\n",
+        start: "parcel = 3.14\n",
         check: (r, _a, code) =>
-          r.printed.trim() !== "<class 'float'>" ? "Выведи тип посылки: print(type(посылка))." : !uses(code, "type") ? "Используй type()." : true,
+          r.printed.trim() !== "<class 'float'>" ? "Выведи тип посылки: print(type(parcel))." : !uses(code, "type") ? "Используй type()." : true,
       },
       {
         title: "Склейка с числом",
@@ -115,9 +115,9 @@ export const TYPES: PythonTopicData = {
           </p>
         ),
         goal: "В терминале должно появиться: Мне 7 лет",
-        start: 'возраст = 7\nprint("Мне " + возраст + " лет")',
+        start: 'age = 7\nprint("Мне " + age + " лет")',
         check: (r, _a, code) =>
-          r.printed.trim() !== "Мне 7 лет" ? "Должно получиться: Мне 7 лет." : !codeOnly(code).includes("+") ? "Оставь склейку через +." : !uses(code, "str") ? "Преврати число в текст: str(возраст)." : true,
+          r.printed.trim() !== "Мне 7 лет" ? "Должно получиться: Мне 7 лет." : !codeOnly(code).includes("+") ? "Оставь склейку через +." : !uses(code, "str") ? "Преврати число в текст: str(age)." : true,
       },
       {
         title: "Сумма двух посылок",
@@ -145,14 +145,14 @@ export const TYPES: PythonTopicData = {
           </p>
         ),
         goal: "Запусти и ответь роботу. Например: 2.5 → 3.0",
-        start: 'вес = input("Вес посылки: ")\n',
+        start: 'weight = input("Вес посылки: ")\n',
         check: (_r, _a, code) =>
           passes(code, [
             { inputs: ["2.5"], expected: "3.0" },
             { inputs: ["1.25"], expected: "1.75" },
           ])
             ? true
-            : "Дробное число получают через float(): вес = float(input(...)), потом print(вес + 0.5).",
+            : "Дробное число получают через float(): weight = float(input(...)), потом print(weight + 0.5).",
       },
       {
         title: "Пустая коробка",
@@ -163,8 +163,8 @@ export const TYPES: PythonTopicData = {
           </p>
         ),
         goal: "В терминале должно появиться: True False",
-        start: 'коробка1 = "мяч"\nкоробка2 = ""\n',
-        check: (r, _a, code) => (r.printed.trim() !== "True False" ? "Выведи print(bool(коробка1), bool(коробка2))." : !uses(code, "bool") ? "Используй bool()." : true),
+        start: 'box1 = "мяч"\nbox2 = ""\n',
+        check: (r, _a, code) => (r.printed.trim() !== "True False" ? "Выведи print(bool(box1), bool(box2))." : !uses(code, "bool") ? "Используй bool()." : true),
       },
     ],
   },
@@ -198,7 +198,7 @@ export const TYPES: PythonTopicData = {
       ],
       rule: (code) => codeOnly(code).includes("+"),
       ruleHint: "склей строку через +.",
-      explain: 'print("Имя: " + имя + ", возраст: " + возраст) — возраст и так текст из input. Если сделал его int — оберни в str().',
+      explain: 'print("Имя: " + name + ", возраст: " + age) — возраст и так текст из input. Если сделал его int — оберни в str().',
     },
     {
       badge: "float()",
@@ -210,7 +210,7 @@ export const TYPES: PythonTopicData = {
       ],
       rule: (code) => uses(code, "float"),
       ruleHint: "дробное число получают через float().",
-      explain: "цена = float(input()), print(цена * 2). float(\"10\") — это 10.0, поэтому и ответ 20.0.",
+      explain: "price = float(input()), print(price * 2). float(\"10\") — это 10.0, поэтому и ответ 20.0.",
     },
     {
       badge: "int()",

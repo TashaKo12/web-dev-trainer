@@ -1,4 +1,4 @@
-import { useEffect, useState, type ReactNode } from "react";
+import { useEffect, useRef, useState, type ReactNode } from "react";
 import { logMistake } from "../lib/mistakes";
 import { emitPixel } from "../lib/pixelBus";
 import { Bot, Check, ChevronRight, Lightbulb, Lock, Sparkles, Trophy } from "lucide-react";
@@ -38,6 +38,8 @@ export function MissionBoard({
   const [done, setDone] = useState(readDone);
   const [active, setActive] = useState(() => Math.min(readDone(), missions.length - 1));
   const [dates, setDates] = useState<(string | null)[]>(() => loadJSON<(string | null)[]>(missionDatesKey(pointsSource)) ?? []);
+  /** the mission that is about to open by itself */
+  const [opening, setOpening] = useState<number | null>(null);
 
   // the teacher counted missions: pick them up
   useEffect(
@@ -64,10 +66,24 @@ export function MissionBoard({
     saveJSON(missionDatesKey(pointsSource), dates);
   }, [pointsSource, dates, teacher]);
 
+  const board = useRef<HTMLDivElement>(null);
+
+  // after a mission is passed the next one opens by itself — a moment later, so «Миссия выполнена» is seen first
+  useEffect(() => {
+    if (opening === null) return;
+    const t = setTimeout(() => {
+      setActive(opening);
+      setOpening(null);
+      requestAnimationFrame(() => board.current?.querySelector(`[data-mission="${opening}"]`)?.scrollIntoView({ behavior: "smooth", block: "start" }));
+    }, 1600);
+    return () => clearTimeout(t);
+  }, [opening]);
+
   function complete(i: number) {
     if (i !== done) return;
     emitPixel("correct");
     if (i === missions.length - 1) setTimeout(() => emitPixel("complete"), 1800);
+    else setOpening(i + 1);
     setDone(done + 1);
     setDates((d) => {
       const next = [...d];
@@ -77,7 +93,7 @@ export function MissionBoard({
   }
 
   return (
-    <div data-missions className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
+    <div ref={board} data-missions className="rounded-xl border border-[#e6e7ee] bg-white p-6 shadow-sm sm:p-8 dark:border-slate-800">
       <div className="mb-6 flex flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-3">
           <div className="flex h-11 w-11 items-center justify-center rounded-xl bg-amber-100 text-amber-700">
@@ -112,6 +128,7 @@ export function MissionBoard({
           return (
             <div
               key={m.title}
+              data-mission={i}
               className={`rounded-2xl border-2 transition ${
                 isOpen ? "border-sky-300 bg-white" : isDone ? "border-emerald-200 bg-emerald-50" : "border-slate-200 bg-slate-50"
               }`}
@@ -155,7 +172,7 @@ export function MissionBoard({
                   {isDone && i < missions.length - 1 && (
                     <button
                       type="button"
-                      onClick={() => setActive(i + 1)}
+                      onClick={() => (setOpening(null), setActive(i + 1))}
                       className="mt-4 inline-flex items-center gap-1 rounded-full bg-gradient-to-r from-sky-500 to-emerald-500 px-5 py-2 text-sm font-bold text-white shadow"
                     >
                       Следующая миссия

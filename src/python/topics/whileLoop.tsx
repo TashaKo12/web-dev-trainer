@@ -20,7 +20,7 @@ export const WHILE_LOOP: PythonTopicData = {
         ),
         examples: [
           { code: "i = 1\nwhile i <= 3:\n    print(i)\n    i += 1", out: "1\n2\n3" },
-          { code: 'энергия = 3\nwhile энергия > 0:\n    print("Работаю!")\n    энергия -= 1\nprint("Устал")', out: "Работаю!\nРаботаю!\nРаботаю!\nУстал" },
+          { code: 'energy = 3\nwhile energy > 0:\n    print("Работаю!")\n    energy -= 1\nprint("Устал")', out: "Работаю!\nРаботаю!\nРаботаю!\nУстал" },
         ],
       },
       {
@@ -45,7 +45,7 @@ export const WHILE_LOOP: PythonTopicData = {
           </>
         ),
         examples: [
-          { code: 'ответ = ""\nwhile ответ != "да":\n    ответ = input("Готов? ")\nprint("Поехали!")', out: "Готов? нет\nГотов? да\nПоехали!" },
+          { code: 'answer = ""\nwhile answer != "да":\n    answer = input("Готов? ")\nprint("Поехали!")', out: "Готов? нет\nГотов? да\nПоехали!" },
         ],
       },
       {
@@ -71,7 +71,7 @@ export const WHILE_LOOP: PythonTopicData = {
         ),
         examples: [
           { code: "for i in range(3):\n    print(i)", out: "0\n1\n2", note: "Количество повторов известно — for." },
-          { code: "копилка = 0\nwhile копилка < 100:\n    копилка += 30\nprint(копилка)", out: "120", note: "Повторяем, пока не наберётся 100 — while." },
+          { code: "savings = 0\nwhile savings < 100:\n    savings += 30\nprint(savings)", out: "120", note: "Повторяем, пока не наберётся 100 — while." },
         ],
       },
     ],
@@ -109,11 +109,11 @@ export const WHILE_LOOP: PythonTopicData = {
           </p>
         ),
         goal: "Запусти и попробуй ответить неправильно, а потом — «пожалуйста».",
-        start: 'слово = ""\n',
+        start: 'word = ""\n',
         check: (_r, _a, code) => {
           const r = runPython(code, ["нет", "открой", "пожалуйста"]);
           if (r.error || r.waiting) return "Цикл должен спрашивать снова, пока не скажут «пожалуйста».";
-          return r.prompts.length === 3 && r.printed.trim() === "Спасибо!" ? true : "Спрашивай в цикле while слово != \"пожалуйста\", а «Спасибо!» выведи после цикла.";
+          return r.prompts.length === 3 && r.printed.trim() === "Спасибо!" ? true : "Спрашивай в цикле while word != \"пожалуйста\", а «Спасибо!» выведи после цикла.";
         },
       },
       {
@@ -125,7 +125,7 @@ export const WHILE_LOOP: PythonTopicData = {
           </p>
         ),
         goal: "В терминале должно появиться: 120",
-        start: "копилка = 0\n",
+        start: "savings = 0\n",
         check: (r, _a, code) =>
           r.printed.trim() !== "120" ? "Должно получиться 120." : !uses(code, "while") || /120/.test(code) ? "Пусть считает цикл while, а не готовое число." : true,
       },
@@ -138,7 +138,7 @@ export const WHILE_LOOP: PythonTopicData = {
           </p>
         ),
         goal: "3 → Не то, 9 → Не то, 7 → Угадал! и конец.",
-        start: "секрет = 7\nwhile True:\n    ",
+        start: "secret = 7\nwhile True:\n    ",
         check: (_r, _a, code) =>
           !uses(code, "break")
             ? "Выйди из цикла с помощью break."
@@ -187,7 +187,7 @@ export const WHILE_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "56" }],
       rule: (code) => uses(code, "while") && !/56/.test(code),
       ruleHint: "пусть сумму посчитает цикл while.",
-      explain: "сумма = 0, while сумма < 50: сумма += 7, потом print(сумма). Последний шаг: 49 → 56.",
+      explain: "total = 0, while total < 50: total += 7, потом print(total). Последний шаг: 49 → 56.",
     },
     {
       badge: "до стоп-слова",
@@ -199,7 +199,7 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "while"),
       ruleHint: "спрашивай в цикле while.",
-      explain: 'слово = "", while слово != "стоп": слово = input(), после цикла print("Конец").',
+      explain: 'word = "", while word != "стоп": word = input(), после цикла print("Конец").',
     },
     {
       badge: "сумма до нуля",
@@ -212,7 +212,7 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "while"),
       ruleHint: "используй цикл while.",
-      explain: "сумма = 0, n = int(input()), while n != 0: сумма += n и снова n = int(input()), потом print(сумма).",
+      explain: "total = 0, n = int(input()), while n != 0: total += n и снова n = int(input()), потом print(total).",
     },
     {
       badge: "break",
@@ -247,7 +247,7 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "while") && !uses(code, "len"),
       ruleHint: "считай цифры в цикле while через //, без len.",
-      explain: "счёт = 0, while n > 0: n //= 10 и счёт += 1. Каждое // 10 отбрасывает одну цифру.",
+      explain: "count = 0, while n > 0: n //= 10 и count += 1. Каждое // 10 отбрасывает одну цифру.",
     },
     {
       badge: "continue",

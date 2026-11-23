@@ -1,5 +1,5 @@
 import type { LucideIcon } from "lucide-react";
-import { Binary, Database, History, ListChecks, Network, Server, Sigma, Table2, Trophy } from "lucide-react";
+import { Binary, Combine, Database, History, ListChecks, Network, Server, Sigma, Table2, Trophy } from "lucide-react";
 import {
   HTML_MISSIONS } from "../missions/html";
 import {
@@ -545,11 +545,22 @@ export const trainers: TrainerMeta[] = [
     path: "/python/if",
     icon: GitBranch,
     title: "Условия: if",
-    summary: "Программа выбирает, что делать: if, else, elif, сравнения, and и or.",
+    summary: "Программа выбирает, что делать: if, else, elif и сравнения.",
     taskCount: 10,
     gradient: "from-sky-500 to-indigo-500",
     section: "python",
     missions: { storageKey: "wdt:missions:python-if", count: 5 },
+  },
+  {
+    id: "python-logic",
+    path: "/python/logic",
+    icon: Combine,
+    title: "Условия: and, or, not, in",
+    summary: "Сложные условия: «и», «или», «не» и проверка, есть ли буква или слово внутри текста.",
+    taskCount: 10,
+    gradient: "from-indigo-500 to-purple-500",
+    section: "python",
+    missions: { storageKey: "wdt:missions:python-logic", count: 5 },
   },
   {
     id: "python-for",

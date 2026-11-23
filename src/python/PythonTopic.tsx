@@ -218,7 +218,7 @@ export function PythonTopicPage({ data }: { data: PythonTopicData }) {
       <div className="mb-10">
         <Tasks id={data.id} levels={data.levels} />
       </div>
-      <SectionHeading kicker="Проверь себя" title="Верно или неверно?" description="Пролистай 10 карточек — угадай, где правда, а где нет." />
+      <SectionHeading kicker="Проверь себя" title="Верно или неверно?" description={`Пролистай ${data.cards.length} карточек — угадай, где правда, а где нет.`} />
       <TrueFalseDeck statements={data.cards} accent={meta.gradient} />
     </TopicSlider>
   );

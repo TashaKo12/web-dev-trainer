@@ -52,26 +52,26 @@ export const FOR_LOOP: PythonTopicData = {
         title: "Перебор букв",
         text: (
           <>
-            <C>for</C> умеет проходить не только по числам, но и по буквам слова: <C>for буква in "кот":</C> — на каждом шаге в
+            <C>for</C> умеет проходить не только по числам, но и по буквам слова: <C>for letter in "кот":</C> — на каждом шаге в
             переменной следующая буква.
           </>
         ),
         examples: [
-          { code: 'for буква in "кот":\n    print(буква)', out: "к\nо\nт" },
-          { code: 'слово = input("Слово: ")\nfor б in слово:\n    print(б * 2, end="")', out: "Слово: да\nддаа" },
+          { code: 'for letter in "кот":\n    print(letter)', out: "к\nо\nт" },
+          { code: 'word = input("Слово: ")\nfor ch in word:\n    print(ch * 2, end="")', out: "Слово: да\nддаа" },
         ],
       },
       {
         title: "Копим сумму",
         text: (
           <>
-            Чтобы сложить много чисел, заводим переменную до цикла: <C>сумма = 0</C>, внутри прибавляем: <C>сумма += i</C>, а
+            Чтобы сложить много чисел, заводим переменную до цикла: <C>total = 0</C>, внутри прибавляем: <C>total += i</C>, а
             печатаем <b>после</b> цикла, без отступа. Если поставить <C>print</C> внутрь, он напечатает промежуточные суммы.
           </>
         ),
         examples: [
-          { code: "сумма = 0\nfor i in range(1, 5):\n    сумма += i\nprint(сумма)", out: "10" },
-          { code: "сумма = 0\nfor i in range(1, 5):\n    сумма += i\n    print(сумма)", out: "1\n3\n6\n10", note: "print внутри цикла печатает на каждом шаге." },
+          { code: "total = 0\nfor i in range(1, 5):\n    total += i\nprint(total)", out: "10" },
+          { code: "total = 0\nfor i in range(1, 5):\n    total += i\n    print(total)", out: "1\n3\n6\n10", note: "print внутри цикла печатает на каждом шаге." },
         ],
       },
     ],
@@ -127,7 +127,7 @@ export const FOR_LOOP: PythonTopicData = {
           </p>
         ),
         goal: "Например: кот → к, о, т на отдельных строках.",
-        start: 'слово = input("Слово: ")\n',
+        start: 'word = input("Слово: ")\n',
         check: (_r, _a, code) =>
           !uses(code, "for")
             ? "Используй цикл for."
@@ -136,17 +136,17 @@ export const FOR_LOOP: PythonTopicData = {
                   { inputs: ["робот"], expected: "р\nо\nб\nо\nт" },
                 ])
               ? true
-              : "for буква in слово: и с отступом print(буква).",
+              : "for letter in word: и с отступом print(letter).",
       },
       {
         title: "Копилка очков",
         body: (
           <p>
-            Спроси число n и выведи сумму всех чисел от 1 до n. Заведи <C>сумма = 0</C> до цикла и печатай после него.
+            Спроси число n и выведи сумму всех чисел от 1 до n. Заведи <C>total = 0</C> до цикла и печатай после него.
           </p>
         ),
         goal: "Например: 4 → 10 (1 + 2 + 3 + 4).",
-        start: 'n = int(input("До какого числа? "))\nсумма = 0\n',
+        start: 'n = int(input("До какого числа? "))\ntotal = 0\n',
         check: (_r, _a, code) =>
           !uses(code, "for")
             ? "Используй цикл for."
@@ -156,7 +156,7 @@ export const FOR_LOOP: PythonTopicData = {
                   { inputs: ["1"], expected: "1" },
                 ])
               ? true
-              : "for i in range(1, n + 1): сумма += i, а print(сумма) — после цикла.",
+              : "for i in range(1, n + 1): total += i, а print(total) — после цикла.",
       },
     ],
   },
@@ -234,7 +234,7 @@ export const FOR_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for"),
       ruleHint: "посчитай сумму в цикле for.",
-      explain: "сумма = 0, for i in range(1, n + 1): сумма += i, после цикла print(сумма).",
+      explain: "total = 0, for i in range(1, n + 1): total += i, после цикла print(total).",
     },
     {
       badge: "буквы",
@@ -246,7 +246,7 @@ export const FOR_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for"),
       ruleHint: "перебери буквы циклом for.",
-      explain: 'for б in слово: print(б * 2, end="").',
+      explain: 'for ch in word: print(ch * 2, end="").',
     },
     {
       badge: "счётчик",
@@ -259,19 +259,19 @@ export const FOR_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for"),
       ruleHint: "посчитай буквы в цикле for.",
-      explain: 'счёт = 0, for б in слово: if б == "а": счёт += 1, после цикла print(счёт).',
+      explain: 'count = 0, for ch in word: if ch == "а": count += 1, после цикла print(count).',
     },
   ],
   cards: [
     { text: "range(5) даёт числа от 1 до 5.", answer: false, explain: "Нет, от 0 до 4: range начинает с нуля и не включает последнее число." },
     { text: "Строки тела цикла пишут с отступом.", answer: true, explain: "Да, по отступу Python понимает, что нужно повторять." },
     { text: "range(1, 10, 3) даёт 1, 4, 7.", answer: true, explain: "Да: от 1 с шагом 3, пока меньше 10." },
-    { text: "for можно использовать, чтобы перебрать буквы слова.", answer: true, explain: "Да: for буква in \"кот\": — по одной букве на шаге." },
+    { text: "for можно использовать, чтобы перебрать буквы слова.", answer: true, explain: "Да: for letter in \"кот\": — по одной букве на шаге." },
     { text: "print после цикла без отступа выполнится столько же раз, сколько цикл.", answer: false, explain: "Нет, один раз — когда цикл закончится." },
     { text: "range(5, 0, -1) считает 5, 4, 3, 2, 1.", answer: true, explain: "Да, отрицательный шаг считает назад, ноль не включается." },
     { text: "В строке с for в конце не нужно двоеточие.", answer: false, explain: "Нужно: for i in range(3): — иначе SyntaxError." },
     { text: "Переменную для суммы лучше создать внутри цикла.", answer: false, explain: "Нет, внутри она будет обнуляться на каждом шаге. Создают до цикла." },
     { text: 'print("*", end="") печатает звёздочку без перехода на новую строку.', answer: true, explain: "Да, end задаёт, что печатать в конце вместо переноса." },
-    { text: "Переменная цикла всегда должна называться i.", answer: false, explain: "Нет, имя любое: for буква in слово:, for день in range(7):" },
+    { text: "Переменная цикла всегда должна называться i.", answer: false, explain: "Нет, имя любое: for letter in word:, for day in range(7):" },
   ],
 };

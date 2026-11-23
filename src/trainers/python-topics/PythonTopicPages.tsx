@@ -1,6 +1,7 @@
 import { PythonTopicPage } from "../../python/PythonTopic";
 import { VARIABLES } from "../../python/topics/variables";
 import { CONDITIONS } from "../../python/topics/conditions";
+import { LOGIC } from "../../python/topics/logic";
 import { FOR_LOOP } from "../../python/topics/forLoop";
 import { WHILE_LOOP } from "../../python/topics/whileLoop";
 import { TYPES } from "../../python/topics/types";
@@ -12,6 +13,10 @@ export function PythonVariablesTrainer() {
 
 export function PythonIfTrainer() {
   return <PythonTopicPage data={CONDITIONS} />;
+}
+
+export function PythonLogicTrainer() {
+  return <PythonTopicPage data={LOGIC} />;
 }
 
 export function PythonForTrainer() {

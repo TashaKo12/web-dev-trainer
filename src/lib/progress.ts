@@ -43,6 +43,7 @@ export type TrainerId =
   | "python-input"
   | "python-variables"
   | "python-if"
+  | "python-logic"
   | "python-for"
   | "python-while"
   | "python-types"

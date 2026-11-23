@@ -55,7 +55,7 @@ const SqlTablesPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default
 const SqlCrudPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlCrudPage })));
 const SqlFinalPage = lazy(() => import("./sql/SqlPages").then((m) => ({ default: m.SqlFinalPage })));
 const Lazy = ({ children }: { children: ReactNode }) => <Suspense fallback={<p className="p-6 text-center text-sm text-slate-400">Загружаю…</p>}>{children}</Suspense>;
-import { PythonForTrainer, PythonIfTrainer, PythonStringsTrainer, PythonTypesTrainer, PythonVariablesTrainer, PythonWhileTrainer } from "./trainers/python-topics/PythonTopicPages";
+import { PythonForTrainer, PythonIfTrainer, PythonLogicTrainer, PythonStringsTrainer, PythonTypesTrainer, PythonVariablesTrainer, PythonWhileTrainer } from "./trainers/python-topics/PythonTopicPages";
 import {
   CssSizesTrainer,
   CssUnitsTrainer,
@@ -149,6 +149,7 @@ function App() {
           <Route path="python/input" element={<PythonInputTrainer />} />
           <Route path="python/variables" element={<PythonVariablesTrainer />} />
           <Route path="python/if" element={<PythonIfTrainer />} />
+          <Route path="python/logic" element={<PythonLogicTrainer />} />
           <Route path="python/for" element={<PythonForTrainer />} />
           <Route path="python/while" element={<PythonWhileTrainer />} />
           <Route path="python/types" element={<PythonTypesTrainer />} />
