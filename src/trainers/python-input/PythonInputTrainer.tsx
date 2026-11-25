@@ -1,4 +1,4 @@
-import { describeFailure } from "../../python/PythonTopic";
+import { describeFailure, ExpectedList } from "../../python/PythonTopic";
 import { ResetDraft, useDraft } from "../../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../../components/TopicSlider";
@@ -318,18 +318,13 @@ function IOLevelTask({ level, onResult }: { level: IOLevel; onResult: (correct: 
     onResult(failing === -1 && (level.rule ? level.rule(results) : true));
   }
 
-  const sample = level.tests[0];
 
   return (
     <div className="space-y-4">
       <p className="text-sm font-semibold text-slate-700">{level.prompt}</p>
       <div className="rounded-2xl bg-slate-50 p-3 text-sm">
-        <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">Пример</p>
-        <p className="text-slate-600">
-          Если ответить: <b className="font-mono">{sample.inputs.join(", ")}</b>
-        </p>
-        <p className="mb-1 mt-1 text-slate-600">print должен напечатать:</p>
-        <pre className="whitespace-pre-wrap rounded-xl bg-slate-950 px-3 py-2 font-mono text-emerald-200">{sample.expected}</pre>
+        <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">Что должно получиться</p>
+        <ExpectedList tests={level.tests} />
       </div>
       <CodeEditor value={code} onChange={setCode} onRun={() => runner.run(code)} disabled={!!checked} />
       {!checked && (
@@ -375,7 +370,11 @@ function Tasks() {
       status={stepper.status}
       isLast={stepper.isLast}
       badge={level.badge}
-      explain={level.explain}
+      explain={
+        <>
+          <b>Пример решения</b> (свои переменные можно назвать иначе): {level.explain}
+        </>
+      }
       onJump={stepper.goTo}
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-violet-500 to-sky-500"

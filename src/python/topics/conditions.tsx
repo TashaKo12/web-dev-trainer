@@ -112,7 +112,7 @@ export const CONDITIONS: PythonTopicData = {
             <C>if</C>.
           </p>
         ),
-        goal: "pixel → «Дверь открыта», всё остальное → «Доступ запрещён».",
+        goal: "Если ввели pixel — «Дверь открыта», если любой другой пароль — «Доступ запрещён».",
         start: 'password = input("Пароль: ")\nif password == "pixel":\n    print("Дверь открыта")\n',
         check: (_r, _a, code) =>
           passes(code, [
@@ -218,7 +218,7 @@ export const CONDITIONS: PythonTopicData = {
     },
     {
       badge: "else",
-      prompt: "Спроси возраст. Если он больше или равен 18 (age >= 18) — «Взрослый», иначе — «Ребёнок».",
+      prompt: "Спроси возраст. Если он больше или равен 18 (>= 18) — «Взрослый», иначе — «Ребёнок».",
       start: "",
       tests: [
         { inputs: ["18"], expected: "Взрослый" },
@@ -241,7 +241,7 @@ export const CONDITIONS: PythonTopicData = {
     },
     {
       badge: "elif",
-      prompt: "Спроси оценку: 5 — «Отлично», 4 — «Хорошо», 3 — «Удовлетворительно», остальное — «Попробуй ещё».",
+      prompt: "Спроси оценку и напечатай: если ввели 5 — Отлично, если 4 — Хорошо, если 3 — Удовлетворительно, а если любое другое число (например, 2) — Попробуй ещё.",
       start: "",
       tests: [
         { inputs: ["5"], expected: "Отлично" },
@@ -251,7 +251,7 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "elif"),
       ruleHint: "используй elif.",
-      explain: "grade = int(input()), потом if grade == 5: …, elif grade == 4: …, elif grade == 3: …, else: …",
+      explain: 'grade = int(input()), потом if grade == 5: print("Отлично"), elif grade == 4: print("Хорошо"), elif grade == 3: print("Удовлетворительно"), else: print("Попробуй ещё").',
     },
     {
       badge: "без max",

@@ -130,6 +130,30 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: PyMi
   );
 }
 
+/** Every check of a task: what is typed in and what exactly must be printed. */
+export function ExpectedList({ tests }: { tests: { inputs: string[]; expected: string }[] }) {
+  return (
+    <div className="overflow-x-auto">
+      <table className="w-full text-left">
+        <thead className="text-xs text-slate-500">
+          <tr>
+            <th className="py-1 pr-4 font-semibold">Если ввести</th>
+            <th className="py-1 font-semibold">программа должна напечатать</th>
+          </tr>
+        </thead>
+        <tbody>
+          {tests.map((t, i) => (
+            <tr key={i} className="border-t border-slate-200 align-top">
+              <td className="whitespace-pre-wrap py-1.5 pr-4 font-mono font-bold text-slate-700">{t.inputs.join(", ")}</td>
+              <td className="whitespace-pre-wrap py-1.5 font-mono text-slate-700">{t.expected || "(ничего)"}</td>
+            </tr>
+          ))}
+        </tbody>
+      </table>
+    </div>
+  );
+}
+
 function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: boolean) => void }) {
   const [code, setCode] = useDraft(level.start);
   const runner = useProgramRunner();
@@ -157,14 +181,15 @@ function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: bo
       <p className="text-sm font-semibold text-slate-700">{level.prompt}</p>
       {level.ruleHint && <p className="text-sm text-slate-600"><b>Условие:</b> {level.ruleHint}</p>}
       <div className="rounded-2xl bg-slate-50 p-3 text-sm">
-        <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">Пример</p>
-        {asks && (
-          <p className="text-slate-600">
-            Если ответить: <b className="font-mono">{sample.inputs.join(", ")}</b>
-          </p>
+        <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">Что должно получиться</p>
+        {asks ? (
+          <ExpectedList tests={level.tests} />
+        ) : (
+          <>
+            <p className="mb-1 mt-1 text-slate-600">Программа должна напечатать:</p>
+            <pre className="whitespace-pre-wrap rounded-xl bg-slate-950 px-3 py-2 font-mono text-emerald-200">{sample.expected || "(ничего)"}</pre>
+          </>
         )}
-        <p className="mb-1 mt-1 text-slate-600">Программа должна напечатать:</p>
-        <pre className="whitespace-pre-wrap rounded-xl bg-slate-950 px-3 py-2 font-mono text-emerald-200">{sample.expected || "(ничего)"}</pre>
       </div>
       <CodeEditor value={code} onChange={setCode} onRun={() => runner.run(code)} disabled={!!checked} />
       {!checked && (
@@ -213,7 +238,11 @@ function Tasks({ id, levels }: { id: TrainerId; levels: PyLevel[] }) {
       status={stepper.status}
       isLast={stepper.isLast}
       badge={level.badge}
-      explain={level.explain}
+      explain={
+        <>
+          <b>Пример решения</b> (свои переменные можно назвать иначе): {level.explain}
+        </>
+      }
       onJump={stepper.goTo}
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-violet-500 to-sky-500"
