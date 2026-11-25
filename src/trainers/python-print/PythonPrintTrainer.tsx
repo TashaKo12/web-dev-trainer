@@ -1,3 +1,4 @@
+import { RichText } from "../../components/RichText";
 import { useDraft } from "../../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../../components/TopicSlider";
@@ -245,7 +246,7 @@ const LEVELS: PyLevel[] = [
     start: "",
     expected: "Python\nэто весело",
     rule: (code) => (code.match(/print\s*\(/g) ?? []).length >= 2,
-    explain: 'print("Python") и print("это весело") — каждая команда print печатает с новой строки.',
+    explain: "```\nprint(\"Python\")\nprint(\"это весело\")\n```\nКаждая команда print печатает с новой строки.",
   },
   {
     badge: "исправь ошибку",
@@ -270,7 +271,7 @@ const LEVELS: PyLevel[] = [
     start: 'print("Начало")\n\nprint("Конец")',
     expected: "Начало\n\nКонец",
     rule: (code) => (code.match(/print\s*\(/g) ?? []).length >= 3,
-    explain: "print() без ничего внутри печатает пустую строку.",
+    explain: "```\nprint(\"Начало\")\nprint()\nprint(\"Конец\")\n```\nprint() без ничего внутри печатает пустую строку.",
   },
   {
     badge: "разделитель",
@@ -373,7 +374,7 @@ function Tasks() {
       status={stepper.status}
       isLast={stepper.isLast}
       badge={level.badge}
-      explain={level.explain}
+      explain={<RichText text={level.explain} />}
       onJump={stepper.goTo}
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-sky-500 to-emerald-500"

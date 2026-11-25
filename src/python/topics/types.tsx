@@ -153,7 +153,7 @@ export const TYPES: PythonTopicData = {
             { inputs: ["1.25"], expected: "1.75" },
           ])
             ? true
-            : "Дробное число получают через float(): weight = float(input(...)), потом print(weight + 0.5).",
+            : "Дробное число получают через float():\n```\nweight = float(input(\"Вес посылки: \"))\nprint(weight + 0.5)\n```",
       },
       {
         title: "Пустая коробка",
@@ -177,7 +177,8 @@ export const TYPES: PythonTopicData = {
       tests: [{ inputs: [], expected: "<class 'str'>" }],
       rule: (code) => uses(code, "type"),
       ruleHint: "используй type().",
-      explain: 'print(type("123")) — в кавычках это текст, хоть там и цифры.',
+      explain:
+        "```\nprint(type(\"123\"))\n```\nВ кавычках это текст, хоть там и цифры.",
     },
     {
       badge: "исправь ошибку",
@@ -187,7 +188,8 @@ export const TYPES: PythonTopicData = {
         { inputs: ["2", "3"], expected: "5" },
         { inputs: ["10", "1"], expected: "11" },
       ],
-      explain: "input() даёт текст. print(int(a) + int(b)) — или сразу a = int(input(...)).",
+      explain:
+        "```\na = input(\"Первое: \")\nb = input(\"Второе: \")\nprint(int(a) + int(b))\n```\ninput() даёт текст, а int() превращает его в число.",
     },
     {
       badge: "str()",
@@ -199,7 +201,8 @@ export const TYPES: PythonTopicData = {
       ],
       rule: (code) => codeOnly(code).includes("+"),
       ruleHint: "склей строку через +.",
-      explain: 'print("Имя: " + name + ", возраст: " + age) — возраст и так текст из input. Если сделал его int — оберни в str().',
+      explain:
+        "```\nname = input(\"Имя: \")\nage = input(\"Возраст: \")\nprint(\"Имя: \" + name + \", возраст: \" + age)\n```\nВозраст из input — уже текст, его можно склеивать. Если сделал его числом, оберни в str().",
     },
     {
       badge: "float()",
@@ -211,7 +214,8 @@ export const TYPES: PythonTopicData = {
       ],
       rule: (code) => uses(code, "float"),
       ruleHint: "дробное число получают через float().",
-      explain: "price = float(input()), print(price * 2). float(\"10\") — это 10.0, поэтому и ответ 20.0.",
+      explain:
+        "```\nprice = float(input(\"Цена: \"))\nprint(price * 2)\n```\nfloat(\"10\") — это 10.0, поэтому и ответ 20.0.",
     },
     {
       badge: "int()",
@@ -223,7 +227,8 @@ export const TYPES: PythonTopicData = {
       ],
       rule: (code) => uses(code, "int"),
       ruleHint: "отбрось дробную часть через int().",
-      explain: "x = float(input()), print(int(x)). int не округляет, а отбрасывает: int(3.9) == 3.",
+      explain:
+        "```\nx = float(input(\"Число: \"))\nprint(int(x))\n```\nint не округляет, а отбрасывает: int(3.9) — это 3.",
     },
     {
       badge: "round()",
@@ -235,7 +240,8 @@ export const TYPES: PythonTopicData = {
       ],
       rule: (code) => uses(code, "round"),
       ruleHint: "округли через round().",
-      explain: "print(round(float(input()))) — round, в отличие от int, округляет к ближайшему.",
+      explain:
+        "```\nx = float(input(\"Число: \"))\nprint(round(x))\n```\nround, в отличие от int, округляет к ближайшему.",
     },
     {
       badge: "bool()",
@@ -244,7 +250,8 @@ export const TYPES: PythonTopicData = {
       tests: [{ inputs: [], expected: "False True False" }],
       rule: (code) => uses(code, "bool"),
       ruleHint: "используй bool() три раза.",
-      explain: 'print(bool(0), bool(10), bool("")) — ноль и пустая строка считаются «нет».',
+      explain:
+        "```\nprint(bool(0), bool(10), bool(\"\"))\n```\nНоль и пустая строка считаются «нет».",
     },
     {
       badge: "type() ==",
@@ -256,7 +263,8 @@ export const TYPES: PythonTopicData = {
       ],
       rule: (code) => uses(code, "type") && /==\s*str/.test(codeOnly(code)),
       ruleHint: "сравни тип: type(x) == str.",
-      explain: "x = input(), print(type(x) == str) — даже «5» из input — это строка.",
+      explain:
+        "```\nx = input(\"Что-нибудь: \")\nprint(type(x) == str)\n```\nДаже «5» из input — это строка.",
     },
     {
       badge: "исправь ошибку",
@@ -265,7 +273,8 @@ export const TYPES: PythonTopicData = {
       tests: [{ inputs: [], expected: "15" }],
       rule: (code) => uses(code, "int"),
       ruleHint: "оставь int(), исправь только текст.",
-      explain: 'int("15") — в тексте для int должны быть только цифры, без слов.',
+      explain:
+        "```\nn = int(\"15\")\nprint(n)\n```\nВ тексте для int должны быть только цифры, без слов.",
     },
     {
       badge: "напиши сам",
@@ -275,7 +284,8 @@ export const TYPES: PythonTopicData = {
         { inputs: ["2.5"], expected: "6" },
         { inputs: ["3"], expected: "9" },
       ],
-      explain: "a = float(input()), print(round(a * a)). 2.5 × 2.5 = 6.25, округляем — 6.",
+      explain:
+        "```\na = float(input(\"Сторона: \"))\nprint(round(a * a))\n```\n2.5 × 2.5 = 6.25, округляем — 6.",
     },
   ],
   cards: [

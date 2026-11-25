@@ -173,7 +173,7 @@ export const FUNCTIONS: JsTopicData = {
         start: "function hello() {\n  \n}\n",
         check: (r, code) =>
           !declares(code, "hello")
-            ? "Объяви функцию: function hello() { … }."
+            ? "Объяви функцию:\n```\nfunction hello() {\n  ...\n}\n```"
             : !r.logs.length
               ? "Функция объявлена, но не вызвана: допиши внизу hello();"
               : !same(r, ["Привет, я Пиксель!"])
@@ -197,7 +197,7 @@ export const FUNCTIONS: JsTopicData = {
         calls: ['greet("Пиксель")'],
         check: (r) =>
           !same(r, ["Привет, Оля!", "Привет, Миша!"])
-            ? "Нужно две строки: Привет, Оля! и Привет, Миша! Склей текст и параметр: \"Привет, \" + name + \"!\"."
+            ? "Нужно две строки: Привет, Оля! и Привет, Миша! Склей текст и параметр:\n```\nfunction greet(name) {\n  console.log(\"Привет, \" + name + \"!\");\n}\n```"
             : r.calls[0]?.logs.join("\n") !== "Привет, Пиксель!"
               ? "Похоже, имена вписаны вручную. Используй параметр name внутри функции."
               : true,
@@ -237,7 +237,7 @@ export const FUNCTIONS: JsTopicData = {
         calls: ["double(5)", "double(0)"],
         check: (r, code) =>
           logs(r).endsWith("undefined") || !/\breturn\b/.test(jsCodeOnly(code))
-            ? "Функция ничего не вернула: напиши внутри return n * 2;"
+            ? "Функция ничего не вернула. Верни результат:\n```\nfunction double(n) {\n  return n * 2;\n}\n```"
             : logs(r).split("\n").pop() !== "42"
               ? "Должно получиться 42."
               : r.calls[0]?.value !== "10" || r.calls[1]?.value !== "0"
@@ -283,7 +283,8 @@ export const FUNCTIONS: JsTopicData = {
         { call: "square(0)", returns: "0" },
         { call: "square(-2)", returns: "4" },
       ],
-      explain: "return n * n; — функция отдаёт результат, и вызов square(3) превращается в 9.",
+      explain:
+        "```\nfunction square(n) {\n  return n * n;\n}\n```\nФункция отдаёт результат, и вызов square(3) превращается в 9.",
     },
     {
       badge: "Уровень 2 · два параметра",
@@ -298,7 +299,8 @@ export const FUNCTIONS: JsTopicData = {
         { call: "sum(10, -4)", returns: "6" },
         { call: "sum(0, 0)", returns: "0" },
       ],
-      explain: "Два параметра перечисляют через запятую, а внутри пишут return a + b;",
+      explain:
+        "```\nfunction sum(a, b) {\n  return a + b;\n}\n```\nДва параметра перечисляют через запятую.",
     },
     {
       badge: "Уровень 3 · текст и параметр",
@@ -313,7 +315,8 @@ export const FUNCTIONS: JsTopicData = {
         { call: 'greet("Миша")', returns: "Привет, Миша!" },
         { call: 'greet("Пиксель")', returns: "Привет, Пиксель!" },
       ],
-      explain: 'Текст склеивают знаком +: return "Привет, " + name + "!"; — пробел после запятой стоит внутри кавычек.',
+      explain:
+        "```\nfunction greet(name) {\n  return \"Привет, \" + name + \"!\";\n}\n```\nТекст склеивают знаком +. Пробел после запятой стоит внутри кавычек.",
     },
     {
       badge: "Уровень 4 · console.log внутри",
@@ -328,7 +331,8 @@ export const FUNCTIONS: JsTopicData = {
         { call: 'about("Миша", 11)', prints: "Меня зовут Миша, мне 11 лет" },
         { call: 'about("Пиксель", 10)', prints: "Меня зовут Пиксель, мне 10 лет" },
       ],
-      explain: 'console.log("Меня зовут " + name + ", мне " + age + " лет"); — оба параметра стоят на своих местах в тексте.',
+      explain:
+        "```\nfunction about(name, age) {\n  console.log(\"Меня зовут \" + name + \", мне \" + age + \" лет\");\n}\n```\nОба параметра стоят на своих местах в тексте.",
     },
     {
       badge: "Уровень 5 · вызови сам",
@@ -342,7 +346,8 @@ export const FUNCTIONS: JsTopicData = {
       output: "3 × пирог\n1 × чай",
       rule: (code) => calls(code, "order") >= 2 && !/×\s*(пирог|чай)/.test(code.split("\n").slice(3).join("\n")),
       ruleHint: "получи обе строки вызовами order(…), а не готовым текстом.",
-      explain: 'console.log(order("пирог", 3)); — сначала блюдо, потом количество, как в параметрах.',
+      explain:
+        "```\nfunction order(dish, count) {\n  return count + \" × \" + dish;\n}\n\nconsole.log(order(\"пирог\", 3));\nconsole.log(order(\"чай\", 1));\n```\nСначала блюдо, потом количество — как в параметрах.",
     },
     {
       badge: "Уровень 6 · да или нет",
@@ -358,7 +363,8 @@ export const FUNCTIONS: JsTopicData = {
         { call: "canRide(120)", returns: "true" },
         { call: "canRide(110)", returns: "false" },
       ],
-      explain: "Сравнение само даёт true или false, поэтому достаточно return height >= 120;",
+      explain:
+        "```\nfunction canRide(height) {\n  return height >= 120;\n}\n```\nСравнение само даёт true или false.",
     },
     {
       badge: "Уровень 7 · if внутри функции",
@@ -374,7 +380,8 @@ export const FUNCTIONS: JsTopicData = {
         { call: "bigger(-1, -5)", returns: "-1" },
         { call: "bigger(4, 4)", returns: "4" },
       ],
-      explain: "if (a > b) { return a; } return b; — return сразу заканчивает функцию, поэтому else не обязателен.",
+      explain:
+        "```\nfunction bigger(a, b) {\n  if (a > b) {\n    return a;\n  }\n  return b;\n}\n```\nreturn сразу заканчивает функцию, поэтому else не обязателен.",
     },
     {
       badge: "Уровень 8 · значение по умолчанию",
@@ -390,7 +397,8 @@ export const FUNCTIONS: JsTopicData = {
         { call: "price(100, 3, 50)", returns: "250" },
         { call: "price(20, 5)", returns: "100" },
       ],
-      explain: "discount = 0 в скобках объявления: без третьего аргумента скидка станет нулём, а не undefined.",
+      explain:
+        "```\nfunction price(cost, count, discount = 0) {\n  return cost * count - discount;\n}\n```\nБез третьего аргумента скидка станет нулём, а не undefined.",
     },
     {
       badge: "Уровень 9 · функция в функции",
@@ -408,7 +416,8 @@ export const FUNCTIONS: JsTopicData = {
       ],
       rule: (code) => calls(code, "area") >= 1,
       ruleHint: "площадь посчитай вызовом area(w, h).",
-      explain: 'return "Площадь: " + area(w, h) + ", периметр: " + 2 * (w + h); — одна функция может вызывать другую.',
+      explain:
+        "```\nfunction area(w, h) {\n  return w * h;\n}\n\nfunction card(w, h) {\n  return \"Площадь: \" + area(w, h) + \", периметр: \" + 2 * (w + h);\n}\n```\nОдна функция может вызывать другую.",
     },
     {
       badge: "Уровень 10 · стрелочная функция",
@@ -425,7 +434,8 @@ export const FUNCTIONS: JsTopicData = {
       ],
       rule: (code) => /=>/.test(jsCodeOnly(code)),
       ruleHint: "запиши функцию стрелкой =>.",
-      explain: "const triple = (n) => n * 3; — справа от стрелки одно выражение, поэтому return не нужен.",
+      explain:
+        "```\nconst triple = (n) => n * 3;\n```\nСправа от стрелки одно выражение, поэтому return не нужен.",
     },
   ],
   cards: [

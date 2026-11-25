@@ -1,3 +1,4 @@
+import { RichText } from "../components/RichText";
 import { ResetDraft, useDraft } from "../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../components/TopicSlider";
@@ -54,7 +55,7 @@ export function passes(code: string, tests: { inputs: string[]; expected: string
 
 const shown = (s: string) => {
   const t = s.replace(/\n+$/, "");
-  return t ? `«${t.split("\n").join(" ⏎ ")}»` : "ничего";
+  return `\`\`\`\n${t || "(ничего)"}\n\`\`\``;
 };
 
 /** What exactly went wrong, on the data of the check: the names of variables do not matter, only the result does. */
@@ -64,8 +65,8 @@ export function describeFailure(r: RunResult, t: { inputs: string[]; expected: s
     ? `остановилась с ошибкой ${r.error.type}: ${r.error.message}`
     : r.waiting
       ? "задала больше вопросов, чем нужно по условию"
-      : `напечатала ${shown(r.printed)}`;
-  return `${given} должна напечатать ${shown(t.expected)}, а ${got}.`;
+      : `напечатала:\n${shown(r.printed)}`;
+  return `${given} должна напечатать:\n${shown(t.expected)}\nа ${got}`;
 }
 let lastFailure: string | null = null;
 
@@ -103,7 +104,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: PyMi
       setSolved(true);
       onComplete();
     } else {
-      setHint(lastFailure ? `${lastFailure} Подсказка: ${verdict} Свои переменные называй как хочешь.` : verdict);
+      setHint(lastFailure ? `${lastFailure}\nПодсказка. ${verdict}\nСвои переменные называй как хочешь.` : verdict);
       if (!isDone) onMistake();
     }
   }
@@ -213,7 +214,7 @@ function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: bo
       )}
       {checked ? (
         <div className="space-y-2">
-          {checked.failed && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{checked.failed}</p>}
+          {checked.failed && <div className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800"><RichText text={checked.failed} /></div>}
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
             {checked.inputs.length ? `Проверка с ответами: ${checked.inputs.join(", ")}` : "Результат проверки"}
           </p>
@@ -240,7 +241,8 @@ function Tasks({ id, levels }: { id: TrainerId; levels: PyLevel[] }) {
       badge={level.badge}
       explain={
         <>
-          <b>Пример решения</b> (свои переменные можно назвать иначе): {level.explain}
+          <b>Пример решения</b> (свои переменные можно назвать иначе):
+          <RichText text={level.explain} />
         </>
       }
       onJump={stepper.goTo}

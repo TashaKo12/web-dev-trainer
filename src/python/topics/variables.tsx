@@ -155,7 +155,7 @@ export const VARIABLES: PythonTopicData = {
             { inputs: ["Миша", "9"], expected: "Герой: Миша\nСледующий уровень: 10" },
           ])
             ? true
-            : "Нужно две строки: Герой: имя и Следующий уровень: уровень + 1 (не забудь int для уровня).",
+            : "Нужны два вопроса и две строки, уровень — числом:\n```\nname = input(\"Как зовут героя? \")\nlevel = int(input(\"Уровень? \"))\nprint(\"Герой:\", name)\nprint(\"Следующий уровень:\", level + 1)\n```",
       },
     ],
   },
@@ -167,7 +167,8 @@ export const VARIABLES: PythonTopicData = {
       tests: [{ inputs: [], expected: "Казань" }],
       rule: printsVariable,
       ruleHint: "сохрани текст в переменную и выведи её — имя в print без кавычек.",
-      explain: 'city = "Казань" и print(city) — имя переменной пишут без кавычек.',
+      explain:
+        "```\ncity = \"Казань\"\nprint(city)\n```\nИмя переменной в print пишут без кавычек.",
     },
     {
       badge: "исправь ошибку",
@@ -176,7 +177,8 @@ export const VARIABLES: PythonTopicData = {
       tests: [{ inputs: [], expected: "Оля" }],
       rule: (code) => !/print\(\s*["']/.test(code),
       ruleHint: "выведи переменную, а не текст в кавычках.",
-      explain: "Name и name — разные переменные. Нужно print(name) — с маленькой буквы, как при создании.",
+      explain:
+        "```\nname = \"Оля\"\nprint(name)\n```\nName и name — разные переменные: в print имя пишут с маленькой буквы, как при создании.",
     },
     {
       badge: "+=",
@@ -188,7 +190,8 @@ export const VARIABLES: PythonTopicData = {
       ],
       rule: (code) => /\+=/.test(code),
       ruleHint: "прибавь 10 с помощью +=.",
-      explain: 'n = int(input("Число: ")), потом n += 10 и print(n).',
+      explain:
+        "```\nn = int(input(\"Число: \"))\nn += 10\nprint(n)\n```\nn += 10 прибавляет 10 к тому, что уже лежит в переменной.",
     },
     {
       badge: "напиши сам",
@@ -198,7 +201,8 @@ export const VARIABLES: PythonTopicData = {
         { inputs: ["3", "4"], expected: "12" },
         { inputs: ["5", "7"], expected: "35" },
       ],
-      explain: "width = int(input(...)), height = int(input(...)), print(width * height).",
+      explain:
+        "```\nwidth = int(input(\"Ширина: \"))\nheight = int(input(\"Высота: \"))\nprint(width * height)\n```\nПлощадь прямоугольника — ширина, умноженная на высоту.",
     },
     {
       badge: "исправь ошибку",
@@ -207,7 +211,8 @@ export const VARIABLES: PythonTopicData = {
       tests: [{ inputs: [], expected: "7" }],
       rule: (code) => /["']3["']/.test(code) && /["']4["']/.test(code) && !/print\(\s*7\s*\)/.test(code),
       ruleHint: "оставь a и b текстом и преврати их в числа при сложении.",
-      explain: "print(int(a) + int(b)) — два текста складываются склейкой, а числа — по-настоящему.",
+      explain:
+        "```\na = \"3\"\nb = \"4\"\nprint(int(a) + int(b))\n```\nДва текста складываются склейкой, а числа — по-настоящему.",
     },
     {
       badge: "напиши сам",
@@ -217,7 +222,8 @@ export const VARIABLES: PythonTopicData = {
         { inputs: ["Оля"], expected: "Привет, Оля! Рад знакомству." },
         { inputs: ["Тимур"], expected: "Привет, Тимур! Рад знакомству." },
       ],
-      explain: 'name = input(), потом print("Привет,", name + "!", "Рад знакомству.") — восклицательный знак приклеиваем к имени через +.',
+      explain:
+        "```\nname = input(\"Как тебя зовут? \")\nprint(\"Привет,\", name + \"!\", \"Рад знакомству.\")\n```\nВосклицательный знак приклеиваем к имени через +, чтобы перед ним не было пробела.",
     },
     {
       badge: "копилка",
@@ -227,7 +233,8 @@ export const VARIABLES: PythonTopicData = {
         { inputs: ["50", "20"], expected: "Осталось: 30" },
         { inputs: ["12", "12"], expected: "Осталось: 0" },
       ],
-      explain: 'had = int(input(...)), spent = int(input(...)), print("Осталось:", had - spent).',
+      explain:
+        "```\nhad = int(input(\"Сколько было? \"))\nspent = int(input(\"Сколько потрачено? \"))\nprint(\"Осталось:\", had - spent)\n```\nИз того, что было, вычитаем потраченное.",
     },
     {
       badge: "*=",
@@ -239,7 +246,8 @@ export const VARIABLES: PythonTopicData = {
       ],
       rule: (code) => (code.match(/\*=/g) ?? []).length >= 1,
       ruleHint: "удваивай с помощью *=.",
-      explain: "n = int(input()), потом три раза n *= 2 и print(n). 5 → 10 → 20 → 40.",
+      explain:
+        "```\nn = int(input(\"Число: \"))\nn *= 2\nn *= 2\nn *= 2\nprint(n)\n```\nЧисло удваивается три раза: 5 → 10 → 20 → 40.",
     },
     {
       badge: "исправь ошибку",
@@ -248,7 +256,8 @@ export const VARIABLES: PythonTopicData = {
       tests: [{ inputs: [], expected: "Петя" }],
       rule: (code) => !/print\(\s*["']/.test(code),
       ruleHint: "оставь переменную, просто переименуй её.",
-      explain: "Имя не может начинаться с цифры. Например, place2 = \"Петя\" и print(place2).",
+      explain:
+        "```\nplace2 = \"Петя\"\nprint(place2)\n```\nИмя переменной не может начинаться с цифры, а заканчиваться — может.",
     },
     {
       badge: "// и %",
@@ -261,7 +270,8 @@ export const VARIABLES: PythonTopicData = {
       ],
       rule: (code) => codeOnly(code).includes("//") && codeOnly(code).includes("%"),
       ruleHint: "посчитай минуты через // и секунды через %.",
-      explain: 's = int(input()), print(s // 60, "мин", s % 60, "сек") — // даёт целые минуты, % — остаток секунд.',
+      explain:
+        "```\ns = int(input(\"Секунды: \"))\nprint(s // 60, \"мин\", s % 60, \"сек\")\n```\n// даёт целые минуты, % — остаток секунд.",
     },
   ],
   cards: [

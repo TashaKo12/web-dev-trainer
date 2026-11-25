@@ -1,3 +1,5 @@
+import { RichText } from "../components/RichText";
+import { sqlExplain, sqlText } from "./pretty";
 import { ResetDraft, useDraft } from "../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../components/TopicSlider";
@@ -87,7 +89,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: SqlM
       <CodeEditor value={code} onChange={setCode} onRun={exec} lang="js" />
       <div className="flex flex-wrap items-center gap-3">
         <RunSqlButton onClick={exec} disabled={!code.trim()} />
-        <MissionFeedback solved={solved} isDone={isDone} hint={hint} />
+        <MissionFeedback solved={solved} isDone={isDone} hint={hint && sqlText(hint)} />
 <ResetDraft value={code} start={mission.start} onReset={setCode} />
       </div>
       <ResultView run={run} />
@@ -134,7 +136,7 @@ function QueryLevel({ level, onResult }: { level: Extract<SqlLevel, SqlTask>; on
         </div>
       )}
       {note && !checked && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{note}</p>}
-      {checked?.hint && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{checked.hint}</p>}
+      {checked?.hint && <div className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800"><RichText text={sqlText(checked.hint)} /></div>}
       <ResultView run={run} />
     </div>
   );
@@ -172,7 +174,7 @@ function Tasks({ id, levels }: { id: TrainerId; levels: SqlLevel[] }) {
       status={stepper.status}
       isLast={stepper.isLast}
       badge={level.badge}
-      explain={level.explain}
+      explain={typeof level.explain === "string" ? <RichText text={level.kind === "choice" ? level.explain : sqlExplain(level.explain, level.solution)} /> : level.explain}
       onJump={stepper.goTo}
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-sky-500 to-indigo-500"

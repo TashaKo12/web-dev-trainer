@@ -120,7 +120,7 @@ export const CONDITIONS: PythonTopicData = {
             { inputs: ["qwerty"], expected: "Доступ запрещён" },
           ])
             ? true
-            : "Добавь else: и под ним с отступом print(\"Доступ запрещён\").",
+            : "Добавь else на том же уровне, что if, и под ним строку с отступом:\n```\nelse:\n    print(\"Доступ запрещён\")\n```",
       },
       {
         title: "Прогноз погоды",
@@ -162,7 +162,7 @@ export const CONDITIONS: PythonTopicData = {
             { inputs: ["80"], expected: "Полный заряд" },
           ])
             ? true
-            : "Три ветки: if battery < 20, elif battery < 80, else. Проверь границы 20 и 80.",
+            : "Нужны три ветки. Проверь границы 20 и 80:\n```\nif battery < 20:\n    ...\nelif battery < 80:\n    ...\nelse:\n    ...\n```",
       },
       {
         title: "Чёт или нечет",
@@ -180,7 +180,7 @@ export const CONDITIONS: PythonTopicData = {
             { inputs: ["0"], expected: "Чётное" },
           ])
             ? true
-            : "Сравни остаток от деления на 2 с нулём: if n % 2 == 0.",
+            : "Сравни остаток от деления на 2 с нулём:\n```\nif n % 2 == 0:\n    ...\nelse:\n    ...\n```",
       },
     ],
   },
@@ -194,7 +194,8 @@ export const CONDITIONS: PythonTopicData = {
         { inputs: ["-3"], expected: "" },
         { inputs: ["0"], expected: "" },
       ],
-      explain: 'n = int(input()), затем if n > 0: и с отступом print("Положительное").',
+      explain:
+        "```\nn = int(input(\"Число: \"))\nif n > 0:\n    print(\"Положительное\")\n```\nЕсли условие неверно, строка с отступом пропускается — программа ничего не печатает.",
     },
     {
       badge: "исправь ошибку",
@@ -204,7 +205,8 @@ export const CONDITIONS: PythonTopicData = {
         { inputs: ["20"], expected: "Больше 10" },
         { inputs: ["3"], expected: "" },
       ],
-      explain: "В конце строки с if нужно двоеточие: if x > 10:",
+      explain:
+        "```\nx = int(input(\"Число: \"))\nif x > 10:\n    print(\"Больше 10\")\n```\nВ конце строки с if нужно двоеточие.",
     },
     {
       badge: "исправь ошибку",
@@ -214,7 +216,8 @@ export const CONDITIONS: PythonTopicData = {
         { inputs: ["да"], expected: "Ура!" },
         { inputs: ["нет"], expected: "" },
       ],
-      explain: 'Для сравнения пишут два знака: if answer == "да":',
+      explain:
+        "```\nanswer = input(\"Играем? \")\nif answer == \"да\":\n    print(\"Ура!\")\n```\nДля сравнения пишут два знака: ==.",
     },
     {
       badge: "else",
@@ -227,7 +230,8 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "else"),
       ruleHint: "используй else.",
-      explain: 'age = int(input()), if age >= 18: print("Взрослый"), else: print("Ребёнок").',
+      explain:
+        "```\nage = int(input(\"Возраст: \"))\nif age >= 18:\n    print(\"Взрослый\")\nelse:\n    print(\"Ребёнок\")\n```\nelse стоит на том же уровне, что и if, а print — с отступом.",
     },
     {
       badge: "исправь отступ",
@@ -237,7 +241,8 @@ export const CONDITIONS: PythonTopicData = {
         { inputs: ["7"], expected: "Счастливое число" },
         { inputs: ["8"], expected: "" },
       ],
-      explain: "Строку под if начинают с 4 пробелов (Tab): так Python понимает, что она внутри условия.",
+      explain:
+        "```\nn = int(input())\nif n == 7:\n    print(\"Счастливое число\")\n```\nСтроку под if начинают с 4 пробелов (Tab): так Python понимает, что она внутри условия.",
     },
     {
       badge: "elif",
@@ -251,7 +256,8 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "elif"),
       ruleHint: "используй elif.",
-      explain: 'grade = int(input()), потом if grade == 5: print("Отлично"), elif grade == 4: print("Хорошо"), elif grade == 3: print("Удовлетворительно"), else: print("Попробуй ещё").',
+      explain:
+        "```\ngrade = int(input(\"Оценка: \"))\nif grade == 5:\n    print(\"Отлично\")\nelif grade == 4:\n    print(\"Хорошо\")\nelif grade == 3:\n    print(\"Удовлетворительно\")\nelse:\n    print(\"Попробуй ещё\")\n```\nPython проверяет условия сверху вниз и выполняет первую подходящую ветку.",
     },
     {
       badge: "без max",
@@ -264,7 +270,8 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => !uses(code, "max") && uses(code, "if"),
       ruleHint: "сравни числа через if, без max.",
-      explain: "if a > b: print(a), else: print(b).",
+      explain:
+        "```\na = int(input(\"Первое: \"))\nb = int(input(\"Второе: \"))\nif a > b:\n    print(a)\nelse:\n    print(b)\n```\nЕсли числа равны, сработает else — ответ всё равно верный.",
     },
     {
       badge: "!=",
@@ -276,7 +283,8 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => /!=/.test(code),
       ruleHint: "используй сравнение != («не равно»).",
-      explain: 'word = input(), if word != "пиксель": print("Неверно").',
+      explain:
+        "```\nword = input(\"Секретное слово: \")\nif word != \"пиксель\":\n    print(\"Неверно\")\n```\n!= значит «не равно».",
     },
     {
       badge: "текст",
@@ -289,7 +297,8 @@ export const CONDITIONS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "lower") || uses(code, "upper"),
       ruleHint: "приведи ответ к одному виду: answer.lower().",
-      explain: 'answer = input(), if answer.lower() == "да": print("Продолжаем"), else: print("Стоп").',
+      explain:
+        "```\nanswer = input(\"Продолжить? \")\nif answer.lower() == \"да\":\n    print(\"Продолжаем\")\nelse:\n    print(\"Стоп\")\n```\nlower() делает все буквы маленькими, поэтому подойдут «да», «Да» и «ДА».",
     },
     {
       badge: "остаток",
@@ -300,7 +309,8 @@ export const CONDITIONS: PythonTopicData = {
         { inputs: ["10"], expected: "Не делится" },
         { inputs: ["0"], expected: "Делится на 3" },
       ],
-      explain: "if n % 3 == 0: — остаток 0 значит «делится без остатка».",
+      explain:
+        "```\nn = int(input(\"Число: \"))\nif n % 3 == 0:\n    print(\"Делится на 3\")\nelse:\n    print(\"Не делится\")\n```\nОстаток 0 значит «делится без остатка».",
     },
   ],
   cards: [

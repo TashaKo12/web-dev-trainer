@@ -137,7 +137,7 @@ export const FOR_LOOP: PythonTopicData = {
                   { inputs: ["робот"], expected: "р\nо\nб\nо\nт" },
                 ])
               ? true
-              : "for letter in word: и с отступом print(letter).",
+              : "Перебери буквы циклом:\n```\nfor letter in word:\n    print(letter)\n```",
       },
       {
         title: "Копилка очков",
@@ -157,7 +157,7 @@ export const FOR_LOOP: PythonTopicData = {
                   { inputs: ["1"], expected: "1" },
                 ])
               ? true
-              : "for i in range(1, n + 1): total += i, а print(total) — после цикла.",
+              : "Складывай внутри цикла, а печатай после него:\n```\ntotal = 0\nfor i in range(1, n + 1):\n    total += i\nprint(total)\n```",
       },
     ],
   },
@@ -169,7 +169,8 @@ export const FOR_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "Python\nPython\nPython" }],
       rule: (code) => uses(code, "for") && printCount(code) === 1,
       ruleHint: "один print внутри цикла for.",
-      explain: 'for i in range(3): и с отступом print("Python").',
+      explain:
+        "```\nfor i in range(3):\n    print(\"Python\")\n```\nОдин print внутри цикла выполнится три раза.",
     },
     {
       badge: "range",
@@ -178,7 +179,8 @@ export const FOR_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "0\n1\n2\n3\n4" }],
       rule: (code) => uses(code, "for"),
       ruleHint: "используй цикл for.",
-      explain: "for i in range(5): print(i) — range(5) даёт 0, 1, 2, 3, 4.",
+      explain:
+        "```\nfor i in range(5):\n    print(i)\n```\nrange(5) даёт 0, 1, 2, 3, 4.",
     },
     {
       badge: "исправь ошибку",
@@ -186,7 +188,8 @@ export const FOR_LOOP: PythonTopicData = {
       start: "for i in range(1, 5):\n    print(i)",
       tests: [{ inputs: [], expected: "1\n2\n3\n4\n5" }],
       rule: (code) => uses(code, "for"),
-      explain: "range не включает последнее число, поэтому нужно range(1, 6).",
+      explain:
+        "```\nfor i in range(1, 6):\n    print(i)\n```\nrange не включает последнее число, поэтому до 6.",
     },
     {
       badge: "шаг",
@@ -195,7 +198,8 @@ export const FOR_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "2\n4\n6\n8\n10" }],
       rule: (code) => /range\([^)]*,[^)]*,[^)]*\)/.test(codeOnly(code)),
       ruleHint: "задай в range шаг: range(start, stop, step).",
-      explain: "for i in range(2, 11, 2): print(i).",
+      explain:
+        "```\nfor i in range(2, 11, 2):\n    print(i)\n```\nТретье число в range — шаг.",
     },
     {
       badge: "end",
@@ -207,7 +211,8 @@ export const FOR_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for"),
       ruleHint: "используй цикл for, а не умножение строки.",
-      explain: 'for i in range(n): print("*", end="") — end="" не переносит строку.',
+      explain:
+        "```\nn = int(input(\"Сколько? \"))\nfor i in range(n):\n    print(\"*\", end=\"\")\n```\nend=\"\" не переносит строку.",
     },
     {
       badge: "таблица",
@@ -216,14 +221,16 @@ export const FOR_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "7 x 1 = 7\n7 x 2 = 14\n7 x 3 = 21\n7 x 4 = 28\n7 x 5 = 35" }],
       rule: (code) => uses(code, "for") && printCount(code) === 1,
       ruleHint: "один print внутри цикла.",
-      explain: 'for i in range(1, 6): print("7 x", i, "=", 7 * i).',
+      explain:
+        "```\nfor i in range(1, 6):\n    print(\"7 x\", i, \"=\", 7 * i)\n```\nЗапятые в print сами ставят пробелы.",
     },
     {
       badge: "исправь отступ",
       prompt: "Python ругается на отступ. Исправь, чтобы вывелись 0, 1, 2.",
       start: "for i in range(3):\nprint(i)",
       tests: [{ inputs: [], expected: "0\n1\n2" }],
-      explain: "Тело цикла пишут с отступом в 4 пробела.",
+      explain:
+        "```\nfor i in range(3):\n    print(i)\n```\nТело цикла пишут с отступом в 4 пробела.",
     },
     {
       badge: "сумма",
@@ -235,7 +242,8 @@ export const FOR_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for"),
       ruleHint: "посчитай сумму в цикле for.",
-      explain: "total = 0, for i in range(1, n + 1): total += i, после цикла print(total).",
+      explain:
+        "```\nn = int(input(\"Число: \"))\ntotal = 0\nfor i in range(1, n + 1):\n    total += i\nprint(total)\n```\nПечатаем после цикла — без отступа, чтобы вывести только итог.",
     },
     {
       badge: "буквы",
@@ -247,7 +255,8 @@ export const FOR_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for"),
       ruleHint: "перебери буквы циклом for.",
-      explain: 'for ch in word: print(ch * 2, end="").',
+      explain:
+        "```\nword = input(\"Слово: \")\nfor ch in word:\n    print(ch * 2, end=\"\")\n```\nТекст, умноженный на 2, повторяется дважды.",
     },
     {
       badge: "счётчик",
@@ -260,7 +269,8 @@ export const FOR_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for"),
       ruleHint: "посчитай буквы в цикле for.",
-      explain: 'count = 0, for ch in word: if ch == "а": count += 1, после цикла print(count).',
+      explain:
+        "```\nword = input(\"Слово: \")\ncount = 0\nfor ch in word:\n    if ch == \"а\":\n        count += 1\nprint(count)\n```\nif внутри цикла — ещё один отступ.",
     },
   ],
   cards: [

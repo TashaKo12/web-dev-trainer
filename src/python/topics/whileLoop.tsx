@@ -113,7 +113,7 @@ export const WHILE_LOOP: PythonTopicData = {
         check: (_r, _a, code) => {
           const r = runPython(code, ["нет", "открой", "пожалуйста"]);
           if (r.error || r.waiting) return "Цикл должен спрашивать снова, пока не скажут «пожалуйста».";
-          return r.prompts.length === 3 && sameOutput(r.printed.trim(), "Спасибо!") ? true : "Спрашивай в цикле while word != \"пожалуйста\", а «Спасибо!» выведи после цикла.";
+          return r.prompts.length === 3 && sameOutput(r.printed.trim(), "Спасибо!") ? true : "Спрашивай в цикле, а «Спасибо!» выведи после него:\n```\nwhile word != \"пожалуйста\":\n    word = input(\"Скажи волшебное слово: \")\nprint(\"Спасибо!\")\n```";
         },
       },
       {
@@ -147,7 +147,7 @@ export const WHILE_LOOP: PythonTopicData = {
                   { inputs: ["7"], expected: "Угадал!" },
                 ])
               ? true
-              : "Спроси n = int(input()), сравни с секретом: угадал — print и break, иначе — «Не то».",
+              : "Спрашивай число внутри цикла и сравнивай с секретом:\n```\nwhile True:\n    n = int(input())\n    if n == secret:\n        print(\"Угадал!\")\n        break\n    print(\"Не то\")\n```",
       },
     ],
   },
@@ -159,14 +159,16 @@ export const WHILE_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "1\n2\n3\n4\n5" }],
       rule: whileNotFor,
       ruleHint: "используй while, а не for.",
-      explain: "i = 1, while i <= 5: print(i) и i += 1.",
+      explain:
+        "```\ni = 1\nwhile i <= 5:\n    print(i)\n    i += 1\n```\nНе забудь увеличивать i, иначе цикл не закончится.",
     },
     {
       badge: "исправь ошибку",
       prompt: "Цикл никогда не заканчивается. Исправь, чтобы вывелись 0, 1, 2.",
       start: "i = 0\nwhile i < 3:\n    print(i)",
       tests: [{ inputs: [], expected: "0\n1\n2" }],
-      explain: "Внутри цикла не хватало i += 1: без него i всегда 0, и условие вечно верно.",
+      explain:
+        "```\ni = 0\nwhile i < 3:\n    print(i)\n    i += 1\n```\nБез i += 1 переменная всегда 0, и условие вечно верно.",
     },
     {
       badge: "отсчёт",
@@ -178,7 +180,8 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: whileNotFor,
       ruleHint: "используй while.",
-      explain: "while n > 0: print(n) и n -= 1.",
+      explain:
+        "```\nn = int(input(\"Число: \"))\nwhile n > 0:\n    print(n)\n    n -= 1\n```\nn -= 1 уменьшает число на единицу.",
     },
     {
       badge: "копим",
@@ -187,7 +190,8 @@ export const WHILE_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "56" }],
       rule: (code) => uses(code, "while") && !/56/.test(noComments(code)),
       ruleHint: "пусть сумму посчитает цикл while.",
-      explain: "total = 0, while total < 50: total += 7, потом print(total). Последний шаг: 49 → 56.",
+      explain:
+        "```\ntotal = 0\nwhile total < 50:\n    total += 7\nprint(total)\n```\nПоследний шаг: 49 → 56.",
     },
     {
       badge: "до стоп-слова",
@@ -199,7 +203,8 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "while"),
       ruleHint: "спрашивай в цикле while.",
-      explain: 'word = "", while word != "стоп": word = input(), после цикла print("Конец").',
+      explain:
+        "```\nword = \"\"\nwhile word != \"стоп\":\n    word = input(\"Слово: \")\nprint(\"Конец\")\n```\nprint без отступа выполнится после цикла.",
     },
     {
       badge: "сумма до нуля",
@@ -212,7 +217,8 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "while"),
       ruleHint: "используй цикл while.",
-      explain: "total = 0, n = int(input()), while n != 0: total += n и снова n = int(input()), потом print(total).",
+      explain:
+        "```\ntotal = 0\nn = int(input(\"Число: \"))\nwhile n != 0:\n    total += n\n    n = int(input(\"Число: \"))\nprint(total)\n```\nНовое число спрашиваем в конце тела цикла.",
     },
     {
       badge: "break",
@@ -221,7 +227,8 @@ export const WHILE_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "1\n2\n3" }],
       rule: (code) => uses(code, "break") && uses(code, "while"),
       ruleHint: "выйди из while True с помощью break.",
-      explain: "Внутри: print(i), i += 1, а if i > 3: break.",
+      explain:
+        "```\ni = 1\nwhile True:\n    print(i)\n    i += 1\n    if i > 3:\n        break\n```\nbreak выходит из вечного цикла.",
     },
     {
       badge: "удвоение",
@@ -234,7 +241,8 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "while"),
       ruleHint: "удваивай в цикле while.",
-      explain: "while n < 100: n *= 2, потом print(n). Если число сразу больше 100, цикл не выполнится ни разу.",
+      explain:
+        "```\nn = int(input(\"Число: \"))\nwhile n < 100:\n    n *= 2\nprint(n)\n```\nЕсли число сразу больше 100, цикл не выполнится ни разу.",
     },
     {
       badge: "цифры",
@@ -247,7 +255,8 @@ export const WHILE_LOOP: PythonTopicData = {
       ],
       rule: (code) => uses(code, "while") && !uses(code, "len"),
       ruleHint: "считай цифры в цикле while через //, без len.",
-      explain: "count = 0, while n > 0: n //= 10 и count += 1. Каждое // 10 отбрасывает одну цифру.",
+      explain:
+        "```\nn = int(input(\"Число: \"))\ncount = 0\nwhile n > 0:\n    n //= 10\n    count += 1\nprint(count)\n```\nКаждое // 10 отбрасывает одну цифру.",
     },
     {
       badge: "continue",
@@ -256,7 +265,8 @@ export const WHILE_LOOP: PythonTopicData = {
       tests: [{ inputs: [], expected: "1\n2\n4\n5\n7\n8\n10" }],
       rule: (code) => uses(code, "continue") && whileNotFor(code),
       ruleHint: "используй while и continue.",
-      explain: "i = 0, while i < 10: i += 1, if i % 3 == 0: continue, print(i). Увеличиваем i до continue, иначе цикл станет вечным.",
+      explain:
+        "```\ni = 0\nwhile i < 10:\n    i += 1\n    if i % 3 == 0:\n        continue\n    print(i)\n```\nУвеличиваем i до continue, иначе цикл станет вечным.",
     },
   ],
   cards: [

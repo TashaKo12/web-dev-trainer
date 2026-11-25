@@ -1,3 +1,4 @@
+import { RichText } from "../components/RichText";
 import { ResetDraft, useDraft } from "../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { Check, Lightbulb, X } from "lucide-react";
@@ -300,7 +301,7 @@ function Tasks({ id, levels }: { id: TrainerId; levels: JsLevel[] }) {
       status={stepper.status}
       isLast={stepper.isLast}
       badge={level.badge}
-      explain={level.explain}
+      explain={typeof level.explain === "string" ? <RichText text={level.explain} /> : level.explain}
       onJump={stepper.goTo}
       onNext={stepper.goNext}
       nextClassName="bg-gradient-to-r from-amber-500 to-orange-500"

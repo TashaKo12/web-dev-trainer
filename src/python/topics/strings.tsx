@@ -136,7 +136,7 @@ export const STRINGS: PythonTopicData = {
             { inputs: ["я робот"], expected: "Я РОБОТ" },
           ])
             ? true
-            : "Выведи фразу большими буквами: print(phrase.upper()).",
+            : "Выведи фразу большими буквами:\n```\nprint(phrase.upper())\n```",
       },
       {
         title: "Слово наоборот",
@@ -153,7 +153,7 @@ export const STRINGS: PythonTopicData = {
             { inputs: ["кот"], expected: "ток" },
           ])
             ? true
-            : "Переверни слово срезом: print(word[::-1]).",
+            : "Переверни слово срезом:\n```\nprint(word[::-1])\n```",
       },
       {
         title: "Опечатка",
@@ -179,7 +179,7 @@ export const STRINGS: PythonTopicData = {
         start: 'name = input("Имя: ")\nfood = input("Любимая еда: ")\n',
         check: (_r, _a, code) =>
           !/\bf["']/i.test(code)
-            ? 'Используй f-строку: print(f"Меня зовут {name}, я люблю {food}!").'
+            ? "Используй f-строку:\n```\nprint(f\"Меня зовут {name}, я люблю {food}!\")\n```"
             : passes(code, [
                   { inputs: ["Оля", "пиццу"], expected: "Меня зовут Оля, я люблю пиццу!" },
                   { inputs: ["Тимур", "блины"], expected: "Меня зовут Тимур, я люблю блины!" },
@@ -200,7 +200,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "len"),
       ruleHint: "посчитай буквы через len().",
-      explain: "s = input(), print(len(s)).",
+      explain:
+        "```\ns = input(\"Слово: \")\nprint(len(s))\n```\nlen считает все знаки, и пробелы тоже.",
     },
     {
       badge: "срез",
@@ -212,7 +213,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => /\[[^\]]*:[^\]]*\]/.test(codeOnly(code)),
       ruleHint: "возьми кусочек срезом: s[:3].",
-      explain: "print(s[:3]) — буквы с номерами 0, 1 и 2.",
+      explain:
+        "```\ns = input(\"Слово: \")\nprint(s[:3])\n```\nЭто буквы с номерами 0, 1 и 2.",
     },
     {
       badge: "индекс",
@@ -224,7 +226,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => /\[/.test(codeOnly(code)),
       ruleHint: "возьми букву по номеру — в квадратных скобках.",
-      explain: "print(s[-1]) — минус считает с конца.",
+      explain:
+        "```\ns = input(\"Слово: \")\nprint(s[-1])\n```\nМинус считает с конца.",
     },
     {
       badge: "палиндром",
@@ -235,7 +238,8 @@ export const STRINGS: PythonTopicData = {
         { inputs: ["кот"], expected: "False" },
         { inputs: ["казак"], expected: "True" },
       ],
-      explain: "print(s == s[::-1]) — сравниваем слово с перевёрнутым.",
+      explain:
+        "```\ns = input(\"Слово: \")\nprint(s == s[::-1])\n```\nСравниваем слово с перевёрнутым.",
     },
     {
       badge: "count()",
@@ -247,7 +251,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => /\.count\(/.test(code),
       ruleHint: "посчитай через .count(\"а\").",
-      explain: 'print(s.count("а")).',
+      explain:
+        "```\ns = input(\"Фраза: \")\nprint(s.count(\"а\"))\n```\ncount считает, сколько раз встречается кусочек текста.",
     },
     {
       badge: "исправь ошибку",
@@ -256,7 +261,8 @@ export const STRINGS: PythonTopicData = {
       tests: [{ inputs: [], expected: "Кот" }],
       rule: (code) => !/print\(\s*["']Кот["']\s*\)/.test(code),
       ruleHint: "не печатай готовое слово — измени строку s.",
-      explain: 'Строку не меняют по букве. Можно s = s.capitalize() или s = "К" + s[1:].',
+      explain:
+        "```\ns = \"кот\"\ns = \"К\" + s[1:]\nprint(s)\n```\nСтроку не меняют по букве — собирают новую. Можно и s = s.capitalize().",
     },
     {
       badge: "strip() и lower()",
@@ -268,7 +274,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => /\.strip\(/.test(code) && /\.lower\(/.test(code),
       ruleHint: "используй и strip(), и lower().",
-      explain: "print(s.strip().lower()) — методы можно писать друг за другом.",
+      explain:
+        "```\ns = input(\"Слово: \")\nprint(s.strip().lower())\n```\nМетоды можно писать друг за другом.",
     },
     {
       badge: "f-строка",
@@ -280,7 +287,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => /\bf["']/i.test(code),
       ruleHint: "используй f-строку с форматом {price:.2f}.",
-      explain: 'price = float(input()), print(f"Цена: {price:.2f} руб.").',
+      explain:
+        "```\nprice = float(input(\"Цена: \"))\nprint(f\"Цена: {price:.2f} руб.\")\n```\n:.2f — ровно два знака после точки.",
     },
     {
       badge: "isdigit()",
@@ -293,7 +301,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => /\.isdigit\(/.test(code),
       ruleHint: "проверь через .isdigit().",
-      explain: 'if s.isdigit(): print("число") else: print("не число").',
+      explain:
+        "```\ns = input(\"Что-нибудь: \")\nif s.isdigit():\n    print(\"число\")\nelse:\n    print(\"не число\")\n```\nisdigit проверяет, что в строке только цифры.",
     },
     {
       badge: "буквы по номерам",
@@ -305,7 +314,8 @@ export const STRINGS: PythonTopicData = {
       ],
       rule: (code) => uses(code, "for") && /\[/.test(codeOnly(code)),
       ruleHint: "пройди по номерам в for и бери букву s[i].",
-      explain: "for i in range(len(s)): print(i, s[i]).",
+      explain:
+        "```\ns = input(\"Слово: \")\nfor i in range(len(s)):\n    print(i, s[i])\n```\ni — номер буквы, s[i] — сама буква.",
     },
   ],
   cards: [

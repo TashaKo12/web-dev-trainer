@@ -103,7 +103,7 @@ export const LOGIC: PythonTopicData = {
                   { inputs: ["13"], expected: "Клуб для 7–12 лет" },
                 ])
               ? true
-              : "Условие: age >= 7 and age <= 12. Проверь и границы 7 и 12.",
+              : "Проверь и границы 7 и 12:\n```\nif age >= 7 and age <= 12:\n    ...\nelse:\n    ...\n```",
       },
       {
         title: "Выходной!",
@@ -124,7 +124,7 @@ export const LOGIC: PythonTopicData = {
                   { inputs: ["ср"], expected: "Приходи в выходные" },
                 ])
               ? true
-              : 'Условие: day == "сб" or day == "вс".',
+              : "Соедини два полных сравнения:\n```\nif day == \"сб\" or day == \"вс\":\n    ...\nelse:\n    ...\n```",
       },
       {
         title: "Пустой ответ",
@@ -144,7 +144,7 @@ export const LOGIC: PythonTopicData = {
                   { inputs: ["Оля"], expected: "Привет, Оля!" },
                 ])
               ? true
-              : 'if not name: print("Назови себя"), else: print("Привет, " + name + "!")',
+              : "Проверь пустое имя через not:\n```\nif not name:\n    print(\"Назови себя\")\nelse:\n    print(\"Привет, \" + name + \"!\")\n```",
       },
       {
         title: "Волшебная буква",
@@ -165,7 +165,7 @@ export const LOGIC: PythonTopicData = {
                   { inputs: ["кот"], expected: "Не тот пароль" },
                 ])
               ? true
-              : 'if "ж" in word: print("Проходи"), else: print("Не тот пароль").',
+              : "Проверь букву через in:\n```\nif \"ж\" in word:\n    print(\"Проходи\")\nelse:\n    print(\"Не тот пароль\")\n```",
       },
       {
         title: "Билет со скидкой",
@@ -185,7 +185,7 @@ export const LOGIC: PythonTopicData = {
             { inputs: ["10", "нет"], expected: "Полная цена" },
           ])
             ? true
-            : 'Условие: age < 10 or card == "да".',
+            : "Хватает одного из двух условий:\n```\nif age < 10 or card == \"да\":\n    print(\"Скидка\")\nelse:\n    print(\"Полная цена\")\n```",
       },
     ],
   },
@@ -202,7 +202,8 @@ export const LOGIC: PythonTopicData = {
       ],
       rule: (code) => uses(code, "and"),
       ruleHint: "соедини два сравнения через and.",
-      explain: "if n >= 1 and n <= 10: — and требует, чтобы оба условия были верны.",
+      explain:
+        "```\nn = int(input(\"Число: \"))\nif n >= 1 and n <= 10:\n    print(\"В диапазоне\")\nelse:\n    print(\"Вне диапазона\")\n```\nand требует, чтобы оба условия были верны.",
     },
     {
       badge: "or",
@@ -215,7 +216,8 @@ export const LOGIC: PythonTopicData = {
       ],
       rule: (code) => uses(code, "or"),
       ruleHint: "объедини два условия через or.",
-      explain: 'if day == "сб" or day == "вс": — or хватает одного верного условия.',
+      explain:
+        "```\nday = input(\"День: \")\nif day == \"сб\" or day == \"вс\":\n    print(\"Выходной\")\nelse:\n    print(\"Учёба\")\n```\nor хватает одного верного условия.",
     },
     {
       badge: "not",
@@ -228,7 +230,8 @@ export const LOGIC: PythonTopicData = {
       ],
       rule: (code) => uses(code, "not"),
       ruleHint: "используй not.",
-      explain: "if not n > 100: — not переворачивает условие n > 100.",
+      explain:
+        "```\nn = int(input(\"Число: \"))\nif not n > 100:\n    print(\"Можно\")\nelse:\n    print(\"Слишком много\")\n```\nnot переворачивает условие n > 100.",
     },
     {
       badge: "in",
@@ -240,7 +243,8 @@ export const LOGIC: PythonTopicData = {
       ],
       rule: (code) => uses(code, "in"),
       ruleHint: "проверь букву через in.",
-      explain: 'word = input(), if "а" in word: print("Есть а"), else: print("Нет а").',
+      explain:
+        "```\nword = input(\"Слово: \")\nif \"а\" in word:\n    print(\"Есть а\")\nelse:\n    print(\"Нет а\")\n```\nin проверяет, есть ли буква внутри слова.",
     },
     {
       badge: "not in",
@@ -252,7 +256,8 @@ export const LOGIC: PythonTopicData = {
       ],
       rule: (code) => /not\s+in/.test(code),
       ruleHint: "используй not in.",
-      explain: 'if "7" not in password: print("Добавь семёрку"), else: print("Отличный пароль").',
+      explain:
+        "```\npassword = input(\"Пароль: \")\nif \"7\" not in password:\n    print(\"Добавь семёрку\")\nelse:\n    print(\"Отличный пароль\")\n```\nnot in — «нет внутри».",
     },
     {
       badge: "исправь ошибку",
@@ -263,7 +268,8 @@ export const LOGIC: PythonTopicData = {
         { inputs: ["2"], expected: "Один или два" },
         { inputs: ["5"], expected: "Другое" },
       ],
-      explain: "Справа от or нужно полное сравнение: if x == 1 or x == 2:",
+      explain:
+        "```\nx = int(input())\nif x == 1 or x == 2:\n    print(\"Один или два\")\nelse:\n    print(\"Другое\")\n```\nСправа от or нужно полное сравнение.",
     },
     {
       badge: "and + or",
@@ -275,7 +281,8 @@ export const LOGIC: PythonTopicData = {
         { inputs: ["9", "нет"], expected: "Нельзя" },
         { inputs: ["12", "нет"], expected: "Проходи" },
       ],
-      explain: 'age = int(input()), adult = input(), if age >= 12 or adult == "да": print("Проходи"), else: print("Нельзя").',
+      explain:
+        "```\nage = int(input(\"Возраст: \"))\nadult = input(\"Со взрослым? \")\nif age >= 12 or adult == \"да\":\n    print(\"Проходи\")\nelse:\n    print(\"Нельзя\")\n```\nДостаточно одного: либо возраст, либо взрослый рядом.",
     },
     {
       badge: "in в ответе",
@@ -288,7 +295,8 @@ export const LOGIC: PythonTopicData = {
       ],
       rule: (code) => uses(code, "in"),
       ruleHint: "проверь через in, есть ли «да» в ответе.",
-      explain: 'answer = input(), if "да" in answer: print("Ура!"), else: print("Ещё полюбишь").',
+      explain:
+        "```\nanswer = input(\"Тебе нравится Python? \")\nif \"да\" in answer:\n    print(\"Ура!\")\nelse:\n    print(\"Ещё полюбишь\")\n```\nin найдёт «да» и внутри длинного ответа.",
     },
     {
       badge: "три условия",
@@ -301,7 +309,8 @@ export const LOGIC: PythonTopicData = {
       ],
       rule: (code) => uses(code, "and"),
       ruleHint: "соедини три сравнения через and.",
-      explain: "if a == 5 and b == 5 and c == 5: — and можно ставить сколько угодно раз.",
+      explain:
+        "```\na = int(input())\nb = int(input())\nc = int(input())\nif a == 5 and b == 5 and c == 5:\n    print(\"Отличник\")\nelse:\n    print(\"Старайся!\")\n```\nand можно ставить сколько угодно раз.",
     },
     {
       badge: "скобки",
@@ -313,7 +322,8 @@ export const LOGIC: PythonTopicData = {
         { inputs: ["11"], expected: "Не подходит" },
         { inputs: ["4"], expected: "Не подходит" },
       ],
-      explain: "if n % 2 == 0 and (n > 10 or n < -10): — скобки нужны, чтобы or посчитался раньше and.",
+      explain:
+        "```\nn = int(input(\"Число: \"))\nif n % 2 == 0 and (n > 10 or n < -10):\n    print(\"Подходит\")\nelse:\n    print(\"Не подходит\")\n```\nСкобки нужны, чтобы or посчитался раньше and.",
     },
   ],
   cards: [

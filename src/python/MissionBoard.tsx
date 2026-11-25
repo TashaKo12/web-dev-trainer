@@ -3,6 +3,7 @@ import { logMistake } from "../lib/mistakes";
 import { emitPixel } from "../lib/pixelBus";
 import { Bot, Check, ChevronRight, Lightbulb, Lock, Sparkles, Trophy } from "lucide-react";
 import { loadItem, loadJSON, onProgressReplaced, POINTS, reportPoints, saveItem, saveJSON } from "../lib/storage";
+import { RichText } from "../components/RichText";
 import { DraftScope } from "../lib/drafts";
 import { isTeacher } from "../lib/teacher";
 
@@ -234,9 +235,9 @@ export function MissionFeedback({ solved, isDone, hint }: { solved: boolean; isD
   }
   if (!hint) return null;
   return (
-    <span className="flex items-start gap-1.5 text-sm font-bold text-amber-700">
+    <div className="flex w-full items-start gap-1.5 text-sm font-bold text-amber-700">
       <Lightbulb className="mt-0.5 h-4 w-4 shrink-0" strokeWidth={2} />
-      {hint}
-    </span>
+      <RichText text={hint} />
+    </div>
   );
 }

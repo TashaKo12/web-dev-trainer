@@ -1,3 +1,4 @@
+import { RichText } from "../../components/RichText";
 import { describeFailure, ExpectedList } from "../../python/PythonTopic";
 import { ResetDraft, useDraft } from "../../lib/drafts";
 import { useState, type ReactNode } from "react";
@@ -210,7 +211,8 @@ const LEVELS: IOLevel[] = [
     start: 'name = input()\nprint("Привет,", name)',
     tests: [{ inputs: ["Аня"], expected: "Привет, Аня" }],
     rule: (results) => results[0].prompts[0]?.includes("?") ?? false,
-    explain: 'name = input("Как тебя зовут? ") — текст в скобках input показывается как вопрос.',
+    explain:
+      "```\nname = input(\"Как тебя зовут? \")\nprint(\"Привет,\", name)\n```\nТекст в скобках input показывается как вопрос.",
   },
   {
     badge: "напиши сам",
@@ -220,7 +222,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["синий"], expected: "Твой любимый цвет — синий" },
       { inputs: ["зелёный"], expected: "Твой любимый цвет — зелёный" },
     ],
-    explain: 'color = input("Какой твой любимый цвет? ") и print("Твой любимый цвет —", color).',
+    explain:
+      "```\ncolor = input(\"Какой твой любимый цвет? \")\nprint(\"Твой любимый цвет —\", color)\n```\nЗапятая в print сама ставит пробел.",
   },
   {
     badge: "исправь ошибку",
@@ -230,7 +233,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["Петя"], expected: "Привет, Петя" },
       { inputs: ["Оля"], expected: "Привет, Оля" },
     ],
-    explain: 'print("Привет,", name) — имя переменной пишут без кавычек, иначе это просто текст.',
+    explain:
+      "```\nname = input(\"Как тебя зовут? \")\nprint(\"Привет,\", name)\n```\nИмя переменной пишут без кавычек, иначе это просто текст.",
   },
   {
     badge: "исправь ошибку",
@@ -240,7 +244,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["11"], expected: "12" },
       { inputs: ["7"], expected: "8" },
     ],
-    explain: 'age = int(input("Сколько тебе лет? ")) — input даёт текст, int превращает его в число.',
+    explain:
+      "```\nage = int(input(\"Сколько тебе лет? \"))\nprint(age + 1)\n```\ninput даёт текст, int превращает его в число.",
   },
   {
     badge: "напиши сам",
@@ -250,7 +255,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["7"], expected: "49" },
       { inputs: ["12"], expected: "144" },
     ],
-    explain: 'n = int(input("Число: ")) и print(n * n).',
+    explain:
+      "```\nn = int(input(\"Число: \"))\nprint(n * n)\n```\nКвадрат — число, умноженное само на себя.",
   },
   {
     badge: "два вопроса",
@@ -260,7 +266,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["Оля", "Казань"], expected: "Оля живёт в городе Казань" },
       { inputs: ["Миша", "Омск"], expected: "Миша живёт в городе Омск" },
     ],
-    explain: 'name = input(...), city = input(...) и print(name, "живёт в городе", city).',
+    explain:
+      "```\nname = input(\"Имя: \")\ncity = input(\"Город: \")\nprint(name, \"живёт в городе\", city)\n```\nКаждый ответ — в своей переменной.",
   },
   {
     badge: "калькулятор",
@@ -270,7 +277,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["3", "4"], expected: "7" },
       { inputs: ["10", "25"], expected: "35" },
     ],
-    explain: "a = int(input(...)), b = int(input(...)) и print(a + b).",
+    explain:
+      "```\na = int(input(\"Первое: \"))\nb = int(input(\"Второе: \"))\nprint(a + b)\n```\nБез int() тексты бы склеились.",
   },
   {
     badge: "напиши сам",
@@ -280,7 +288,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["ку"], expected: "кукуку" },
       { inputs: ["ла"], expected: "лалала" },
     ],
-    explain: 'word = input("Слово: ") и print(word * 3) — текст можно умножать на число.',
+    explain:
+      "```\nword = input(\"Слово: \")\nprint(word * 3)\n```\nТекст можно умножать на число.",
   },
   {
     badge: "исправь ошибку",
@@ -290,7 +299,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["5"], expected: "10" },
       { inputs: ["21"], expected: "42" },
     ],
-    explain: 'number = int(input("Число: ")) — у int и у input свои скобки, закрыть нужно обе.',
+    explain:
+      "```\nnumber = int(input(\"Число: \"))\nprint(number * 2)\n```\nУ int и у input свои скобки, закрыть нужно обе.",
   },
   {
     badge: "напиши сам",
@@ -300,7 +310,8 @@ const LEVELS: IOLevel[] = [
       { inputs: ["11"], expected: "Через 5 лет тебе будет 16" },
       { inputs: ["7"], expected: "Через 5 лет тебе будет 12" },
     ],
-    explain: 'age = int(input(...)) и print("Через 5 лет тебе будет", age + 5).',
+    explain:
+      "```\nage = int(input(\"Возраст: \"))\nprint(\"Через 5 лет тебе будет\", age + 5)\n```\nСначала число, потом прибавляем 5.",
   },
 ];
 
@@ -344,7 +355,7 @@ function IOLevelTask({ level, onResult }: { level: IOLevel; onResult: (correct: 
       {checked ? (
         <div className="space-y-2">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Проверка с ответами: {checked.inputs.join(", ")}</p>
-          {checked.failed && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{checked.failed}</p>}
+          {checked.failed && <div className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800"><RichText text={checked.failed} /></div>}
           <TerminalView result={checked.result} />
         </div>
       ) : (
@@ -372,7 +383,8 @@ function Tasks() {
       badge={level.badge}
       explain={
         <>
-          <b>Пример решения</b> (свои переменные можно назвать иначе): {level.explain}
+          <b>Пример решения</b> (свои переменные можно назвать иначе):
+          <RichText text={level.explain} />
         </>
       }
       onJump={stepper.goTo}
