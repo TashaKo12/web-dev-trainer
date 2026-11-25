@@ -2,13 +2,14 @@ import { useEffect, useMemo, useState } from "react";
 import { logMistake } from "../lib/mistakes";
 import { saveProgress, type TrainerId } from "../lib/progress";
 import { loadJSON, onProgressReplaced, POINTS, reportPoints, saveJSON } from "../lib/storage";
+import { clearDrafts } from "../lib/drafts";
 import { setTimeLevel } from "../lib/timeTracker";
 import { emitPixel } from "../lib/pixelBus";
 
 export type TaskStatus = "idle" | "correct" | "wrong";
 
 /** What is kept for each topic's practice: current level, answers and when each level was answered. */
-export type SavedSession = { index: number; statuses: TaskStatus[]; dates: (string | null)[] };
+export type SavedSession = { index: number; statuses: TaskStatus[]; dates: (string | null)[]; /** when the practice was started over */ epoch?: number };
 
 export function sessionKey(trainerId: TrainerId) {
   return `wdt:session:${trainerId}`;
@@ -16,9 +17,11 @@ export function sessionKey(trainerId: TrainerId) {
 
 export function loadSession(trainerId: TrainerId, total: number): SavedSession | null {
   const saved = loadJSON<Partial<SavedSession>>(sessionKey(trainerId));
-  if (!saved || !Array.isArray(saved.statuses) || saved.statuses.length !== total) return null;
-  const dates = Array.isArray(saved.dates) && saved.dates.length === total ? saved.dates : Array(total).fill(null);
-  return { index: Math.min(Math.max((saved.index ?? 0) | 0, 0), total - 1), statuses: saved.statuses, dates };
+  if (!saved || !Array.isArray(saved.statuses)) return null;
+  // the topic got more (or fewer) levels: the answers already given stay
+  const statuses = Array.from({ length: total }, (_, i) => saved.statuses![i] ?? "idle");
+  const dates = Array.from({ length: total }, (_, i) => (Array.isArray(saved.dates) ? (saved.dates[i] ?? null) : null));
+  return { ...saved, index: Math.min(Math.max((saved.index ?? 0) | 0, 0), total - 1), statuses, dates };
 }
 
 /** A link like #/headings?level=4 opens the practice right on that level (used by the teacher dashboard). */
@@ -97,7 +100,8 @@ export function useTaskStepper(total: number, trainerId: TrainerId) {
   }
 
   function restart() {
-    setSession({ index: 0, statuses: Array(total).fill("idle"), dates: Array(total).fill(null) });
+    clearDrafts(`${window.location.hash.replace(/^#/, "").split("?")[0]}:L`);
+    setSession({ index: 0, statuses: Array(total).fill("idle"), dates: Array(total).fill(null), epoch: Date.now() });
   }
 
   return {

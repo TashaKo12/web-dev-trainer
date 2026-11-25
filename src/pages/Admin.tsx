@@ -1,6 +1,6 @@
 import { useEffect, useMemo, useState } from "react";
 import { Link } from "react-router-dom";
-import { CalendarClock, Check, AlertTriangle, ChevronDown, Clock, Copy, Crown, Eye, EyeOff, KeyRound, Pencil, RefreshCw, Trash2, Search, Star, Target, Users, X } from "lucide-react";
+import { CalendarClock, Check, AlertTriangle, ChevronDown, Clock, Copy, Crown, Download, Eye, EyeOff, KeyRound, Pencil, RefreshCw, Trash2, Search, Star, Target, Users, X } from "lucide-react";
 import { cloudAvailable, getAdminSession, rpc, setAdminSession } from "../lib/cloud";
 import { HUB_URL } from "../lib/cloudConfig";
 import { buildActivity, formatDate, formatDuration, readReports, totalPoints, type TopicReport } from "../lib/reports";
@@ -511,6 +511,16 @@ function Mistakes({ people, resets, actions }: { people: Participant[]; resets: 
   );
 }
 
+/** The whole progress of every student as a file on the teacher's computer (it holds names and codes). */
+function downloadBackup(data: Overview) {
+  const url = URL.createObjectURL(new Blob([JSON.stringify({ at: new Date().toISOString(), participants: data.participants }, null, 1)], { type: "application/json" }));
+  const a = document.createElement("a");
+  a.href = url;
+  a.download = `progress-${new Date().toISOString().slice(0, 10)}.json`;
+  a.click();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+}
+
 function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefresh: () => void; busy: boolean; actions: Actions }) {
   const [query, setQuery] = useState("");
   const [open, setOpen] = useState<string | null>(null);
@@ -555,7 +565,10 @@ function Dashboard({ data, onRefresh, busy, actions }: { data: Overview; onRefre
             <TeacherKey />
           </div>
         </div>
-        <div className="flex gap-2">
+        <div className="flex flex-wrap gap-2">
+          <button type="button" onClick={() => downloadBackup(data)} className={BTN_SECOND} title="Файл с прогрессом всех учеников. В нём имена и коды — никому не передавай.">
+            <Download className="h-4 w-4" strokeWidth={2} /> Скачать копию прогресса
+          </button>
           <button type="button" onClick={onRefresh} disabled={busy} className={BTN_SECOND}>
             <RefreshCw className={`h-4 w-4 ${busy ? "animate-spin" : ""}`} strokeWidth={2} />
             Обновить

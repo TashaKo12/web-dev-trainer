@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState, type KeyboardEvent, type RefObject } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router-dom";
 import { BookOpen, Lightbulb, Lock, Play, RotateCcw, Star } from "lucide-react";
+import { readDraft, writeDraft } from "../lib/drafts";
 import { createStarStore } from "../lib/gameStars";
 import { emitPixel } from "../lib/pixelBus";
 import { TheoryCard, type GameTheory } from "../components/GameTheory";
@@ -28,7 +29,6 @@ const BEST: Record<string, number> = Object.fromEntries(
   }),
 );
 /** Unsent code of every level: kept while the page is open. */
-const drafts = new Map<string, string>();
 
 const lines = (n: number) => (n % 10 === 1 && n % 100 !== 11 ? "строка" : n % 10 >= 2 && n % 10 <= 4 && (n % 100 < 12 || n % 100 > 14) ? "строки" : "строк");
 
@@ -289,7 +289,7 @@ function LevelScreen() {
   const level = ALL_LEVELS[index];
   const deck = DECKS.find((d) => d.levels.some((l) => l.id === param));
   const grid = useMemo(() => parseGrid(level?.map ?? ["."]), [level]);
-  const [code, setCode] = useState(() => drafts.get(param ?? "") ?? "");
+  const [code, setCode] = useState(() => readDraft(`beacon:${param}`) ?? "");
   const [result, setResult] = useState<RunResult | null>(null);
   const [shown, setShown] = useState(0);
   const [message, setMessage] = useState<{ tone: "bad" | "good"; text: string } | null>(null);
@@ -340,7 +340,7 @@ function LevelScreen() {
 
   function edit(v: string) {
     setCode(v);
-    drafts.set(level.id, v);
+    writeDraft(`beacon:${level.id}`, v);
     setResult(null);
     setShown(0);
     setErrorLine(null);

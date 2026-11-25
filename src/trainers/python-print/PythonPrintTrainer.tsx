@@ -1,3 +1,4 @@
+import { useDraft } from "../../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../../components/TopicSlider";
 import { printTheorySlides } from "../../python/PythonTheory";
@@ -140,7 +141,7 @@ const MISSIONS: Mission[] = [
 ];
 
 function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: Mission; isDone: boolean; onComplete: () => void; onMistake: () => void }) {
-  const [arg, setArg] = useState(mission.start);
+  const [arg, setArg] = useDraft(mission.start);
   const [result, setResult] = useState<RunResult | null>(null);
   const [solved, setSolved] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
@@ -301,7 +302,7 @@ const LEVELS: PyLevel[] = [
 ];
 
 function PyLevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: boolean) => void }) {
-  const [text, setText] = useState(level.start);
+  const [text, setText] = useDraft(level.start);
   const [result, setResult] = useState<RunResult | null>(null);
   const [checked, setChecked] = useState(false);
 

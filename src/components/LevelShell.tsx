@@ -1,4 +1,6 @@
 import type { ReactNode } from "react";
+import { useLocation } from "react-router-dom";
+import { DraftScope } from "../lib/drafts";
 import { CircleCheck } from "lucide-react";
 import { LevelSidebar } from "./LevelSidebar";
 import type { TaskStatus } from "./useTaskStepper";
@@ -28,6 +30,7 @@ export function LevelShell({
   nextClassName?: string;
   children: ReactNode;
 }) {
+  const { pathname } = useLocation();
   const answered = status !== "idle";
 
   return (
@@ -43,7 +46,7 @@ export function LevelShell({
             {badge && <span className="rounded-full bg-slate-100 px-2.5 py-1 text-xs font-bold text-slate-500">{badge}</span>}
           </div>
 
-          {children}
+          <DraftScope id={`${pathname}:L${index}`}>{children}</DraftScope>
 
           <div className="mt-4 flex flex-wrap items-center gap-3">
             {answered && !isLast && (

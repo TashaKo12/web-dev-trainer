@@ -1,3 +1,4 @@
+import { ResetDraft, useDraft } from "../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../components/TopicSlider";
 import { TrainerHero } from "../components/TrainerHero";
@@ -56,7 +57,7 @@ export const uses = (code: string, word: string) => new RegExp(`(^|[^A-Za-zА-Я
 const lastLine = (r: RunResult) => r.printed.replace(/\n$/, "").split("\n").pop() ?? "";
 
 function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: PyMission; isDone: boolean; onComplete: () => void; onMistake: () => void }) {
-  const [code, setCode] = useState(mission.start);
+  const [code, setCode] = useDraft(mission.start);
   const runner = useProgramRunner();
   const [solved, setSolved] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
@@ -93,6 +94,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: PyMi
       <div className="flex flex-wrap items-center gap-3">
         <RunButton onClick={() => evaluate(runner.run(code))} />
         <MissionFeedback solved={solved} isDone={isDone} hint={hint} />
+<ResetDraft value={code} start={mission.start} onReset={setCode} />
       </div>
       <TerminalView result={r} onAnswer={(text) => evaluate(runner.answer(text))} />
     </div>
@@ -100,7 +102,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: PyMi
 }
 
 function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: boolean) => void }) {
-  const [code, setCode] = useState(level.start);
+  const [code, setCode] = useDraft(level.start);
   const runner = useProgramRunner();
   const [checked, setChecked] = useState<{ result: RunResult; inputs: string[]; ruleFailed: boolean } | null>(null);
 

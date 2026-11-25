@@ -23,7 +23,8 @@ export function TrueFalseDeck({
   const sessionKey = `wdt:cards:${pathname}`;
   const saved = useState(() => {
     const s = loadJSON<{ index: number; picks: (boolean | null)[] }>(sessionKey);
-    return s && Array.isArray(s.picks) && s.picks.length === statements.length ? s : null;
+    // more cards than before: the answers already given stay
+    return s && Array.isArray(s.picks) ? { ...s, picks: statements.map((_, i) => s.picks[i] ?? null) } : null;
   })[0];
 
   const [index, setIndex] = useState(() => Math.min(Math.max(saved?.index ?? 0, 0), statements.length - 1));

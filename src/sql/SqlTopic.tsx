@@ -1,3 +1,4 @@
+import { ResetDraft, useDraft } from "../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../components/TopicSlider";
 import { TrainerHero } from "../components/TrainerHero";
@@ -61,7 +62,7 @@ function Expected({ task }: { task: SqlTask }) {
 }
 
 function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: SqlMission; isDone: boolean; onComplete: () => void; onMistake: () => void }) {
-  const [code, setCode] = useState(mission.start);
+  const [code, setCode] = useDraft(mission.start);
   const [run, setRun] = useState<SqlRun | null>(null);
   const [solved, setSolved] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
@@ -87,6 +88,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: SqlM
       <div className="flex flex-wrap items-center gap-3">
         <RunSqlButton onClick={exec} disabled={!code.trim()} />
         <MissionFeedback solved={solved} isDone={isDone} hint={hint} />
+<ResetDraft value={code} start={mission.start} onReset={setCode} />
       </div>
       <ResultView run={run} />
     </div>
@@ -94,7 +96,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: SqlM
 }
 
 function QueryLevel({ level, onResult }: { level: Extract<SqlLevel, SqlTask>; onResult: (ok: boolean) => void }) {
-  const [code, setCode] = useState(level.start);
+  const [code, setCode] = useDraft(level.start);
   const [run, setRun] = useState<SqlRun | null>(null);
   const [checked, setChecked] = useState<{ ok: boolean; hint: string | null } | null>(null);
   const tryIt = () => {

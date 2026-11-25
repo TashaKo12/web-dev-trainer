@@ -2,7 +2,9 @@ import { useSyncExternalStore } from "react";
 import { CLOUD } from "./cloudConfig";
 import { flush as flushTime, TIME_KEY } from "./timeTracker";
 import { applyMarksLocally, type Marks } from "./marks";
-import { CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, removeItem, resetDevice, saveItem, setConsent } from "./storage";
+import { changedKeys, mergeData } from "./merge";
+import { DRAFTS_KEY, flushDrafts } from "./drafts";
+import { applyValues, CLOUD_CODE_KEY, CLOUD_OWNER_KEY, exportData, getConsent, importData, loadItem, onSave, removeItem, resetDevice, saveItem, setConsent } from "./storage";
 
 // Progress stored on the server under a short participant code (e.g. K7QM-2XWD),
 // so the same progress opens on any computer. Turned on only by an explicit opt-in.
@@ -32,11 +34,12 @@ export function useSyncState() {
   );
 }
 
-export async function rpc<T>(fn: string, body: Record<string, unknown>): Promise<T | null> {
+export async function rpc<T>(fn: string, body: Record<string, unknown>, keepalive = false): Promise<T | null> {
   const res = await fetch(`${CLOUD.url.replace(/\/$/, "")}/rest/v1/rpc/${fn}`, {
     method: "POST",
     headers: { apikey: CLOUD.key, "Content-Type": "application/json" },
     body: JSON.stringify(body),
+    keepalive,
   });
   if (!res.ok) throw new Error(`cloud ${fn} failed: ${res.status}`);
   const text = await res.text();
@@ -81,6 +84,7 @@ export function useAccount() {
 /** Saves everything to the server, then forgets the participant on this device. Throws if saving failed, unless forced. */
 export async function signOut(force = false) {
   flushTime();
+  flushDrafts();
   await syncNow();
   if (state.status === "error" && !force) throw new Error("sync");
   resetDevice();
@@ -125,13 +129,32 @@ export function setAdminSession(code: string | null, name?: string) {
   }
 }
 
-export async function syncNow() {
+let running: Promise<void> | null = null;
+/** One at a time: two at once could save an older copy over a newer one. */
+export function syncNow(): Promise<void> {
+  const next = (running ?? Promise.resolve()).then(doSync);
+  running = next;
+  return next;
+}
+
+async function doSync() {
   const code = getCloudCode();
   if (!cloudAvailable || !code) return;
   setState({ status: "saving", at: state.at });
   try {
-    const ok = await rpc<boolean>("save_progress", { p_code: code, p_data: exportData() });
-    if (ok === false) {
+    // the account may hold more (another computer): join both copies first, then save the joint one
+    const found = await rpc<{ data: Record<string, string> }>("load_progress", { p_code: code });
+    if (getCloudCode() !== code) return; // signed out meanwhile
+    let ok: boolean | null = false;
+    if (found) {
+      const cloud = Object.fromEntries(Object.entries(found.data ?? {}).filter(([, v]) => typeof v === "string"));
+      const local = exportData();
+      const merged = mergeData(local, cloud);
+      const fresh = changedKeys(local, merged);
+      if (fresh.length) applyValues(Object.fromEntries(fresh.map((k) => [k, merged[k]])));
+      ok = changedKeys(cloud, merged).length ? await rpc<boolean>("save_progress", { p_code: code, p_data: merged }, JSON.stringify(merged).length < 25000) : true;
+    }
+    if (!found) {
       // the teacher deleted this account: forget it here, the trainers will ask to sign in again
       removeItem(CLOUD_CODE_KEY);
       removeItem(CLOUD_OWNER_KEY);
@@ -223,14 +246,27 @@ export async function pullTeacherMarks() {
 
 export function startAutoSync() {
   if (!cloudAvailable) return;
-  pullTeacherMarks();
+  // progress made on another computer comes first, then the teacher's marks
+  syncNow().finally(pullTeacherMarks);
+  // leaving the page or closing it: what is not saved yet goes up now, not in a few seconds
+  document.addEventListener("visibilitychange", () => {
+    if (document.visibilityState === "hidden" && (timer !== undefined || getCloudCode())) {
+      flushTime();
+      flushDrafts();
+      if (timer !== undefined) {
+        clearTimeout(timer);
+        timer = undefined;
+        syncNow();
+      }
+    } else if (document.visibilityState === "visible") syncNow();
+  });
   setInterval(() => {
     if (document.visibilityState === "visible") pullTeacherMarks();
   }, 60_000);
   onSave((key) => {
     if (key === CLOUD_CODE_KEY || !getCloudCode()) return;
     // answers go up within seconds; time-on-task counters only once a minute
-    const delay = key === TIME_KEY ? 60_000 : 2000;
+    const delay = key === TIME_KEY ? 60_000 : key === DRAFTS_KEY ? 10_000 : 2000;
     const due = Date.now() + delay;
     if (timer !== undefined && timerDue <= due) return;
     clearTimeout(timer);

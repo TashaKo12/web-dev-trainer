@@ -1,3 +1,4 @@
+import { ResetDraft, useDraft } from "../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { Check, Lightbulb, X } from "lucide-react";
 import { TopicSlider } from "../components/TopicSlider";
@@ -116,7 +117,7 @@ function useJsRunner() {
 const lastLine = (r: JsResult) => r.logs[r.logs.length - 1] ?? "";
 
 function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: JsMission; isDone: boolean; onComplete: () => void; onMistake: () => void }) {
-  const [code, setCode] = useState(mission.start);
+  const [code, setCode] = useDraft(mission.start);
   const runner = useJsRunner();
   const [solved, setSolved] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
@@ -154,6 +155,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: JsMi
       <div className="flex flex-wrap items-center gap-3">
         <RunButton onClick={go} disabled={runner.running} />
         <MissionFeedback solved={solved} isDone={isDone} hint={hint} />
+<ResetDraft value={code} start={mission.start} onReset={setCode} />
       </div>
       <JsTerminal result={r} running={runner.running} />
     </div>
@@ -180,7 +182,7 @@ function expectedOf(t: JsTest) {
 }
 
 function LevelTask({ level, onResult }: { level: JsLevel; onResult: (correct: boolean) => void }) {
-  const [code, setCode] = useState(level.start);
+  const [code, setCode] = useDraft(level.start);
   const runner = useJsRunner();
   const [checked, setChecked] = useState<{ result: JsResult; rows: TestRow[]; outputOk: boolean; ruleFailed: boolean } | null>(null);
   const [checking, setChecking] = useState(false);

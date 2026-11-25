@@ -3,6 +3,7 @@ import { logMistake } from "../lib/mistakes";
 import { emitPixel } from "../lib/pixelBus";
 import { Bot, Check, ChevronRight, Lightbulb, Lock, Sparkles, Trophy } from "lucide-react";
 import { loadItem, loadJSON, onProgressReplaced, POINTS, reportPoints, saveItem, saveJSON } from "../lib/storage";
+import { DraftScope } from "../lib/drafts";
 import { isTeacher } from "../lib/teacher";
 
 export function missionDatesKey(pointsSource: string) {
@@ -41,11 +42,17 @@ export function MissionBoard({
   /** the mission that is about to open by itself */
   const [opening, setOpening] = useState<number | null>(null);
 
+  const doneRef = useRef(done);
+  doneRef.current = done;
+
   // the teacher counted missions: pick them up
   useEffect(
     () =>
       onProgressReplaced(() => {
-        setDone((d) => Math.max(d, readDone()));
+        const now = readDone();
+        setDone((d) => Math.max(d, now));
+        // missions passed on another computer (or counted by the teacher): stand on the first one that is left
+        setActive((a) => (now > a && a < doneRef.current ? a : Math.max(a, Math.min(now, missions.length - 1))));
         setDates(loadJSON<(string | null)[]>(missionDatesKey(pointsSource)) ?? []);
       }),
     // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -57,7 +64,8 @@ export function MissionBoard({
 
   useEffect(() => {
     if (teacher) return;
-    saveItem(storageKey, String(done));
+    // never less than what is already saved
+    saveItem(storageKey, String(Math.max(done, Number(loadItem(storageKey)) || 0)));
     reportPoints(pointsSource, done * POINTS.mission);
   }, [storageKey, pointsSource, done, teacher]);
 
@@ -163,11 +171,13 @@ export function MissionBoard({
               {isOpen && (
                 <div className="border-t border-slate-200 px-4 pb-5 pt-4">
                   <div key={i}>
-                    {m.render({
-                      isDone,
-                      onComplete: () => complete(i),
-                      onMistake: () => logMistake(`${pointsSource.replace(/^missions:/, "")}:M${i}`),
-                    })}
+                    <DraftScope id={`${pointsSource}:M${i}`}>
+                      {m.render({
+                        isDone,
+                        onComplete: () => complete(i),
+                        onMistake: () => logMistake(`${pointsSource.replace(/^missions:/, "")}:M${i}`),
+                      })}
+                    </DraftScope>
                   </div>
                   {isDone && i < missions.length - 1 && (
                     <button

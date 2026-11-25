@@ -5,7 +5,8 @@ import { SectionHeading } from "./SectionHeading";
 import { TrainerHero } from "./TrainerHero";
 import { WebMissions } from "../missions/WebMissions";
 import { emitPixel } from "../lib/pixelBus";
-import { loadItem, saveItem } from "../lib/storage";
+import { loadItem, onProgressReplaced, saveItem } from "../lib/storage";
+import { hasWorked, markTheoryRead, theoryRead } from "../lib/access";
 import { isTeacher } from "../lib/teacher";
 
 // A topic page as a slider: theory → game → practice → check. One block on screen at a time.
@@ -48,9 +49,23 @@ export function TopicSlider({ children }: { children: ReactNode }) {
   const { hero, slides } = useMemo(() => split(children), [children]);
   const slideKey = `slide:${pathname}`; // view state only — not part of the progress
   // keyed by the block title, so adding a block to a topic does not shift what was read
-  const readKey = (i: number) => `theory-read:${pathname}:${slides[i]?.title || i}`;
+  const readId = (i: number) => `${pathname}:${slides[i]?.title || i}`;
+  // theory changed after the student had passed missions or levels here: what was open stays open
+  const [worked, setWorked] = useState(() => hasWorked(pathname));
+  const [, refresh] = useState(0);
+  useEffect(
+    () =>
+      onProgressReplaced(() => {
+        if (hasWorked(pathname)) {
+          setWorked(true);
+          setLeft(0);
+        }
+        refresh((n) => n + 1);
+      }),
+    [pathname],
+  );
   // the teacher has every theory block open at once, without the timer
-  const isRead = (i: number) => slides[i].kind !== "theory" || isTeacher() || loadItem(readKey(i)) === "1";
+  const isRead = (i: number) => slides[i].kind !== "theory" || isTeacher() || worked || theoryRead(readId(i));
 
   const fromUrl = window.location.hash.includes("level=") ? slides.findIndex((s) => s.kind === "practice") : -1;
   const [index, setIndex] = useState(() => {
@@ -79,7 +94,7 @@ export function TopicSlider({ children }: { children: ReactNode }) {
       if (document.visibilityState !== "visible") return;
       setLeft((s) => {
         if (s <= 1) {
-          saveItem(readKey(index), "1");
+          markTheoryRead(readId(index));
           emitPixel("complete");
           return 0;
         }

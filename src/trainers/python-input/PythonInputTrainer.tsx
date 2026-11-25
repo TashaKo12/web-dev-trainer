@@ -1,3 +1,4 @@
+import { ResetDraft, useDraft } from "../../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../../components/TopicSlider";
 import { inputTheorySlides } from "../../python/PythonTheory";
@@ -138,7 +139,7 @@ const MISSIONS: IOMission[] = [
 ];
 
 function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: IOMission; isDone: boolean; onComplete: () => void; onMistake: () => void }) {
-  const [code, setCode] = useState(mission.start);
+  const [code, setCode] = useDraft(mission.start);
   const runner = useProgramRunner();
   const [solved, setSolved] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
@@ -181,6 +182,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: IOMi
       <div className="flex flex-wrap items-center gap-3">
         <RunButton onClick={() => evaluate(runner.run(code))} />
         <MissionFeedback solved={solved} isDone={isDone} hint={hint} />
+<ResetDraft value={code} start={mission.start} onReset={setCode} />
       </div>
       <TerminalView result={r} onAnswer={(text) => evaluate(runner.answer(text))} />
     </div>
@@ -298,7 +300,7 @@ const LEVELS: IOLevel[] = [
 ];
 
 function IOLevelTask({ level, onResult }: { level: IOLevel; onResult: (correct: boolean) => void }) {
-  const [code, setCode] = useState(level.start);
+  const [code, setCode] = useDraft(level.start);
   const runner = useProgramRunner();
   const [checked, setChecked] = useState<{ result: RunResult; inputs: string[] } | null>(null);
 

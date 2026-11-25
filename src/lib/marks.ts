@@ -42,8 +42,8 @@ export function marksPatch(get: (key: string) => string | null, marks: Marks): P
     const levels = list.filter((x) => x.kind === "L" && x.index < t.taskCount);
     if (levels.length) {
       const saved = parse<Partial<SavedSession>>(get(sessionKey(t.id)));
-      const statuses = Array.isArray(saved?.statuses) && saved.statuses.length === t.taskCount ? [...saved.statuses] : Array(t.taskCount).fill("idle");
-      const dates = Array.isArray(saved?.dates) && saved.dates.length === t.taskCount ? [...saved.dates] : Array(t.taskCount).fill(null);
+      const statuses = Array.from({ length: t.taskCount }, (_, i) => (Array.isArray(saved?.statuses) ? saved.statuses[i] : undefined) ?? "idle");
+      const dates: (string | null)[] = Array.from({ length: t.taskCount }, (_, i) => (Array.isArray(saved?.dates) ? saved.dates[i] : undefined) ?? null);
       let changed = false;
       for (const l of levels) {
         if (statuses[l.index] !== "correct") {
@@ -53,7 +53,7 @@ export function marksPatch(get: (key: string) => string | null, marks: Marks): P
         }
       }
       if (changed) {
-        items[sessionKey(t.id)] = JSON.stringify({ index: saved?.index ?? 0, statuses, dates });
+        items[sessionKey(t.id)] = JSON.stringify({ ...saved, index: saved?.index ?? 0, statuses, dates });
         points[`practice:${t.id}`] = statuses.filter((s) => s === "correct").length * POINTS.practice;
       }
     }

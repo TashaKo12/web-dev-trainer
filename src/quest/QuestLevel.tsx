@@ -1,6 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Link, useNavigate, useParams } from "react-router-dom";
 import { Footprints, Lightbulb, Play, RotateCcw, Star, Trash2, Undo2 } from "lucide-react";
+import { readDraft, writeDraft } from "../lib/drafts";
 import { useRoomBelow } from "../components/useRoomBelow";
 import { BAYS, DIARY, mapsOf } from "./data";
 import {
@@ -79,6 +80,16 @@ export function QuestLevel() {
   return <LevelScreen key={`${bay}/${level}`} />;
 }
 
+/** The blocks the player had put together before leaving the level. */
+function savedProgram(id: string | null): Program {
+  try {
+    const p = JSON.parse(readDraft(id) ?? "null") as Program | null;
+    return p && Object.keys(EMPTY_PROGRAM).every((k) => Array.isArray((p as Record<string, unknown>)[k])) ? p : EMPTY_PROGRAM;
+  } catch {
+    return EMPTY_PROGRAM;
+  }
+}
+
 function LevelScreen() {
   const { bay: bayParam, level: levelParam } = useParams();
   const side = useRoomBelow<HTMLDivElement>();
@@ -88,12 +99,14 @@ function LevelScreen() {
   const index = Number(levelParam) - 1;
   const level = bay?.levels[index];
 
+  const draftId = level ? `quest:${level.id}` : null;
+
   const maps = useMemo(() => (level ? mapsOf(level).map(parseMap) : []), [level]);
   // the goal for the second star: the checked solution, or the shortest plain program
   const best = useMemo(() => (level?.solution ? blockCount(level.solution) : level && maps[0] ? bestLength(maps[0], level.dir, level.blocks) : null), [level, maps]);
   const optionalIn = (g: (typeof maps)[number]) => g.cells.flat().filter((c) => c === "*" || c === "D").length;
 
-  const [program, setProgram] = useState<Program>(EMPTY_PROGRAM);
+  const [program, setProgram] = useState<Program>(() => savedProgram(draftId));
   const [into, setInto] = useState("main");
   const [view, setView] = useState(0); // which variant is shown while editing
   const [results, setResults] = useState<RunResult[] | null>(null);
@@ -104,9 +117,13 @@ function LevelScreen() {
   const [won, setWon] = useState<{ stars: number; short: boolean; all: boolean; fresh: number; diary: boolean; count: number } | null>(null);
   const timer = useRef<ReturnType<typeof setTimeout>>();
 
+  useEffect(() => {
+    if (blockCount(program) || readDraft(draftId)) writeDraft(draftId, JSON.stringify(program));
+  }, [program, draftId]);
+
   // a new level: start over
   useEffect(() => {
-    setProgram(EMPTY_PROGRAM);
+    setProgram(savedProgram(draftId));
     setInto("main");
     setView(0);
     setResults(null);

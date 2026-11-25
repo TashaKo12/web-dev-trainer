@@ -1,3 +1,4 @@
+import { useDraft } from "../lib/drafts";
 import { useMemo, useRef, useState, type ReactNode } from "react";
 import { Eye } from "lucide-react";
 import { LiveDemo } from "./LiveDemo";
@@ -154,7 +155,7 @@ function ChoiceLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "ch
 }
 
 function WriteLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "write" }>; onResult: (ok: boolean) => void }) {
-  const [code, setCode] = useState(level.start);
+  const [code, setCode] = useDraft(level.start);
   const [done, setDone] = useState(false);
   const [note, setNote] = useState<string | null>(null);
   const doc = useRef<Document | null>(null);
@@ -221,7 +222,7 @@ function WriteLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "wri
 }
 
 function HtmlLevel({ level, onResult }: { level: Extract<CssLevel, { kind: "html" }>; onResult: (ok: boolean) => void }) {
-  const [code, setCode] = useState(level.start);
+  const [code, setCode] = useDraft(level.start);
   const [done, setDone] = useState(false);
   const [hint, setHint] = useState<string | null>(null);
   function check() {

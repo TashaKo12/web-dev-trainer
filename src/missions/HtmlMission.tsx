@@ -1,3 +1,4 @@
+import { useDraft } from "../lib/drafts";
 import { useLayoutEffect, useMemo, useRef, useState, type ReactNode } from "react";
 import { Eye, Globe, Play, X } from "lucide-react";
 import { MissionFeedback, MissionGoal, RobotSays } from "../python/MissionBoard";
@@ -44,7 +45,7 @@ export function HtmlMissionPlay({
   onComplete: () => void;
   onMistake?: () => void;
 }) {
-  const [code, setCode] = useState(mission.starter);
+  const [code, setCode] = useDraft(mission.starter);
   const [checked, setChecked] = useState<string | null | undefined>(undefined);
   const preview = useMemo(() => PREVIEW_STYLE + code, [code]);
   // like a real browser: the tab shows the page title, or the file name when there is none

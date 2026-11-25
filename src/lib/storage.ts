@@ -1,4 +1,5 @@
 import { useSyncExternalStore } from "react";
+import { mergeValue } from "./merge";
 
 // Everything the site remembers goes through here. Until the user agrees,
 // data lives only in memory for the current tab; nothing is written to the browser.
@@ -8,6 +9,8 @@ export type Consent = "granted" | "denied";
 const CONSENT_KEY = "wdt:consent";
 const POINTS_KEY = "wdt:points";
 const LEGACY_KEYS = ["theme", "web-dev-trainer:progress", "python-print-missions"];
+
+const isOurKey = (k: string) => (k.startsWith("wdt:") || LEGACY_KEYS.includes(k)) && k !== CONSENT_KEY && k !== "wdt:cloud-code" && k !== "wdt:cloud-owner";
 
 function storageGet(key: string): string | null {
   try {
@@ -51,6 +54,11 @@ export function onSave(listener: (key: string) => void) {
 
 export function saveItem(key: string, value: string) {
   const changed = loadItem(key) !== value;
+  // another tab may have saved more in the meantime: keep the better of the two
+  if (changed && consent === "granted" && isOurKey(key)) {
+    const stored = storageGet(key);
+    if (stored !== null && stored !== memory.get(key)) value = mergeValue(key, value, stored);
+  }
   memory.set(key, value);
   if (consent === "granted") storageSet(key, value);
   if (changed) saveListeners.forEach((l) => l(key));
@@ -102,7 +110,7 @@ export function resetDevice() {
     const keys: string[] = [];
     for (let i = 0; i < localStorage.length; i++) {
       const k = localStorage.key(i);
-      if (k && k !== "theme" && (k.startsWith("wdt:") || LEGACY_KEYS.includes(k))) keys.push(k);
+      if (k && k !== "theme" && (k.startsWith("wdt:") || k.startsWith("theory-read:") || k.startsWith("slide:") || LEGACY_KEYS.includes(k))) keys.push(k);
     }
     keys.forEach((k) => localStorage.removeItem(k));
   } catch {
@@ -134,8 +142,6 @@ export function setConsent(value: Consent) {
   storageSet(CONSENT_KEY, value);
   emit();
 }
-
-const isOurKey = (k: string) => (k.startsWith("wdt:") || LEGACY_KEYS.includes(k)) && k !== CONSENT_KEY && k !== CLOUD_CODE_KEY && k !== CLOUD_OWNER_KEY;
 
 /** Everything this site remembers (saved on the device and kept in memory), for the restore code. */
 export function exportData(): Record<string, string> {
@@ -230,5 +236,29 @@ export function onProgressReplaced(listener: () => void) {
 }
 
 export function notifyProgressReplaced() {
+  points = { ...(loadJSON<Record<string, number>>(POINTS_KEY) ?? {}) };
+  total = Object.values(points).reduce((a, b) => a + b, 0);
+  emit();
   replacedListeners.forEach((l) => l());
+}
+
+/** Takes in values that came from elsewhere (the account, another tab) and tells the open pages. */
+export function applyValues(values: Record<string, string>) {
+  const keys = Object.keys(values).filter(isOurKey);
+  for (const k of keys) {
+    memory.set(k, values[k]);
+    if (consent === "granted") storageSet(k, values[k]);
+  }
+  if (keys.length) notifyProgressReplaced();
+}
+
+// another tab of the site saved something: this one must not go on with the old value
+if (typeof window !== "undefined") {
+  window.addEventListener("storage", (e) => {
+    if (!e.key || e.newValue === null || consent !== "granted" || !isOurKey(e.key)) return;
+    const mine = loadItem(e.key);
+    const next = mine === null || mine === e.newValue ? e.newValue : mergeValue(e.key, e.newValue, mine);
+    memory.set(e.key, next);
+    notifyProgressReplaced();
+  });
 }
