@@ -56,13 +56,13 @@ export const CONDITIONS: PythonTopicData = {
         text: (
           <>
             Текст тоже можно сравнивать: <C>==</C> и <C>!=</C> проверяют, совпадает ли он буква в букву. Большие и маленькие буквы
-            различаются: <C>"Да" == "да"</C> — это <C>False</C>. Поэтому ответ часто приводят к маленьким буквам:{" "}
-            <C>answer.lower() == "да"</C>.
+            различаются: <C>"Да" == "да"</C> — это <C>False</C>. Текст в условии пишут в кавычках, а число — без них. С текстом
+            тоже работают <C>elif</C> и <C>else</C>: так программа выбирает из нескольких ответов.
           </>
         ),
         examples: [
           { code: 'answer = "Да"\nif answer == "да":\n    print("Ура!")\nelse:\n    print("Не совпало")', out: "Не совпало", note: "«Да» с большой буквы — другой текст." },
-          { code: 'answer = "Да"\nif answer.lower() == "да":\n    print("Ура!")', out: "Ура!" },
+          { code: 'pet = "кот"\nif pet == "кот":\n    print("Мяу")\nelif pet == "пёс":\n    print("Гав")\nelse:\n    print("Не знаю такого")', out: "Мяу", note: "Первое условие подошло — остальные Python не проверяет." },
         ],
       },
       {
@@ -260,8 +260,8 @@ export const CONDITIONS: PythonTopicData = {
         "```\ngrade = int(input(\"Оценка: \"))\nif grade == 5:\n    print(\"Отлично\")\nelif grade == 4:\n    print(\"Хорошо\")\nelif grade == 3:\n    print(\"Удовлетворительно\")\nelse:\n    print(\"Попробуй ещё\")\n```\nPython проверяет условия сверху вниз и выполняет первую подходящую ветку.",
     },
     {
-      badge: "без max",
-      prompt: "Спроси два числа и выведи большее из них. Функцию max не используй.",
+      badge: "что больше",
+      prompt: "Спроси два числа и выведи большее из них.",
       start: "",
       tests: [
         { inputs: ["3", "8"], expected: "8" },
@@ -269,7 +269,7 @@ export const CONDITIONS: PythonTopicData = {
         { inputs: ["5", "5"], expected: "5" },
       ],
       rule: (code) => !uses(code, "max") && uses(code, "if"),
-      ruleHint: "сравни числа через if, без max.",
+      ruleHint: "сравни числа через if и else.",
       explain:
         "```\na = int(input(\"Первое: \"))\nb = int(input(\"Второе: \"))\nif a > b:\n    print(a)\nelse:\n    print(b)\n```\nЕсли числа равны, сработает else — ответ всё равно верный.",
     },
@@ -287,18 +287,19 @@ export const CONDITIONS: PythonTopicData = {
         "```\nword = input(\"Секретное слово: \")\nif word != \"пиксель\":\n    print(\"Неверно\")\n```\n!= значит «не равно».",
     },
     {
-      badge: "текст",
-      prompt: "Спроси «Продолжить?». Если ответили «да» любыми буквами (да, Да, ДА) — «Продолжаем», иначе — «Стоп».",
+      badge: "светофор",
+      prompt: "Спроси цвет светофора. Если красный — напечатай Стой, если жёлтый — Жди, если зелёный — Иди, а если любое другое слово — Такого цвета нет.",
       start: "",
       tests: [
-        { inputs: ["Да"], expected: "Продолжаем" },
-        { inputs: ["ДА"], expected: "Продолжаем" },
-        { inputs: ["нет"], expected: "Стоп" },
+        { inputs: ["красный"], expected: "Стой" },
+        { inputs: ["жёлтый"], expected: "Жди" },
+        { inputs: ["зелёный"], expected: "Иди" },
+        { inputs: ["синий"], expected: "Такого цвета нет" },
       ],
-      rule: (code) => uses(code, "lower") || uses(code, "upper"),
-      ruleHint: "приведи ответ к одному виду: answer.lower().",
+      rule: (code) => uses(code, "elif") && uses(code, "else"),
+      ruleHint: "используй if, elif и else.",
       explain:
-        "```\nanswer = input(\"Продолжить? \")\nif answer.lower() == \"да\":\n    print(\"Продолжаем\")\nelse:\n    print(\"Стоп\")\n```\nlower() делает все буквы маленькими, поэтому подойдут «да», «Да» и «ДА».",
+        "```\ncolor = input(\"Цвет: \")\nif color == \"красный\":\n    print(\"Стой\")\nelif color == \"жёлтый\":\n    print(\"Жди\")\nelif color == \"зелёный\":\n    print(\"Иди\")\nelse:\n    print(\"Такого цвета нет\")\n```\nelse срабатывает, когда не подошло ни одно из условий выше.",
     },
     {
       badge: "остаток",
@@ -319,7 +320,7 @@ export const CONDITIONS: PythonTopicData = {
     { text: "Для сравнения в условии пишут один знак =.", answer: false, explain: "Нет, два: ==. Один = записывает значение в переменную." },
     { text: "else выполняется, когда условие в if оказалось ложным.", answer: true, explain: "Да, else — это «иначе»." },
     { text: "Если подошли и if, и elif, выполнятся обе ветки.", answer: false, explain: "Нет, Python выполняет только первую подходящую ветку и дальше не смотрит." },
-    { text: '"Да" == "да" — это True.', answer: false, explain: "Нет, большие и маленькие буквы различаются. Помогает .lower()." },
+    { text: '"Да" == "да" — это True.', answer: false, explain: "Нет, большие и маленькие буквы различаются — это разные тексты." },
     { text: "elif можно написать без if перед ним.", answer: false, explain: "Нет, elif и else продолжают if — сами по себе они не работают." },
     { text: "7 % 2 == 0 — это True.", answer: false, explain: "Нет, остаток от деления 7 на 2 равен 1. Число 7 нечётное." },
     { text: '"5" > 3 сработает, ведь там пятёрка.', answer: false, explain: "Нет, \"5\" — текст, его нельзя сравнить с числом. Нужно int(\"5\")." },

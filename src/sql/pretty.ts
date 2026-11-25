@@ -47,7 +47,7 @@ export const prettySql = (sql: string) => splitStatements(sql).map(one).join("\n
 export function sqlText(text: string) {
   return text
     .replace(STATEMENT, (m) => `\`\`\`\n${prettySql(m)}\n\`\`\``)
-    .replace(/```\s*```/g, "\n")
+    .replace(/```\s*```/g, "")
     .replace(/```\s*—\s*(.)/g, (_, c: string) => "```\n" + c.toUpperCase());
 }
 

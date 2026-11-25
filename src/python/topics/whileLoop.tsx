@@ -254,7 +254,7 @@ export const WHILE_LOOP: PythonTopicData = {
         { inputs: ["1000"], expected: "4" },
       ],
       rule: (code) => uses(code, "while") && !uses(code, "len"),
-      ruleHint: "считай цифры в цикле while через //, без len.",
+      ruleHint: "считай цифры в цикле while через //.",
       explain:
         "```\nn = int(input(\"Число: \"))\ncount = 0\nwhile n > 0:\n    n //= 10\n    count += 1\nprint(count)\n```\nКаждое // 10 отбрасывает одну цифру.",
     },
