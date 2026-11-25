@@ -176,7 +176,7 @@ export const SQL_DESIGN: SqlTopicData = {
         db: "empty",
         start: "",
         solution: "CREATE TABLE classes (id INT PRIMARY KEY, title VARCHAR(5), teacher VARCHAR(60));",
-        verify: "SELECT name, UPPER(REPLACE(type, ' ', '')), pk FROM pragma_table_info('classes') ORDER BY cid",
+        verify: "SELECT name, REPLACE(UPPER(REPLACE(type, ' ', '')), 'INTEGER', 'INT'), pk FROM pragma_table_info('classes') ORDER BY cid",
         hint: "CREATE TABLE classes (id INT PRIMARY KEY, title VARCHAR(5), teacher VARCHAR(60));",
       },
       {

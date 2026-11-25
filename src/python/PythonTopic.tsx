@@ -46,9 +46,37 @@ export type PyLevel = {
 export function passes(code: string, tests: { inputs: string[]; expected: string }[]) {
   return tests.every((t) => {
     const r = runPython(code, t.inputs);
-    return !r.error && !r.waiting && sameOutput(r.printed, t.expected);
+    const ok = !r.error && !r.waiting && sameOutput(r.printed, t.expected);
+    if (!ok) lastFailure = describeFailure(r, t);
+    return ok;
   });
 }
+
+const shown = (s: string) => {
+  const t = s.replace(/\n+$/, "");
+  return t ? `«${t.split("\n").join(" ⏎ ")}»` : "ничего";
+};
+
+/** What exactly went wrong, on the data of the check: the names of variables do not matter, only the result does. */
+export function describeFailure(r: RunResult, t: { inputs: string[]; expected: string }) {
+  const given = t.inputs.length ? `Если ввести ${t.inputs.map((x) => `«${x}»`).join(", ")}, программа` : "Программа";
+  const got = r.error
+    ? `остановилась с ошибкой ${r.error.type}: ${r.error.message}`
+    : r.waiting
+      ? "задала больше вопросов, чем нужно по условию"
+      : `напечатала ${shown(r.printed)}`;
+  return `${given} должна напечатать ${shown(t.expected)}, а ${got}.`;
+}
+let lastFailure: string | null = null;
+
+/** Some variable (under any name) is created and then printed. */
+export function printsVariable(code: string) {
+  const clean = code.replace(/#.*$/gm, "");
+  const names = [...clean.matchAll(/(?:^|[\n;])[ \t]*([A-Za-zА-Яа-яЁё_][\wА-Яа-яЁё]*)[ \t]*=(?!=)/g)].map((m) => m[1]);
+  return names.some((n) => new RegExp(`(^|[^\\wА-Яа-яЁё])${n}([^\\wА-Яа-яЁё]|$)`).test(codeOnly(code).match(/print\([\s\S]*/)?.[0] ?? "") || clean.includes(`{${n}`));
+}
+/** The code without comments (texts stay): to see whether a ready answer is written in it. */
+export const noComments = (code: string) => code.replace(/#.*$/gm, "");
 
 /** The code without strings and comments — to look for keywords like for or while. */
 export const codeOnly = (code: string) => code.replace(/(["'])(?:\\.|(?!\1).)*\1/g, '""').replace(/#.*$/gm, "");
@@ -69,12 +97,13 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: PyMi
       if (!isDone) onMistake();
       return;
     }
+    lastFailure = null;
     const verdict = mission.check(result, answers, code);
     if (verdict === true) {
       setSolved(true);
       onComplete();
     } else {
-      setHint(verdict);
+      setHint(lastFailure ? `${lastFailure} Подсказка: ${verdict} Свои переменные называй как хочешь.` : verdict);
       if (!isDone) onMistake();
     }
   }
@@ -104,7 +133,8 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: PyMi
 function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: boolean) => void }) {
   const [code, setCode] = useDraft(level.start);
   const runner = useProgramRunner();
-  const [checked, setChecked] = useState<{ result: RunResult; inputs: string[]; ruleFailed: boolean } | null>(null);
+  const [checked, setChecked] = useState<{ result: RunResult; inputs: string[]; failed: string | null } | null>(null);
+  const [ruleNote, setRuleNote] = useState(false);
 
   function check() {
     const results = level.tests.map((t) => runPython(code, t.inputs));
@@ -112,8 +142,11 @@ function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: bo
     const failing = passed.indexOf(false);
     const ruleOk = level.rule ? level.rule(code, results) : true;
     const shown = failing === -1 ? 0 : failing;
-    setChecked({ result: results[shown], inputs: level.tests[shown].inputs, ruleFailed: failing === -1 && !ruleOk });
-    onResult(failing === -1 && ruleOk);
+    // the result is right, only the way is not the one of the task: not a mistake — let the student rewrite it
+    if (failing === -1 && !ruleOk) return setRuleNote(true);
+    setRuleNote(false);
+    setChecked({ result: results[shown], inputs: level.tests[shown].inputs, failed: failing === -1 ? null : describeFailure(results[shown], level.tests[shown]) });
+    onResult(failing === -1);
   }
 
   const sample = level.tests[0];
@@ -122,6 +155,7 @@ function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: bo
   return (
     <div className="space-y-4">
       <p className="text-sm font-semibold text-slate-700">{level.prompt}</p>
+      {level.ruleHint && <p className="text-sm text-slate-600"><b>Условие:</b> {level.ruleHint}</p>}
       <div className="rounded-2xl bg-slate-50 p-3 text-sm">
         <p className="mb-1.5 text-xs font-bold uppercase tracking-wide text-slate-400">Пример</p>
         {asks && (
@@ -144,14 +178,17 @@ function LevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: bo
           >
             Проверить
           </button>
-          <span className="text-xs text-slate-400">{asks ? "Проверка запустит программу с разными ответами" : "Tab — отступ, Ctrl + Enter — запуск"}</span>
+          <span className="text-xs text-slate-400">{asks ? "Проверка запустит программу с разными ответами. Имена переменных — любые." : "Проверяется результат программы. Имена переменных — любые."}</span>
         </div>
+      )}
+      {ruleNote && !checked && (
+        <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">
+          Результат верный! Осталось выполнить условие: {level.ruleHint ?? "прочитай задание ещё раз."} Исправь и проверь снова — это не ошибка.
+        </p>
       )}
       {checked ? (
         <div className="space-y-2">
-          {checked.ruleFailed && level.ruleHint && (
-            <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">Ответ верный, но решить нужно по условию: {level.ruleHint}</p>
-          )}
+          {checked.failed && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{checked.failed}</p>}
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">
             {checked.inputs.length ? `Проверка с ответами: ${checked.inputs.join(", ")}` : "Результат проверки"}
           </p>

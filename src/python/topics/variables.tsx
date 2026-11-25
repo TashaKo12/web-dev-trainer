@@ -1,4 +1,5 @@
-import { Code, codeOnly, passes, type PythonTopicData } from "../PythonTopic";
+import { Code, codeOnly, passes, printsVariable, type PythonTopicData, noComments } from "../PythonTopic";
+import { sameOutput } from "../interpreter";
 
 const C = Code;
 
@@ -87,46 +88,44 @@ export const VARIABLES: PythonTopicData = {
         title: "Коробка с именем",
         body: (
           <p>
-            Пиксель хочет запомнить своё имя. Создай переменную <C>robot</C>, положи в неё текст <C>"Пиксель"</C> и выведи её
+            Пиксель хочет запомнить своё имя. Создай переменную (имя придумай сам, например <C>robot</C>), положи в неё текст <C>"Пиксель"</C> и выведи её
             через <C>print</C> — без кавычек вокруг имени переменной.
           </p>
         ),
         goal: "В терминале должно появиться: Пиксель",
         start: "robot = \nprint()",
         check: (r, _a, code) =>
-          r.printed.trim() !== "Пиксель"
+          !sameOutput(r.printed.trim(), "Пиксель")
             ? "Робот должен сказать ровно: Пиксель."
-            : !/robot\s*=\s*["']Пиксель["']/.test(code)
-              ? 'Положи текст в переменную: robot = "Пиксель".'
-              : !/print\(\s*robot\s*\)/.test(code)
-                ? "В print напиши имя переменной без кавычек: print(robot)."
-                : true,
+            : !printsVariable(code)
+              ? "Верно сказано! Теперь через переменную: положи текст в переменную с любым именем, а в print напиши это имя без кавычек."
+              : true,
       },
       {
         title: "Счёт очков",
         body: (
           <p>
             Пиксель играет и трижды получает по 10 очков. Начни с <C>score = 0</C>, трижды прибавь 10 через <C>+=</C> и выведи
-            score.
+            результат.
           </p>
         ),
         goal: "В терминале должно появиться: 30",
         start: "score = 0\n",
         check: (r, _a, code) =>
-          r.printed.trim() !== "30" ? "Должно получиться 30." : (code.match(/\+=/g) ?? []).length < 3 ? "Прибавь 10 три раза с помощью +=." : true,
+          !sameOutput(r.printed.trim(), "30") ? "Должно получиться 30." : (code.match(/\+=/g) ?? []).length < 3 ? "Прибавь 10 три раза с помощью +=." : true,
       },
       {
         title: "Обед в столовой",
         body: (
           <p>
-            Обед стоит 120 рублей, а Пиксель покупает 3 порции. Заведи переменные <C>price</C> и <C>portions</C> и выведи, сколько
+            Обед стоит 120 рублей, а Пиксель покупает 3 порции. Заведи две переменные, например <C>price</C> и <C>portions</C>, и выведи, сколько
             всего платить. Пусть посчитает Python — не пиши ответ сам.
           </p>
         ),
         goal: "В терминале должно появиться: 360",
         start: "price = 120\nportions = 3\n",
         check: (r, _a, code) =>
-          r.printed.trim() !== "360" ? "Должно получиться 360." : /360/.test(code) ? "Пусть Python посчитает сам: price * portions." : true,
+          !sameOutput(r.printed.trim(), "360") ? "Должно получиться 360." : /360/.test(noComments(code)) ? "Пусть Python посчитает сам: price * portions." : true,
       },
       {
         title: "Текст или число",
@@ -138,7 +137,7 @@ export const VARIABLES: PythonTopicData = {
         ),
         goal: "В терминале должно появиться: 14",
         start: 'a = "7"\nprint(a * 2)',
-        check: (r) => (r.printed.trim() === "14" ? true : "Сделай из текста число: int(a) * 2 — или убери кавычки."),
+        check: (r) => (sameOutput(r.printed.trim(), "14") ? true : "Сделай из текста число: int(a) * 2 — или убери кавычки."),
       },
       {
         title: "Карточка героя",
@@ -163,11 +162,11 @@ export const VARIABLES: PythonTopicData = {
   levels: [
     {
       badge: "напиши сам",
-      prompt: 'Создай переменную city со значением "Казань" и выведи её.',
+      prompt: 'Создай переменную с любым именем и значением "Казань" и выведи её.',
       start: "",
       tests: [{ inputs: [], expected: "Казань" }],
-      rule: (code) => /city\s*=/.test(code) && /print\(\s*city\s*\)/.test(code),
-      ruleHint: "сохрани текст в переменную city и выведи print(city).",
+      rule: printsVariable,
+      ruleHint: "сохрани текст в переменную и выведи её — имя в print без кавычек.",
       explain: 'city = "Казань" и print(city) — имя переменной пишут без кавычек.',
     },
     {

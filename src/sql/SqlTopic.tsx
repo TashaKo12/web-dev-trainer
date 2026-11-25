@@ -74,7 +74,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: SqlM
     if (v.ok) {
       setSolved(true);
       onComplete();
-    } else if (!isDone) onMistake();
+    } else if (!isDone && !v.ruleOnly) onMistake();
   }
   return (
     <div className="space-y-4">
@@ -99,6 +99,7 @@ function QueryLevel({ level, onResult }: { level: Extract<SqlLevel, SqlTask>; on
   const [code, setCode] = useDraft(level.start);
   const [run, setRun] = useState<SqlRun | null>(null);
   const [checked, setChecked] = useState<{ ok: boolean; hint: string | null } | null>(null);
+  const [note, setNote] = useState<string | null>(null);
   const tryIt = () => {
     run?.db.close();
     setRun(runSql(DATABASES[level.db].setup, code));
@@ -107,6 +108,8 @@ function QueryLevel({ level, onResult }: { level: Extract<SqlLevel, SqlTask>; on
     run?.db.close();
     const v = checkSql(level, code);
     setRun(v.run);
+    if (v.ruleOnly) return setNote(v.hint);
+    setNote(null);
     setChecked({ ok: v.ok, hint: v.hint });
     onResult(v.ok);
   }
@@ -130,6 +133,7 @@ function QueryLevel({ level, onResult }: { level: Extract<SqlLevel, SqlTask>; on
           <span className="text-xs text-slate-400">Ctrl + Enter — выполнить. Каждый запуск — на свежей копии базы.</span>
         </div>
       )}
+      {note && !checked && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{note}</p>}
       {checked?.hint && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{checked.hint}</p>}
       <ResultView run={run} />
     </div>

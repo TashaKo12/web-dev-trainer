@@ -1,4 +1,5 @@
 import { Code, codeOnly, passes, uses, type PythonTopicData } from "../PythonTopic";
+import { sameOutput } from "../interpreter";
 
 const C = Code;
 
@@ -118,7 +119,7 @@ export const STRINGS: PythonTopicData = {
         goal: "В терминале должно появиться: П ь",
         start: 'name = "Пиксель"\n',
         check: (r, _a, code) =>
-          r.printed.trim() !== "П ь" ? "Нужно: П ь. Первая буква — name[0], последняя — name[-1]." : !/\[\s*-?\d+\s*\]/.test(codeOnly(code)) ? "Используй индексы в квадратных скобках." : true,
+          !sameOutput(r.printed.trim(), "П ь") ? "Нужно: П ь. Первая буква — name[0], последняя — name[-1]." : !/\[/.test(codeOnly(code)) ? "Используй индексы в квадратных скобках." : true,
       },
       {
         title: "Громкий робот",
@@ -165,7 +166,7 @@ export const STRINGS: PythonTopicData = {
         goal: "В терминале должно появиться: Пиксель",
         start: 'sign = "Пиксиль"\n',
         check: (r, _a, code) =>
-          r.printed.trim() !== "Пиксель" ? "Должно получиться: Пиксель." : !/\.replace\(/.test(code) ? "Используй replace: sign.replace(\"и\", \"е\") — но осторожно, «и» в слове две!" : true,
+          !sameOutput(r.printed.trim(), "Пиксель") ? "Должно получиться: Пиксель." : !/\.replace\(/.test(code) ? "Используй replace: sign.replace(\"и\", \"е\") — но осторожно, «и» в слове две!" : true,
       },
       {
         title: "Визитка",
@@ -177,7 +178,7 @@ export const STRINGS: PythonTopicData = {
         goal: "Запусти и ответь роботу. Например: Оля и пиццу → Меня зовут Оля, я люблю пиццу!",
         start: 'name = input("Имя: ")\nfood = input("Любимая еда: ")\n',
         check: (_r, _a, code) =>
-          !/\bf["']/.test(code)
+          !/\bf["']/i.test(code)
             ? 'Используй f-строку: print(f"Меня зовут {name}, я люблю {food}!").'
             : passes(code, [
                   { inputs: ["Оля", "пиццу"], expected: "Меня зовут Оля, я люблю пиццу!" },
@@ -221,8 +222,8 @@ export const STRINGS: PythonTopicData = {
         { inputs: ["робот"], expected: "т" },
         { inputs: ["Пиксель"], expected: "ь" },
       ],
-      rule: (code) => /\[\s*-\s*1\s*\]/.test(codeOnly(code)),
-      ruleHint: "последняя буква — s[-1].",
+      rule: (code) => /\[/.test(codeOnly(code)),
+      ruleHint: "возьми букву по номеру — в квадратных скобках.",
       explain: "print(s[-1]) — минус считает с конца.",
     },
     {
@@ -277,7 +278,7 @@ export const STRINGS: PythonTopicData = {
         { inputs: ["12.5"], expected: "Цена: 12.50 руб." },
         { inputs: ["7"], expected: "Цена: 7.00 руб." },
       ],
-      rule: (code) => /\bf["']/.test(code),
+      rule: (code) => /\bf["']/i.test(code),
       ruleHint: "используй f-строку с форматом {price:.2f}.",
       explain: 'price = float(input()), print(f"Цена: {price:.2f} руб.").',
     },

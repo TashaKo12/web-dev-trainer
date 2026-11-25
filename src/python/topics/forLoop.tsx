@@ -1,4 +1,5 @@
 import { Code, codeOnly, passes, uses, type PythonTopicData } from "../PythonTopic";
+import { sameOutput } from "../interpreter";
 
 const C = Code;
 const printCount = (code: string) => (codeOnly(code).match(/print\s*\(/g) ?? []).length;
@@ -92,7 +93,7 @@ export const FOR_LOOP: PythonTopicData = {
         goal: "Пять строк «Присед!» одним print.",
         start: "for i in range(5):\n    ",
         check: (r, _a, code) =>
-          r.printed !== "Присед!\n".repeat(5) ? "Должно быть ровно 5 строк «Присед!»." : printCount(code) !== 1 || !uses(code, "for") ? "Один print внутри цикла for." : true,
+          !sameOutput(r.printed, "Присед!\n".repeat(5)) ? "Должно быть ровно 5 строк «Присед!»." : printCount(code) !== 1 || !uses(code, "for") ? "Один print внутри цикла for." : true,
       },
       {
         title: "Счёт до десяти",
@@ -104,7 +105,7 @@ export const FOR_LOOP: PythonTopicData = {
         goal: "Числа от 1 до 10 по одному в строке.",
         start: "",
         check: (r, _a, code) =>
-          r.printed !== Array.from({ length: 10 }, (_, i) => `${i + 1}\n`).join("") ? "Нужны числа от 1 до 10 — проверь начало и конец range." : !uses(code, "for") ? "Используй цикл for." : true,
+          !sameOutput(r.printed, Array.from({ length: 10 }, (_, i) => `${i + 1}\n`).join("")) ? "Нужны числа от 1 до 10 — проверь начало и конец range." : !uses(code, "for") ? "Используй цикл for." : true,
       },
       {
         title: "Обратный отсчёт",
@@ -117,7 +118,7 @@ export const FOR_LOOP: PythonTopicData = {
         goal: "5 4 3 2 1 по строкам и «Старт!» в конце.",
         start: "",
         check: (r, _a, code) =>
-          r.printed !== "5\n4\n3\n2\n1\nСтарт!\n" ? "Сначала 5…1, потом один раз «Старт!» — после цикла, без отступа." : !uses(code, "for") ? "Используй цикл for." : true,
+          !sameOutput(r.printed, "5\n4\n3\n2\n1\nСтарт!\n") ? "Сначала 5…1, потом один раз «Старт!» — после цикла, без отступа." : !uses(code, "for") ? "Используй цикл for." : true,
       },
       {
         title: "Буква за буквой",
@@ -142,7 +143,7 @@ export const FOR_LOOP: PythonTopicData = {
         title: "Копилка очков",
         body: (
           <p>
-            Спроси число n и выведи сумму всех чисел от 1 до n. Заведи <C>total = 0</C> до цикла и печатай после него.
+            Спроси число n и выведи сумму всех чисел от 1 до n. Заведи до цикла переменную для суммы (например, <C>total = 0</C>) и печатай её после цикла.
           </p>
         ),
         goal: "Например: 4 → 10 (1 + 2 + 3 + 4).",

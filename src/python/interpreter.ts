@@ -1422,6 +1422,19 @@ export function runPython(code: string, inputs: string[] = []): RunResult {
   return snapshot();
 }
 
+/** Signs that look alike (– — -, ё е, x х ×, « ") and spaces at the ends of lines are not mistakes. */
+const plain = (s: string) =>
+  s
+    .replace(/[‐-―−]/g, "-")
+    .replace(/[×хХX]/g, "x")
+    .replace(/ё/g, "е")
+    .replace(/Ё/g, "Е")
+    .replace(/[«»“”„]/g, '"')
+    .replace(/…/g, "...")
+    .replace(/\u00a0/g, " ")
+    .replace(/[ \t]+$/gm, "")
+    .replace(/\n+$/, "");
+
 export function sameOutput(actual: string, expected: string) {
-  return actual.replace(/\n$/, "") === expected.replace(/\n$/, "");
+  return plain(actual) === plain(expected);
 }

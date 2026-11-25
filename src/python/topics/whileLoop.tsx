@@ -1,5 +1,5 @@
-import { runPython } from "../interpreter";
-import { Code, passes, uses, type PythonTopicData } from "../PythonTopic";
+import { sameOutput, runPython } from "../interpreter";
+import { Code, passes, uses, type PythonTopicData, noComments } from "../PythonTopic";
 
 const C = Code;
 const whileNotFor = (code: string) => uses(code, "while") && !uses(code, "for");
@@ -91,14 +91,14 @@ export const WHILE_LOOP: PythonTopicData = {
         goal: "Числа 1, 2, 3, 4, 5 по одному в строке.",
         start: "i = 1\nwhile i <= 5:\n    ",
         check: (r, _a, code) =>
-          r.printed !== "1\n2\n3\n4\n5\n" ? "Нужны числа от 1 до 5 по одному в строке." : !whileNotFor(code) ? "Используй while, а не for." : true,
+          !sameOutput(r.printed, "1\n2\n3\n4\n5\n") ? "Нужны числа от 1 до 5 по одному в строке." : !whileNotFor(code) ? "Используй while, а не for." : true,
       },
       {
         title: "Почини вечный цикл",
         body: <p>Эта программа никогда не заканчивается: Пиксель застрял! Найди, чего не хватает, и почини.</p>,
         goal: "Программа печатает 0, 1, 2 и останавливается.",
         start: "i = 0\nwhile i < 3:\n    print(i)",
-        check: (r) => (r.printed === "0\n1\n2\n" ? true : "Внутри цикла i должна расти: i += 1."),
+        check: (r) => (sameOutput(r.printed, "0\n1\n2\n") ? true : "Внутри цикла i должна расти: i += 1."),
       },
       {
         title: "Волшебное слово",
@@ -113,7 +113,7 @@ export const WHILE_LOOP: PythonTopicData = {
         check: (_r, _a, code) => {
           const r = runPython(code, ["нет", "открой", "пожалуйста"]);
           if (r.error || r.waiting) return "Цикл должен спрашивать снова, пока не скажут «пожалуйста».";
-          return r.prompts.length === 3 && r.printed.trim() === "Спасибо!" ? true : "Спрашивай в цикле while word != \"пожалуйста\", а «Спасибо!» выведи после цикла.";
+          return r.prompts.length === 3 && sameOutput(r.printed.trim(), "Спасибо!") ? true : "Спрашивай в цикле while word != \"пожалуйста\", а «Спасибо!» выведи после цикла.";
         },
       },
       {
@@ -127,7 +127,7 @@ export const WHILE_LOOP: PythonTopicData = {
         goal: "В терминале должно появиться: 120",
         start: "savings = 0\n",
         check: (r, _a, code) =>
-          r.printed.trim() !== "120" ? "Должно получиться 120." : !uses(code, "while") || /120/.test(code) ? "Пусть считает цикл while, а не готовое число." : true,
+          !sameOutput(r.printed.trim(), "120") ? "Должно получиться 120." : !uses(code, "while") || /120/.test(noComments(code)) ? "Пусть считает цикл while, а не готовое число." : true,
       },
       {
         title: "Угадай число",
@@ -185,7 +185,7 @@ export const WHILE_LOOP: PythonTopicData = {
       prompt: "Начни с 0 и прибавляй по 7, пока сумма меньше 50. Выведи итоговую сумму.",
       start: "",
       tests: [{ inputs: [], expected: "56" }],
-      rule: (code) => uses(code, "while") && !/56/.test(code),
+      rule: (code) => uses(code, "while") && !/56/.test(noComments(code)),
       ruleHint: "пусть сумму посчитает цикл while.",
       explain: "total = 0, while total < 50: total += 7, потом print(total). Последний шаг: 49 → 56.",
     },

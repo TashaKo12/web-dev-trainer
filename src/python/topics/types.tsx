@@ -1,4 +1,5 @@
 import { Code, codeOnly, passes, uses, type PythonTopicData } from "../PythonTopic";
+import { sameOutput } from "../interpreter";
 
 const C = Code;
 
@@ -104,7 +105,7 @@ export const TYPES: PythonTopicData = {
         goal: "В терминале должно появиться: <class 'float'>",
         start: "parcel = 3.14\n",
         check: (r, _a, code) =>
-          r.printed.trim() !== "<class 'float'>" ? "Выведи тип посылки: print(type(parcel))." : !uses(code, "type") ? "Используй type()." : true,
+          !sameOutput(r.printed.trim(), "<class 'float'>") ? "Выведи тип посылки: print(type(parcel))." : !uses(code, "type") ? "Используй type()." : true,
       },
       {
         title: "Склейка с числом",
@@ -117,7 +118,7 @@ export const TYPES: PythonTopicData = {
         goal: "В терминале должно появиться: Мне 7 лет",
         start: 'age = 7\nprint("Мне " + age + " лет")',
         check: (r, _a, code) =>
-          r.printed.trim() !== "Мне 7 лет" ? "Должно получиться: Мне 7 лет." : !codeOnly(code).includes("+") ? "Оставь склейку через +." : !uses(code, "str") ? "Преврати число в текст: str(age)." : true,
+          !sameOutput(r.printed.trim(), "Мне 7 лет") ? "Должно получиться: Мне 7 лет." : !codeOnly(code).includes("+") ? "Оставь склейку через +." : !uses(code, "str") ? "Преврати число в текст: str(age)." : true,
       },
       {
         title: "Сумма двух посылок",
@@ -164,7 +165,7 @@ export const TYPES: PythonTopicData = {
         ),
         goal: "В терминале должно появиться: True False",
         start: 'box1 = "мяч"\nbox2 = ""\n',
-        check: (r, _a, code) => (r.printed.trim() !== "True False" ? "Выведи print(bool(box1), bool(box2))." : !uses(code, "bool") ? "Используй bool()." : true),
+        check: (r, _a, code) => (!sameOutput(r.printed.trim(), "True False") ? "Выведи print(bool(box1), bool(box2))." : !uses(code, "bool") ? "Используй bool()." : true),
       },
     ],
   },

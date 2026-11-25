@@ -1,3 +1,4 @@
+import { describeFailure } from "../../python/PythonTopic";
 import { ResetDraft, useDraft } from "../../lib/drafts";
 import { useState, type ReactNode } from "react";
 import { TopicSlider } from "../../components/TopicSlider";
@@ -20,6 +21,11 @@ function Code({ children }: { children: ReactNode }) {
 }
 
 const lastLine = (r: RunResult) => r.printed.replace(/\n$/, "").split("\n").pop() ?? "";
+/** Runs the program with the check's own answers: is this word or number in what it printed? The names of variables do not matter. */
+const says = (code: string, inputs: string[], text: string) => {
+  const r = runPython(code, [...inputs, "8", "8"]);
+  return !r.error && !r.waiting && new RegExp(`(^|[^\\wА-Яа-яЁё.])${text}(?![\\wА-Яа-яЁё]|\\.\\d)`).test(r.printed);
+};
 const isInt = (s: string) => /^\s*-?\d+\s*$/.test(s);
 
 type IOMission = {
@@ -28,7 +34,7 @@ type IOMission = {
   goal: ReactNode;
   start: string;
   /** Runs once the program has finished without errors: true = mission complete, string = hint. */
-  check: (r: RunResult, answers: string[]) => true | string;
+  check: (r: RunResult, answers: string[], code: string) => true | string;
 };
 
 const MISSIONS: IOMission[] = [
@@ -68,10 +74,10 @@ const MISSIONS: IOMission[] = [
     ),
     goal: "Пусть робот поздоровается по имени: «Привет, …» и твоё имя.",
     start: 'name = input("Как тебя зовут? ")\nprint("Привет!")',
-    check: (r, answers) => {
+    check: (_r, answers, code) => {
       const name = answers[0]?.trim();
       if (!name) return "Когда робот спросит, напиши своё имя.";
-      return lastLine(r).includes(name) ? true : 'Робот пока не называет имя. Добавь переменную в print: print("Привет,", name).';
+      return says(code, ["Зоя"], "Зоя") && says(code, ["Тимур"], "Тимур") ? true : "Робот не называет имя, которое ему сказали. Допиши в print свою переменную — без кавычек, через запятую.";
     },
   },
   {
@@ -90,9 +96,9 @@ const MISSIONS: IOMission[] = [
     ),
     goal: "Сделай так, чтобы робот правильно удваивал число: на 5 он должен ответить 10.",
     start: 'number = input("Введи число: ")\nprint(number * 2)',
-    check: (r, answers) => {
+    check: (_r, answers, code) => {
       if (!answers[0] || !isInt(answers[0])) return "Введи целое число, например 5.";
-      return lastLine(r) === String(Number(answers[0]) * 2) ? true : "Робот склеил текст. Оберни ответ: int(input(...)).";
+      return says(code, ["7"], "14") && says(code, ["21"], "42") ? true : `Если ввести 7, должно получиться 14, а программа напечатала «${runPython(code, ["7"]).printed.trim()}». Оберни ответ: int(input(...)).`;
     },
   },
   {
@@ -112,10 +118,9 @@ const MISSIONS: IOMission[] = [
     ),
     goal: "Добавь второй вопрос — про возраст — и пусть робот скажет имя и возраст в одной фразе.",
     start: 'name = input("Как тебя зовут? ")\nprint("Привет,", name)',
-    check: (r, answers) => {
-      if (answers.length < 2) return "Нужен второй вопрос: age = input(...).";
-      const said = r.printed;
-      return answers.every((a) => a.trim() && said.includes(a.trim())) ? true : "Пусть в print будут и имя, и возраст.";
+    check: (_r, answers, code) => {
+      if (answers.length < 2) return "Нужен второй вопрос — ещё одна команда input(...), ответ сохрани в другую переменную.";
+      return says(code, ["Зоя", "13"], "Зоя") && says(code, ["Зоя", "13"], "13") ? true : "Если ответить «Зоя» и «13», в print должны быть и Зоя, и 13.";
     },
   },
   {
@@ -130,10 +135,10 @@ const MISSIONS: IOMission[] = [
     ),
     goal: "Робот спрашивает два числа и печатает их сумму.",
     start: 'a = int(input("Первое число: "))\n',
-    check: (r, answers) => {
+    check: (_r, answers, code) => {
       if (answers.length < 2) return "Робот должен задать два вопроса.";
       if (!isInt(answers[0]) || !isInt(answers[1])) return "Введи целые числа.";
-      return lastLine(r) === String(Number(answers[0]) + Number(answers[1])) ? true : "Последней строкой должна быть сумма чисел.";
+      return says(code, ["12", "30"], "42") && says(code, ["5", "6"], "11") ? true : `Если ввести 12 и 30, должно получиться 42, а программа напечатала «${runPython(code, ["12", "30"]).printed.trim()}».`;
     },
   },
 ];
@@ -151,7 +156,7 @@ function MissionPlay({ mission, isDone, onComplete, onMistake }: { mission: IOMi
       if (!isDone) onMistake();
       return;
     }
-    const verdict = mission.check(result, answers);
+    const verdict = mission.check(result, answers, code);
     if (verdict === true) {
       setSolved(true);
       onComplete();
@@ -302,14 +307,14 @@ const LEVELS: IOLevel[] = [
 function IOLevelTask({ level, onResult }: { level: IOLevel; onResult: (correct: boolean) => void }) {
   const [code, setCode] = useDraft(level.start);
   const runner = useProgramRunner();
-  const [checked, setChecked] = useState<{ result: RunResult; inputs: string[] } | null>(null);
+  const [checked, setChecked] = useState<{ result: RunResult; inputs: string[]; failed: string | null } | null>(null);
 
   function check() {
     const results = level.tests.map((t) => runPython(code, t.inputs));
     const passed = results.map((r, i) => !r.error && !r.waiting && sameOutput(r.printed, level.tests[i].expected));
     const failing = passed.indexOf(false);
     const shown = failing === -1 ? 0 : failing;
-    setChecked({ result: results[shown], inputs: level.tests[shown].inputs });
+    setChecked({ result: results[shown], inputs: level.tests[shown].inputs, failed: failing === -1 ? null : describeFailure(results[shown], level.tests[shown]) });
     onResult(failing === -1 && (level.rule ? level.rule(results) : true));
   }
 
@@ -338,12 +343,13 @@ function IOLevelTask({ level, onResult }: { level: IOLevel; onResult: (correct: 
           >
             Проверить
           </button>
-          <span className="text-xs text-slate-400">Проверка запустит программу с разными ответами</span>
+          <span className="text-xs text-slate-400">Проверка запустит программу с разными ответами. Имена переменных — любые.</span>
         </div>
       )}
       {checked ? (
         <div className="space-y-2">
           <p className="text-xs font-bold uppercase tracking-wide text-slate-400">Проверка с ответами: {checked.inputs.join(", ")}</p>
+          {checked.failed && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">{checked.failed}</p>}
           <TerminalView result={checked.result} />
         </div>
       ) : (

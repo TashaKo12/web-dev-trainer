@@ -185,6 +185,7 @@ function LevelTask({ level, onResult }: { level: JsLevel; onResult: (correct: bo
   const [code, setCode] = useDraft(level.start);
   const runner = useJsRunner();
   const [checked, setChecked] = useState<{ result: JsResult; rows: TestRow[]; outputOk: boolean; ruleFailed: boolean } | null>(null);
+  const [ruleNote, setRuleNote] = useState(false);
   const [checking, setChecking] = useState(false);
 
   async function check() {
@@ -195,6 +196,8 @@ function LevelTask({ level, onResult }: { level: JsLevel; onResult: (correct: bo
     const outputOk = level.output === undefined || r.logs.join("\n").trim() === level.output;
     const allOk = !r.error && outputOk && rows.every((x) => x.ok);
     const ruleOk = level.rule ? level.rule(code) : true;
+    if (allOk && !ruleOk) return setRuleNote(true);
+    setRuleNote(false);
     setChecked({ result: r, rows, outputOk, ruleFailed: allOk && !ruleOk });
     onResult(allOk && ruleOk);
   }
@@ -241,6 +244,7 @@ function LevelTask({ level, onResult }: { level: JsLevel; onResult: (correct: bo
           <span className="text-xs text-slate-400">Tab — отступ, Ctrl + Enter — запуск</span>
         </div>
       )}
+      {ruleNote && !checked && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">Результат верный! Осталось выполнить условие: {level.ruleHint ?? "прочитай задание ещё раз."} Исправь и проверь снова — это не ошибка.</p>}
       {checked ? (
         <div className="space-y-3">
           {checked.ruleFailed && level.ruleHint && (

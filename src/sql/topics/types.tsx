@@ -5,7 +5,7 @@ import type { SqlTopicData } from "../SqlTopic";
 // DEFAULT values and how much space each type takes.
 
 /** The columns of a table with their declared types (case and spaces do not matter). */
-export const cols = (t: string) => `SELECT name, UPPER(REPLACE(type, ' ', '')) AS type FROM pragma_table_info('${t}') ORDER BY cid`;
+export const cols = (t: string) => `SELECT name, REPLACE(UPPER(REPLACE(type, ' ', '')), 'INTEGER', 'INT') AS type FROM pragma_table_info('${t}') ORDER BY cid`;
 
 const sizes = (
   <div className="overflow-x-auto">
@@ -297,7 +297,7 @@ export const SQL_TYPES: SqlTopicData = {
       db: "empty",
       start: "",
       solution: "CREATE TABLE students (id INT PRIMARY KEY, name VARCHAR(50) NOT NULL, active BOOLEAN DEFAULT TRUE);",
-      verify: "SELECT name, UPPER(REPLACE(type, ' ', '')), \"notnull\", UPPER(dflt_value) FROM pragma_table_info('students') ORDER BY cid",
+      verify: "SELECT name, REPLACE(UPPER(REPLACE(type, ' ', '')), 'INTEGER', 'INT'), \"notnull\", UPPER(dflt_value) FROM pragma_table_info('students') ORDER BY cid",
       explain: "CREATE TABLE students (id INT PRIMARY KEY, name VARCHAR(50) NOT NULL, active BOOLEAN DEFAULT TRUE);",
     },
   ],

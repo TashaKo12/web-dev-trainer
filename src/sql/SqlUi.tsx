@@ -171,7 +171,7 @@ export type SqlTask = {
   custom?: (run: SqlRun, code: string) => boolean;
 };
 
-export type Verdict = { ok: boolean; run: SqlRun; hint: string | null };
+export type Verdict = { ok: boolean; /** the result is right, only the way is not the one of the task */ ruleOnly?: boolean; run: SqlRun; hint: string | null };
 
 /** The text without strings and comments: to look for words like WHERE in the student's code. */
 export const sqlOnly = (code: string) =>
@@ -210,6 +210,6 @@ export function checkSql(task: SqlTask, code: string): Verdict {
   } else ok = sameTable(lastTable(run), lastTable(ref), task.ordered ?? /order\s+by/i.test(task.solution));
   ref.db.close();
   if (!ok) return { ok: false, run, hint: task.hint ?? (task.verify ? "Данные в таблице получились не такие, как нужно." : "Результат не совпадает с тем, что нужно получить.") };
-  if (task.rule && !task.rule(code)) return { ok: false, run, hint: `Результат верный, но решить нужно по условию: ${task.ruleHint ?? "посмотри задание"}` };
+  if (task.rule && !task.rule(code)) return { ok: false, ruleOnly: true, run, hint: `Результат верный! Осталось выполнить условие: ${task.ruleHint ?? "посмотри задание"} Исправь и проверь снова — это не ошибка.` };
   return { ok: true, run, hint: null };
 }

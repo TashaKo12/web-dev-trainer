@@ -306,6 +306,8 @@ function PyLevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: 
   const [result, setResult] = useState<RunResult | null>(null);
   const [checked, setChecked] = useState(false);
 
+  const [ruleNote, setRuleNote] = useState(false);
+
   const code = level.mode === "paren" ? `print(${text})` : text;
 
   function run() {
@@ -316,8 +318,11 @@ function PyLevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: 
 
   function check() {
     const r = run();
+    const right = !r.error && sameOutput(r.output, level.expected);
+    if (right && level.rule && !level.rule(code)) return setRuleNote(true);
+    setRuleNote(false);
     setChecked(true);
-    onResult(!r.error && sameOutput(r.output, level.expected) && (level.rule ? level.rule(code) : true));
+    onResult(right);
   }
 
   return (
@@ -346,6 +351,7 @@ function PyLevelTask({ level, onResult }: { level: PyLevel; onResult: (correct: 
           {level.mode === "code" && <span className="text-xs text-slate-400">Ctrl + Enter — запустить</span>}
         </div>
       )}
+      {ruleNote && !checked && <p className="rounded-2xl bg-amber-50 p-3 text-sm font-bold text-amber-800">Текст верный! Осталось сделать так, как просит задание: прочитай его ещё раз, исправь и проверь снова — это не ошибка.</p>}
       <TerminalView result={result} />
     </div>
   );

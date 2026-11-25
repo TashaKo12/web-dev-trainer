@@ -198,7 +198,7 @@ export const SQL_SETUP: SqlTopicData = {
         db: "empty",
         start: "",
         solution: "CREATE DATABASE robots;",
-        custom: (r) => said(r, /^CREATE\s+DATABASE\s+`?robots`?$/i),
+        custom: (r) => said(r, /^CREATE\s+DATABASE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?robots`?$/i),
         hint: "CREATE DATABASE robots;",
       },
       {
@@ -273,7 +273,7 @@ export const SQL_SETUP: SqlTopicData = {
       db: "empty",
       start: "",
       solution: "CREATE DATABASE cinema;",
-      custom: (r) => said(r, /^CREATE\s+DATABASE\s+`?cinema`?$/i),
+      custom: (r) => said(r, /^CREATE\s+DATABASE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?cinema`?$/i),
       explain: "CREATE DATABASE cinema;",
     },
     {
@@ -286,7 +286,7 @@ export const SQL_SETUP: SqlTopicData = {
       db: "empty",
       start: "",
       solution: "CREATE DATABASE zoo;\nUSE zoo;",
-      custom: (r) => said(r, /^CREATE\s+DATABASE\s+`?zoo`?$/i) && said(r, /^USE\s+`?zoo`?$/i),
+      custom: (r) => said(r, /^CREATE\s+DATABASE\s+(?:IF\s+NOT\s+EXISTS\s+)?`?zoo`?$/i) && said(r, /^USE\s+`?zoo`?$/i),
       explain: "CREATE DATABASE zoo; USE zoo; — сначала создать, потом выбрать.",
     },
     {

@@ -239,7 +239,7 @@ export const SQL_TABLES: SqlTopicData = {
       db: "empty",
       start: "",
       solution: "CREATE TABLE teachers (id INT PRIMARY KEY, name VARCHAR(60) NOT NULL, subject VARCHAR(40));",
-      verify: "SELECT name, UPPER(REPLACE(type, ' ', '')), \"notnull\", pk FROM pragma_table_info('teachers') ORDER BY cid",
+      verify: "SELECT name, REPLACE(UPPER(REPLACE(type, ' ', '')), 'INTEGER', 'INT'), \"notnull\", pk FROM pragma_table_info('teachers') ORDER BY cid",
       explain: "CREATE TABLE teachers (id INT PRIMARY KEY, name VARCHAR(60) NOT NULL, subject VARCHAR(40));",
     },
     {

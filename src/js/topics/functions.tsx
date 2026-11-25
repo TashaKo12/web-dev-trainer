@@ -216,8 +216,9 @@ export const FUNCTIONS: JsTopicData = {
           </>
         ),
         start: 'function move(direction, steps) {\n  console.log(direction + " на " + steps);\n}\n\nmove(3, "вправо");\nmove(2, "вверх");',
-        check: (r, code) =>
-          !/console\.log\(\s*direction\s*\+\s*" на "\s*\+\s*steps\s*\)/.test(code)
+        calls: ['move("вниз", 7)'],
+        check: (r) =>
+          r.calls[0]?.logs.join("\n") !== "вниз на 7"
             ? "Функцию менять не нужно — верни её как было и поменяй местами аргументы в вызовах."
             : !same(r, ["вправо на 3", "вверх на 2"])
               ? "Первый параметр — direction (куда), второй — steps (сколько). Аргументы идут в том же порядке."

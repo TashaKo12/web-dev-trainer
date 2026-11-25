@@ -59,7 +59,7 @@ export const SQL_FINAL: SqlTopicData = {
         db: "empty",
         start: "",
         solution: FILMS,
-        verify: "SELECT name, UPPER(REPLACE(type, ' ', '')), \"notnull\", dflt_value, pk FROM pragma_table_info('films') ORDER BY cid",
+        verify: "SELECT name, REPLACE(UPPER(REPLACE(type, ' ', '')), 'INTEGER', 'INT'), \"notnull\", dflt_value, pk FROM pragma_table_info('films') ORDER BY cid",
         hint: "Четыре столбца через запятую, у age_limit — DEFAULT 0.",
       },
       {
