@@ -194,7 +194,7 @@ export const FOR_LOOP: PythonTopicData = {
       start: "",
       tests: [{ inputs: [], expected: "2\n4\n6\n8\n10" }],
       rule: (code) => /range\([^)]*,[^)]*,[^)]*\)/.test(codeOnly(code)),
-      ruleHint: "задай в range шаг: range(начало, конец, шаг).",
+      ruleHint: "задай в range шаг: range(start, stop, step).",
       explain: "for i in range(2, 11, 2): print(i).",
     },
     {

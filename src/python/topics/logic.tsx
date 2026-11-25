@@ -46,7 +46,7 @@ export const LOGIC: PythonTopicData = {
         ),
         examples: [
           { code: "print(not True)\nprint(not 5 > 3)", out: "False\nFalse" },
-          { code: 'name = ""\nif not name:\n    print("Ты не ввёл имя")', out: "Ты не ввёл имя", note: "Пустая строка — это «нет», а not превращает её в «да»." },
+          { code: 'name = ""\nif not name:\n    print("Ты не ввёл имя")', out: "Ты не ввёл имя", note: "Пустая строка — это «нет», а not превращает его в «да»." },
         ],
       },
       {
